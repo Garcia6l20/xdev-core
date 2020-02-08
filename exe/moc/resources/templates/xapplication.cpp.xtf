@@ -1,0 +1,44 @@
+{% extends templates/xclass.cpp.xtf %}
+
+{% block xclass_content %}
+int _xdev_application_argc;
+char** _xdev_application_argv;
+
+static void _xdev_application_help(int argc, char** argv)
+{
+    cout << "Usage: " << argv[0] << " [OPTIONS]" << endl;
+    cout << "OPTIONS:" << endl;
+    cout << "\t--help, -h\t\tShow this message and quit." << endl;
+    {% for prop in xclass.properties %}
+    {% if prop.args.ProgramOption %}
+    cout << "\t--{{ prop.args.ProgramOption.LongOpt }}, -{{ prop.args.ProgramOption.ShortOpt }}\t\t{{ prop.args.ProgramOption.Help }}" << endl;
+    {% endif %}
+    {% endfor %}
+}
+
+int _xdev_application_parse_args(XApplication::ptr& app, int argc, char** argv)
+{
+    for(int ii=1; ii < argc; ++ii)
+    {
+        string arg = argv[ii];
+        if (arg == "-h" || arg == "--help")
+        {
+            _xdev_application_help(argc, argv);
+            exit(-1);
+        }{% for prop in xclass.properties %}{% if prop.args.ProgramOption %}
+        else if (arg == "--{{ prop.args.ProgramOption.LongOpt }}" || arg == "-{{ prop.args.ProgramOption.ShortOpt }}")
+        {
+            // {{ prop.args.ProgramOption }}
+            app->setProperty("{{ prop.name }}", XVariant::FromString<{{ prop.value_type }}>(argv[++ii]));            
+        }{% endif %}{% endfor %}
+    }
+    return 0;
+}
+{{ super() }}
+void {{ xclass.name }}StaticClass::Help()
+{
+    _xdev_application_help(_xdev_application_argc, _xdev_application_argv);
+}
+
+XAPPLICATION_IMPL({{ xclass.name }})
+{% endblock %}

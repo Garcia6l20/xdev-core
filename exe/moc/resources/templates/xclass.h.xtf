@@ -1,0 +1,20 @@
+/**
+ * @brief {{ xclass.name }}'s static class
+ */
+ #include <{{ origin_filename }}>
+{% block xclass_class_head %}
+class {{ xclass.name }}StaticClass: public {{ xclass.name }}::BaseStaticClass
+{
+public:
+    using BaseStaticClass = {{ xclass.name }}::BaseStaticClass;
+    using ptr = shared_ptr<{{ xclass.name }}StaticClass>;
+    {{ xclass.name }}StaticClass();
+    virtual ~{{ xclass.name }}StaticClass() override;
+    virtual XObjectBase::ptr Create() const override;
+private:
+{% endblock %}
+{% block xclass_class_tail %}
+    static {{ xclass.name }}StaticClass::ptr _instance;
+    friend {{ xclass.base }}<{{ xclass.name }}>;
+};
+{% endblock %}

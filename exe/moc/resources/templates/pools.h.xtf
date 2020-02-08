@@ -1,0 +1,19 @@
+{% extends templates/header.xtf %}
+
+{% block header_body %}
+#include <xdev.hpp>
+#include <xdev/xdev-object-pool.hpp>
+
+{% for include in includes %}
+#include <{{ include }}>
+{% endfor %}
+
+using namespace xdev;
+
+{% for pool in pools %}
+/**
+ * @brief {{ pool.name }} declaration
+ */
+extern XObjectPool {{ pool.name }}Pool;
+{% endfor %}
+{% endblock %}

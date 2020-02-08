@@ -1,0 +1,5 @@
+{% extends templates/xclass.h.xtf %}
+
+{% block xclass_class_tail %}
+    static void Help();
+{{ super() }}{% endblock %}

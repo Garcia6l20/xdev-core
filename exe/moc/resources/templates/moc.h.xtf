@@ -1,0 +1,14 @@
+{% extends templates/header.xtf %}
+
+{% block header_body %}
+#include <xdev.hpp>
+{% if pools %}
+#include <pools.xdev.hpp>
+{% endif %}
+
+using namespace xdev;
+
+{% for xclass in xclasses %}
+{{ render(xclass.hdr_template) }}
+{% endfor %}
+{% endblock %}
