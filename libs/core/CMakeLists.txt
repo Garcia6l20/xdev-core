@@ -27,8 +27,8 @@ if(WIN32)
 endif()
 
 FetchContent_Declare(ctti-fetch
-    GIT_REPOSITORY git@github.com:Manu343726/ctti.git
-    GIT_TAG master
+    GIT_REPOSITORY https://github.com/Manu343726/ctti.git
+    GIT_TAG d7e9828b82ce7a6321465fbd84f9bccb772c7f43
 )
 FetchContent_MakeAvailable(ctti-fetch)
 install(DIRECTORY ${ctti_SOURCE_DIR}/include/ctti DESTINATION include)
