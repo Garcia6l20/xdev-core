@@ -50,7 +50,6 @@ jobs:
           sudo pip3 install wheel
           sudo pip3 install conan
 
-          echo -- Adding xdev conan repository
           conan remote add xdev https://api.bintray.com/conan/6l20garcia/xdev
 
       - name: Run test build
@@ -61,8 +60,11 @@ jobs:
           make -j
           ctest
 
-      # - name: Build & Publish conan package
-      #   run: |
-      #     conan user -p ${CONAN_XDEV_TOKEN} -r xdev 6l20garcia
-      #     conan create .
-      #     conan upload --all -r xdev xdev-core
+      - name: Build & Publish conan package
+        run: |
+          mkdir build-release
+          cd build-release
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          conan create --profile=./conan_profile ..
+          conan user -p ${CONAN_XDEV_TOKEN} -r xdev 6l20garcia
+          conan upload --all --confirm -r xdev xdev-core
