@@ -17,7 +17,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 
     set(XDEV_CONAN_CXX_COMPILER_VERSION ${XDEV_CXX_COMPILER_VERSION_MAJOR}.${XDEV_CXX_COMPILER_VERSION_MINOR})
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set(_compiler_version_setting -s compiler.version=${XDEV_CONAN_CXX_COMPILER_VERSION})
+        set(_compiler_version_setting -s compiler.version=${XDEV_CONAN_CXX_COMPILER_VERSION} -s compiler.libcxx=libstdc++11)
     endif()
 
     execute_process(COMMAND ${CONAN_EXE} install ${CMAKE_SOURCE_DIR}

@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      XDEV_UNIT_TESTS: ON
+      CONAN_XDEV_TOKEN: ${{ secrets.CONAN_XDEV_TOKEN }}
 
     strategy:
       fail-fast: false
@@ -51,12 +51,18 @@ jobs:
           sudo pip3 install conan
 
           echo -- Adding xdev conan repository
-          conan remote add xdev https://api.bintray.com/conan/6l20garcia/xdev 
+          conan remote add xdev https://api.bintray.com/conan/6l20garcia/xdev
 
       - name: Run test build
         run: |
           mkdir build-debug
           cd build-debug
-          cmake -DCMAKE_BUILD_TYPE=Debug ..
+          cmake -DCMAKE_BUILD_TYPE=Debug -DXDEV_UNIT_TESTING=ON ..
           make -j
           ctest
+
+      # - name: Build & Publish conan package
+      #   run: |
+      #     conan user -p ${CONAN_XDEV_TOKEN} -r xdev 6l20garcia
+      #     conan create .
+      #     conan upload --all -r xdev xdev-core
