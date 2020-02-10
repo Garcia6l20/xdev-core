@@ -12,8 +12,13 @@
 #include <thread>
 #include <future>
 #include <condition_variable>
-#include <concepts>
 #include <algorithm>
+
+#ifdef XDEV_HAS_CONCEPTS_HEADER
+#include <concepts>
+#else
+#include <xdev/std-concepts.hpp>
+#endif
 
 // #define XDEV_DEBUG_CONCURRENT
 #ifdef XDEV_DEBUG_CONCURRENT

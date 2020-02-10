@@ -1,14 +1,11 @@
-name: C/C++ CI
+name: Pull request validation
 
-on: [push]
+on: [pull_request]
 
 jobs:
   ci:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-
-    env:
-      CONAN_XDEV_TOKEN: ${{ secrets.CONAN_XDEV_TOKEN }}
 
     strategy:
       fail-fast: false
@@ -47,8 +44,8 @@ jobs:
           echo -- Installing setuptools, pip, wheel and conan
           # sudo apt upgrade -y python3
           sudo apt install -y python3-setuptools python3-pip
-          sudo pip3 install wheel
-          sudo pip3 install conan
+          sudo -H pip3 install wheel
+          sudo -H pip3 install conan
 
           conan remote add xdev https://api.bintray.com/conan/6l20garcia/xdev
 
@@ -60,11 +57,9 @@ jobs:
           make -j
           ctest
 
-      - name: Build & Publish conan package
+      - name: Build conan package
         run: |
           mkdir build-release
           cd build-release
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DCONAN_CONFIG=ON ..
           conan create --profile=./conan_profile ..
-          conan user -p ${CONAN_XDEV_TOKEN} -r xdev 6l20garcia
-          conan upload --all --confirm -r xdev xdev-core

@@ -1,5 +1,5 @@
-#include <xdev/xdev.hpp>
 #include <gtest/gtest.h>
+#include <xdev/xdev.hpp>
 #include <iomanip>
 
 using namespace xdev;

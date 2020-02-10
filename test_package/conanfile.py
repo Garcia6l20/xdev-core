@@ -1,5 +1,5 @@
 from conans import ConanFile, CMake
-import os
+
 
 class XdevCoreTestConan(ConanFile):
     name = 'xdev-core-test-package'
@@ -17,5 +17,4 @@ class XdevCoreTestConan(ConanFile):
         self.copy("*.dylib*", dst="bin", src="lib")
 
     def test(self):
-        os.chdir("bin")
-        self.run("xdev-core-test-package")
+        self.run("./bin/xdev-core-test-package")

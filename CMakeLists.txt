@@ -11,7 +11,12 @@ list(APPEND CMAKE_CXX_REQUIRED_FLAGS -fconcepts)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
+option(CONAN_CONFIG "Use this option to generate conan_profile" OFF)
 include(conan_check)
+if(CONAN_CONFIG)
+    return()
+endif()
+
 include(xdev)
 
 if(MSVC)

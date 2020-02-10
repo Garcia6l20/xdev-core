@@ -12,5 +12,4 @@ TEST(Logger, Nominal) {
     TestLogger.warning("{} + {} = {}", 40, 2, 42);
     TestLogger.error("{} + {} = {}", 40, 2, 42);
     TestLogger.critical("{} + {} = {}", 40, 2, 42);
-    std::cout << std::format("{} + {} = {}\n", 40, 2, 42);
 }

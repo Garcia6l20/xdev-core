@@ -3,7 +3,12 @@
  */
 #pragma once
 
+#ifdef XDEV_HAS_CONCEPTS_HEADER
 #include <concepts>
+#else
+#include <xdev/std-concepts.hpp>
+#endif
+
 #include <variant>
 #include <string>
 
