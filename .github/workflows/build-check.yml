@@ -1,6 +1,14 @@
-name: Pull request validation
+name: Build
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - master
+      - devel
+  pull_request:
+    branches:
+      - master
+      - devel
 
 jobs:
   ci:
@@ -42,7 +50,6 @@ jobs:
           fi
 
           echo -- Installing setuptools, pip, wheel and conan
-          # sudo apt upgrade -y python3
           sudo apt install -y python3-setuptools python3-pip
           sudo -H pip3 install wheel
           sudo -H pip3 install conan
