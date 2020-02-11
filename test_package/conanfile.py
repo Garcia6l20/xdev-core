@@ -11,5 +11,8 @@ class XdevCoreTestConan(ConanFile):
         cmake.configure()
         cmake.build()
 
+    def imports(self):
+        self.copy("xdev.cmake", "cmake", "cmake")
+
     def test(self):
         self.run(os.path.join("bin", "xdev-core-test-package"))

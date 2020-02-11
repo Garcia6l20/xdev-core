@@ -13,9 +13,7 @@ endif()
 
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
-
-list(APPEND CMAKE_MODULE_PATH ${CONAN_XDEV-CORE_ROOT}/cmake)
-include(xdev)
+conan_include_build_modules()
 
 add_executable(${PROJECT_NAME}
     test-object.hpp
