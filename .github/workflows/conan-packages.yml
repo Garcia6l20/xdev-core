@@ -1,22 +1,38 @@
-name: Pull request validation
+name: Conan packages
 
-on: [pull_request]
+on:
+  push:
+    tags:
+       - v*
 
 jobs:
   ci:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
 
+    env:
+      CONAN_XDEV_TOKEN: ${{ secrets.CONAN_XDEV_TOKEN }}
+
     strategy:
       fail-fast: false
       matrix:
-        name: [ubuntu-18.04-gcc-9]
+        name:
+          - ubuntu-18.04-gcc-9-debug
+          - ubuntu-18.04-gcc-9-release
 
         include:
-          - name: ubuntu-18.04-gcc-9
+
+          - name: ubuntu-18.04-gcc-9-debug
             os: ubuntu-18.04
             compiler: gcc
             version: "9"
+            build_type: Debug
+
+          - name: ubuntu-18.04-gcc-9-release
+            os: ubuntu-18.04
+            compiler: gcc
+            version: "9"
+            build_type: Release
 
     steps:
       - uses: actions/checkout@v1
@@ -26,7 +42,10 @@ jobs:
 
           echo -- Installing cmake...
           curl -sSL https://github.com/Kitware/CMake/releases/download/v3.15.4/cmake-3.15.4-Linux-x86_64.tar.gz -o cmake.tar.gz
-          sudo tar xf cmake.tar.gz --strip 1 -C /usr/local
+          sudo tar xf cmake.tar.gz --strip 1 -C /usr/local && rm cmake.tar.gz
+
+          echo -- Removing outdated compilers
+          sudo apt autoremove gcc g++
 
           echo -- Setting up xenial repositories
           sudo add-apt-repository "deb http://dk.archive.ubuntu.com/ubuntu/ xenial main"
@@ -42,24 +61,20 @@ jobs:
           fi
 
           echo -- Installing setuptools, pip, wheel and conan
-          # sudo apt upgrade -y python3
           sudo apt install -y python3-setuptools python3-pip
           sudo -H pip3 install wheel
           sudo -H pip3 install conan
 
           conan remote add xdev https://api.bintray.com/conan/6l20garcia/xdev
 
-      - name: Run test build
-        run: |
-          mkdir build-debug
-          cd build-debug
-          cmake -DCMAKE_BUILD_TYPE=Debug -DXDEV_UNIT_TESTING=ON ..
-          make -j
-          ctest
-
       - name: Build conan package
         run: |
-          mkdir build-release
-          cd build-release
-          cmake -DCMAKE_BUILD_TYPE=Release -DCONAN_CONFIG=ON ..
+          set -xe
+
+          git clean -fd
+
+          mkdir build && cd build
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
           conan create --profile=./conan_profile ..
+          conan user -p ${CONAN_XDEV_TOKEN} -r xdev 6l20garcia
+          conan upload --all --confirm -r xdev xdev-core

@@ -3,30 +3,28 @@ from conans import ConanFile, CMake, tools
 
 class XdevBaseConan(ConanFile):
     name = "xdev-core"
-    version = "0.1.0"
     license = "MIT"
     author = "Sylvain Garcia <garcia.6l20@gmail.com>"
-    url = "https://github.com/Garcia6l20/xdev-base"
+    url = "https://github.com/Garcia6l20/xdev-core"
     description = "@PACKAGE_DESCRIPTION@"
     topics = ("xdev", "reflexion", "templating", "moderncpp")
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
     scm = {
      "type": "git",  # Use "type": "svn", if local repo is managed using SVN
-     "url": "auto",
+     "url": "https://github.com/Garcia6l20/xdev-core.git",
      "revision": "auto"
     }
-    requires = 'boost/1.71.0', 'openssl/1.1.1d', 'fmt/6.1.2'
+    requires = 'boost/1.71.0@conan/stable', 'fmt/6.1.2', 'openssl/1.1.1d', 'zlib/1.2.11', 'bzip2/1.0.8'
     build_requires = 'gtest/1.10.0'
-    options = {"shared": [True, False]}
-    default_options = {"shared": False, "boost:shared": False, "OpenSSL:shared": False}
-    exports_sources = "include/*"
+    options = {"fPIC": [True, False], "shared": [True, False]}
+    default_options = {"fPIC": True, "shared": False, "boost:shared": False, "OpenSSL:shared": False}
     no_copy_source = True
 
-    # def set_version(self):
-    #     git = tools.Git(folder=self.recipe_folder)
-    #     self.version = str(git.get_tag())[1:]
-        
+    def set_version(self):
+        git = tools.Git(folder=self.recipe_folder)
+        self.version = str(git.get_tag())[1:] if git.get_tag() is not None else git.get_revision()
+
     def deploy(self):
         self.copy("*", dst="bin", src="bin")
 
@@ -40,8 +38,9 @@ class XdevBaseConan(ConanFile):
         return self.cmake
 
     def configure(self):
-        self.settings.compiler.cppstd = "20"
         tools.check_min_cppstd(self, "20")
+        if self.settings.os == "Windows":
+            del self.options.fPIC
 
     def build(self):
         cmake = self._cmake()

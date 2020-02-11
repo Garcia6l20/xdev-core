@@ -1,0 +1,75 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+      - devel
+  pull_request:
+    branches:
+      - master
+      - devel
+
+jobs:
+  ci:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [ubuntu-18.04-gcc-9]
+
+        include:
+          - name: ubuntu-18.04-gcc-9
+            os: ubuntu-18.04
+            compiler: gcc
+            version: "9"
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: System setup
+        run: |
+          set -xe
+
+          echo -- Installing cmake...
+          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.15.4/cmake-3.15.4-Linux-x86_64.tar.gz -o cmake.tar.gz
+          sudo tar xf cmake.tar.gz --strip 1 -C /usr/local
+
+          echo -- Removing outdated compilers
+          sudo apt autoremove gcc g++
+
+          echo -- Setting up xenial repositories
+          sudo add-apt-repository "deb http://dk.archive.ubuntu.com/ubuntu/ xenial main"
+          sudo add-apt-repository "deb http://dk.archive.ubuntu.com/ubuntu/ xenial universe"
+          sudo apt-get update
+
+          # install required gcc version
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            echo -- Installing gcc-${{ matrix.version }}...
+            sudo apt-get install -y g++-${{ matrix.version }}
+            echo "::set-env name=CC::gcc-${{ matrix.version }}"
+            echo "::set-env name=CXX::g++-${{ matrix.version }}"
+          fi
+
+          echo -- Installing setuptools, pip, wheel and conan
+          sudo apt install -y python3-setuptools python3-pip
+          sudo -H pip3 install wheel
+          sudo -H pip3 install conan
+
+          conan remote add xdev https://api.bintray.com/conan/6l20garcia/xdev
+
+      - name: Run test build
+        run: |
+          mkdir build-debug
+          cd build-debug
+          cmake -DCMAKE_BUILD_TYPE=Debug -DXDEV_UNIT_TESTING=ON ..
+          make -j
+          ctest
+
+      - name: Build conan package
+        run: |
+          mkdir build-release
+          cd build-release
+          cmake -DCMAKE_BUILD_TYPE=Release -DCONAN_CONFIG=ON ..
+          conan create --profile=./conan_profile ..
