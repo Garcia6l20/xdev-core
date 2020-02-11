@@ -39,7 +39,7 @@ Variant& Array::operator[](size_t index) {
     if (_value.size() <= index) {
         throw std::out_of_range("querying index greater than size");
     }
-    auto& it = begin();
+    auto it = begin();
     std::advance(it, index);
     return *it;
 }
@@ -48,7 +48,7 @@ const Variant& Array::operator[](size_t index) const {
     if (_value.size() <= index) {
         throw std::out_of_range("querying index greater than size");
     }
-    auto& it = begin();
+    auto it = begin();
     std::advance(it, index);
     return *it;
 }

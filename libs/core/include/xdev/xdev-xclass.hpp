@@ -24,7 +24,6 @@ public:
     ~XClass();
 private:
     XClass();
-    static shared_ptr<XClass> _instance;
     static XClass& Get();
     struct XDEV_CORE_EXPORT ClassData {
         XStaticClass::ptr staticClass;

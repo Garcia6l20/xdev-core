@@ -27,8 +27,8 @@ if(WIN32)
 endif()
 
 FetchContent_Declare(ctti-fetch
-    GIT_REPOSITORY git@github.com:Manu343726/ctti.git
-    GIT_TAG master
+    GIT_REPOSITORY https://github.com/Manu343726/ctti.git
+    GIT_TAG d7e9828b82ce7a6321465fbd84f9bccb772c7f43
 )
 FetchContent_MakeAvailable(ctti-fetch)
 install(DIRECTORY ${ctti_SOURCE_DIR}/include/ctti DESTINATION include)
@@ -36,8 +36,8 @@ install(DIRECTORY ${ctti_SOURCE_DIR}/include/ctti DESTINATION include)
 xdev_library(${PROJECT_NAME} STATIC
     PUBLIC_HEADERS ${header_files} ${inline_files}
     SOURCES ${source_files}
-    PUBLIC_INCLUDE_DIRS ${Boost_INCLUDE_DIR} ${ctti-fetch_SOURCE_DIR}/include ${dlfcn-win32-fetch_SOURCE_DIR}
-    PUBLIC_LIBRARIES Threads::Threads ctti dl
+    PUBLIC_INCLUDE_DIRS ${ctti-fetch_SOURCE_DIR}/include ${dlfcn-win32-fetch_SOURCE_DIR}
+    PUBLIC_LIBRARIES Threads::Threads ctti dl Boost::headers CONAN_PKG::fmt
     CXX_STANDARD 20
     ALIAS XDev::core
     FOLDER xdev
@@ -50,28 +50,8 @@ endif()
 
 include(CheckIncludeFileCXX)
 
-check_include_file_cxx(concepts HAS_CONCEPTS_HEADER)
-if(NOT HAS_CONCEPTS_HEADER)
-    target_include_directories(${PROJECT_NAME} PUBLIC libstdc++-extra/concepts)
-    target_sources(${PROJECT_NAME} PRIVATE libstdc++-extra/concepts)
-    install(DIRECTORY libstdc++-extra/concepts DESTINATION include/libstdc++-extra)
-else()
-    message(WARNING "concepts library seems implemented... consider removing libstdc++-extra/concepts")
-endif()
-
-check_include_file_cxx(format HAS_FORMAT_HEADER)
-if(NOT HAS_FORMAT_HEADER)
-    set(FMT_INSTALL ON CACHE INTERNAL "" FORCE)
-    FetchContent_Declare(fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG b55ea587053a01e242c8a83d84fa81e0acf7d973
-    )
-    FetchContent_MakeAvailable(fmt)
-    target_link_libraries(${PROJECT_NAME} PUBLIC fmt)
-
-    target_include_directories(${PROJECT_NAME} PUBLIC libstdc++-extra/format)
-    target_sources(${PROJECT_NAME} PRIVATE libstdc++-extra/format)
-    install(DIRECTORY libstdc++-extra/format DESTINATION include/libstdc++-extra)
-else()
-    message(WARNING "format library seems implemented... consider removing libstdc++-extra/format")
+check_include_file_cxx(concepts XDEV_HAS_CONCEPTS_HEADER)
+if(XDEV_HAS_CONCEPTS_HEADER)
+    message(FATAL_ERROR "concepts library seems implemented... consider removing std-concepts")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC XDEV_HAS_CONCEPTS_HEADER=1)
 endif()

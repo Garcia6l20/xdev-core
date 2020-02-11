@@ -28,4 +28,4 @@ XVariant parse(const std::string& data)
 
 } // xdev::yaml
 
-#include "../inline/xdev-yaml.inl"
+#include <xdev/xdev-yaml.inl>

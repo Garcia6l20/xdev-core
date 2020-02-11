@@ -1,4 +1,4 @@
-#include <xdev.hpp>
+#include <xdev/xdev.hpp>
 #include <iostream>
 #include <cassert>
 #include <xdev/xdev-xclass.hpp>

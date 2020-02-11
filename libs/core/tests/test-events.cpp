@@ -57,7 +57,7 @@ namespace channels {
             return _listeners.size();
         }
     };
-    
+
     static std::map<std::string, BaseListenerPoolPtr> g_pools;
 
     template <typename T = void*>
@@ -72,7 +72,7 @@ namespace channels {
     [[nodiscard]] constexpr Subscription subscribe(const std::string& channel, typename ListenerPool<T>::callback_type&& cb) {
         return {
             channel,
-            pool<T>(channel).emplace_back(std::forward<ListenerPool<T>::callback_type>(cb))
+            pool<T>(channel).emplace_back(std::forward<typename ListenerPool<T>::callback_type>(cb))
         };
     }
 

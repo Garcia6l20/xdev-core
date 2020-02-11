@@ -10,7 +10,7 @@
 #include <xdev/xdev-exception.hpp>
 #include <xdev/xdev-properties.hpp>
 #include <xdev/xdev-concepts.hpp>
-#include <xdev/xdev-variant.hpp>
+#include <xdev/xdev-variant-dict.hpp>
 
 #include <typeinfo>
 #include <typeindex>

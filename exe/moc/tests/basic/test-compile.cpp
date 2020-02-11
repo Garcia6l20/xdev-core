@@ -1,4 +1,4 @@
-#include <xdev.hpp>
+#include <xdev/xdev.hpp>
 #include <xdev/xdev-moc.hpp>
 #include <gtest/gtest.h>
 

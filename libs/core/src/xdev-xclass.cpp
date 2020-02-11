@@ -2,14 +2,6 @@
 
 namespace xdev {
 
-shared_ptr<XClass> XClass::_instance = [](){
-    struct XClassMaker: XClass {};
-    auto instance = make_shared<XClassMaker>();
-    if (instance == nullptr)
-        throw XException("Failed to create XClass singleton");
-    return instance;
-}();
-
 XClass::XClass() {
 }
 
@@ -53,7 +45,8 @@ XStaticClass::ptr XClass::Class(const string &name) {
 }
 
 XClass& XClass::Get() {
-    return *_instance;
+    static XClass instance;
+    return instance;
 }
 
 }

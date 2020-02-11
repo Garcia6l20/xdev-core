@@ -4,7 +4,12 @@
 #pragma once
 
 #include <functional>
+
+#ifdef XDEV_HAS_CONCEPTS_HEADER
 #include <concepts>
+#else
+#include <xdev/std-concepts.hpp>
+#endif
 
 namespace xdev::variant {
 
