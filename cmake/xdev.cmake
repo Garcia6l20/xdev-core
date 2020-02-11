@@ -62,10 +62,17 @@ function(xdev_moc_target target)
     set(full_path_header_files ${header_files})
     list(TRANSFORM full_path_header_files PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
     message("Moc[${target}] files: ${full_path_header_files}")
+    if (NOT TARGET xdev-moc)
+        find_program(MOC_EXE_OR_TARGET xdev-moc)
+        set(_deps ${header_files})
+    else()
+        set(MOC_EXE_OR_TARGET xdev-moc)
+        set(_deps "xdev-moc;${header_files}")
+    endif()
     add_custom_command(
         OUTPUT ${generated_files}
-        DEPENDS "xdev-moc;${header_files}"
-        COMMAND xdev-moc ARGS ${target} ${full_path_header_files}
+        DEPENDS ${_deps}
+        COMMAND ${MOC_EXE_OR_TARGET} ARGS ${target} ${full_path_header_files}
     )
     source_group(xdev/moc FILES ${generated_files})
     target_sources(${target} PRIVATE ${generated_files})
@@ -89,10 +96,17 @@ function(xdev_resources target directory)
     endforeach()
     list(APPEND generated_files ${output_dir}/${target}-resources.hpp)
     list(APPEND generated_files ${output_dir}/${target}-resources.cpp)
+    if (NOT TARGET xdev-rc)
+        find_program(RC_EXE_OR_TARGET xdev-rc)
+        set(_deps ${resource_files})
+    else()
+        set(RC_EXE_OR_TARGET xdev-rc)
+        set(_deps "xdev-rc;${resource_files}")
+    endif()
     add_custom_command(
         OUTPUT ${generated_files}
-        DEPENDS "xdev-rc;${resource_files}"
-        COMMAND xdev-rc ARGS ${target} ${CMAKE_CURRENT_SOURCE_DIR}/${directory}
+        DEPENDS ${_deps}
+        COMMAND ${RC_EXE_OR_TARGET} ARGS ${target} ${CMAKE_CURRENT_SOURCE_DIR}/${directory}
         COMMENT "Generating resources for ${target}"
         WORKING_DIRECTORY ${output_dir}
     )

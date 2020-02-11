@@ -3,6 +3,7 @@ from conans import ConanFile, CMake, tools
 
 class XdevBaseConan(ConanFile):
     name = "xdev-core"
+    version = "0.1.0"
     license = "MIT"
     author = "Sylvain Garcia <garcia.6l20@gmail.com>"
     url = "https://github.com/Garcia6l20/xdev-base"
@@ -15,20 +16,19 @@ class XdevBaseConan(ConanFile):
      "url": "auto",
      "revision": "auto"
     }
-    requires = (
-        'boost/1.71.0',
-        'openssl/1.1.1d',
-        'fmt/6.1.2',
-    )
-    build_requires = ('gtest/1.10.0')
+    requires = 'boost/1.71.0', 'openssl/1.1.1d', 'fmt/6.1.2'
+    build_requires = 'gtest/1.10.0'
     options = {"shared": [True, False]}
     default_options = {"shared": False, "boost:shared": False, "OpenSSL:shared": False}
     exports_sources = "include/*"
     no_copy_source = True
 
-    def set_version(self):
-        git = tools.Git(folder=self.recipe_folder)
-        self.version = str(git.get_tag())[1:]
+    # def set_version(self):
+    #     git = tools.Git(folder=self.recipe_folder)
+    #     self.version = str(git.get_tag())[1:]
+        
+    def deploy(self):
+        self.copy("*", dst="bin", src="bin")
 
     def _cmake(self):
         if hasattr(self, 'cmake'):
@@ -55,3 +55,5 @@ class XdevBaseConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.bindirs = ['bin']
+        self.cpp_info.build_modules.append('cmake/xdev.cmake')

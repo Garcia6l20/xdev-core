@@ -14,7 +14,12 @@ endif()
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
+list(APPEND CMAKE_MODULE_PATH ${CONAN_XDEV-CORE_ROOT}/cmake)
+include(xdev)
+
 add_executable(${PROJECT_NAME}
+    test-object.hpp
     main.cpp
 )
+xdev_moc_target(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} CONAN_PKG::xdev-core)

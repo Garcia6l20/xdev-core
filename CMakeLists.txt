@@ -26,4 +26,5 @@ endif()
 
 add_subdirectory(libs)
 add_subdirectory(exe)
-# add_subdirectory(examples)
+
+install(FILES cmake/xdev.cmake DESTINATION cmake)

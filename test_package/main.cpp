@@ -1,4 +1,7 @@
 #include <xdev/xdev.hpp>
+#include <test-object.hpp>
+
+#include <cassert>
 
 int main(int argc, char** argv) {
     auto d = xdev::XDict{
@@ -9,5 +12,7 @@ int main(int argc, char** argv) {
         "hello": "conan"
     })");
     std::cout << v.toString() << std::endl;
+    auto obj = xdev::XObjectBase::Create<TestObject>();
+    assert(obj->call("whatIsTheAnswer") == 42);
     return 0;
 }
