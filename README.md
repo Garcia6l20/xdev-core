@@ -7,3 +7,19 @@
 
 The XDev framework aims to ease modern c++ development, providing
 reflection, templating, serialization, and much more.
+
+## Building
+
+- [optional]: Add xdev-center conan's repository:
+```bash
+conan remote add xdev-center https://api.bintray.com/conan/6l20garcia/xdev
+```
+
+- Linux:
+```bash
+mkdir build && cd build
+conan install -s build_type=<BUILD_TYPE> .. --build missing
+cmake -DXDEV_UNIT_TESTING=ON -DCMAKE_BUILD_TYPE=<BUILD_TYPE> ..
+cmake --build .
+ctest
+```
