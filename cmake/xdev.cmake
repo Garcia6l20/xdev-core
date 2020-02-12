@@ -210,6 +210,7 @@ function(xdev_library _target)
         SOURCES
         PUBLIC_HEADERS
         PUBLIC_LIBRARIES
+        PUBLIC_DEFINITIONS
         PUBLIC_INCLUDE_DIRS
         RESOURCES_DIRS
     )
@@ -265,6 +266,10 @@ function(xdev_library _target)
 
     if(LIB_PUBLIC_HEADERS)
         set_target_properties(${_target} PROPERTIES PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}")
+    endif()
+
+    if(LIB_PUBLIC_DEFINITIONS)
+        target_compile_definitions(${_target} PUBLIC LIB_PUBLIC_DEFINITIONS)
     endif()
 
     if(NOT LIB_NO_INSTALL)

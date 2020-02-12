@@ -4,13 +4,6 @@ file(GLOB_RECURSE header_files include/*.hpp)
 file(GLOB_RECURSE source_files src/*.cpp)
 file(GLOB_RECURSE inline_files inline/*.inl)
 
-set(Boost_USE_STATIC_LIBS        ON)
-set(Boost_USE_MULTITHREADED      ON)
-
-find_package(Boost REQUIRED)
-
-add_definitions(-DBOOST_SYSTEM_NO_DEPRECATED)
-
 include(FetchContent)
 
 project(xdev-core)
@@ -37,7 +30,8 @@ xdev_library(${PROJECT_NAME} STATIC
     PUBLIC_HEADERS ${header_files} ${inline_files}
     SOURCES ${source_files}
     PUBLIC_INCLUDE_DIRS ${ctti-fetch_SOURCE_DIR}/include ${dlfcn-win32-fetch_SOURCE_DIR}
-    PUBLIC_LIBRARIES Threads::Threads ctti dl Boost::headers CONAN_PKG::fmt
+    PUBLIC_LIBRARIES Threads::Threads ctti dl CONAN_PKG::boost CONAN_PKG::fmt
+    PUBLIC_DEFINITIONS BOOST_SYSTEM_NO_DEPRECATED
     CXX_STANDARD 20
     ALIAS XDev::core
     FOLDER xdev
@@ -46,12 +40,4 @@ xdev_library(${PROJECT_NAME} STATIC
 if(NOT WIN32)
     target_compile_options(${PROJECT_NAME} PUBLIC -fconcepts)
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
-endif()
-
-include(CheckIncludeFileCXX)
-
-check_include_file_cxx(concepts XDEV_HAS_CONCEPTS_HEADER)
-if(XDEV_HAS_CONCEPTS_HEADER)
-    message(STATUS "concepts library seems implemented... consider removing std-concepts")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC XDEV_HAS_CONCEPTS_HEADER=1)
 endif()

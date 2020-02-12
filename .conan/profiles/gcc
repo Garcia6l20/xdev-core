@@ -1,0 +1,9 @@
+include(all)
+
+[settings]
+
+compiler=gcc
+compiler.libcxx=libstdc++11
+
+gtest:compiler=gcc
+gtest:compiler.cppstd=20

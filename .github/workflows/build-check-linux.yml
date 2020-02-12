@@ -1,17 +1,21 @@
-name: Build
+name: Build linux
 
 on:
   push:
+    paths-ignore:
+      - '*.md'
     branches:
       - master
       - devel
   pull_request:
+    paths-ignore:
+      - '*.md'
     branches:
       - master
       - devel
 
 jobs:
-  ci:
+  linux:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
 
@@ -61,15 +65,13 @@ jobs:
 
       - name: Run test build
         run: |
-          mkdir build-debug
-          cd build-debug
+          mkdir build
+          cd build
+          conan install .. --profile=../.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
           cmake -DCMAKE_BUILD_TYPE=Debug -DXDEV_UNIT_TESTING=ON ..
           make -j
           ctest
 
       - name: Build conan package
         run: |
-          mkdir build-release
-          cd build-release
-          cmake -DCMAKE_BUILD_TYPE=Release -DCONAN_CONFIG=ON ..
-          conan create --profile=./conan_profile ..
+          conan create . -s build_type=Debug --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing

@@ -6,7 +6,7 @@ on:
        - v*
 
 jobs:
-  ci:
+  linux:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
 
@@ -70,11 +70,49 @@ jobs:
       - name: Build conan package
         run: |
           set -xe
-
           git clean -fd
-
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
-          conan create --profile=./conan_profile ..
+          conan create . -s build_type=${{ matrix.build_type }} --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
           conan user -p ${CONAN_XDEV_TOKEN} -r xdev 6l20garcia
           conan upload --all --confirm -r xdev xdev-core
+
+  # windows:
+  #   name: ${{ matrix.name }}
+  #   runs-on: ${{ matrix.os }}
+  #
+  #   env:
+  #     CONAN_XDEV_TOKEN: ${{ secrets.CONAN_XDEV_TOKEN }}
+  #
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       name:
+  #         - windows-2019-debug
+  #         - windows-2019-release
+  #
+  #       include:
+  #
+  #         - name: windows-2019-debug
+  #           os: windows-2019
+  #           build_type: Debug
+  #
+  #         - name: windows-2019-release
+  #           os: windows-2019
+  #           build_type: Release
+  #
+  #   steps:
+  #   - uses: actions/checkout@v1
+  #   - name: Set up Python 3
+  #     uses: actions/setup-python@v1
+  #     with:
+  #       python-version: 3
+  #   - name: System setup
+  #     run: |
+  #       python -m pip install --upgrade pip
+  #       pip install conan
+  #       conan remote add xdev https://api.bintray.com/conan/6l20garcia/xdev
+  #   - name: Build conan package
+  #     run: |
+  #       git clean -fd
+  #       conan create . -s build_type=${{ matrix.build_type }} --build missing
+  #       conan user -p ${CONAN_XDEV_TOKEN} -r xdev 6l20garcia
+  #       conan upload --all --confirm -r xdev xdev-core

@@ -7,7 +7,7 @@
 #include <string>
 #include <functional>
 
-#ifdef WIN32
+#ifdef _WIN32
 namespace std {
 namespace detail {
     template <class Default, class AlwaysVoid,

@@ -11,14 +11,19 @@ class XdevBaseConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
     scm = {
-     "type": "git",  # Use "type": "svn", if local repo is managed using SVN
-     "url": "https://github.com/Garcia6l20/xdev-core.git",
-     "revision": "auto"
+        "type": "git",  # Use "type": "svn", if local repo is managed using SVN
+        "url": "https://github.com/Garcia6l20/xdev-core.git",
+        "revision": "auto"
     }
-    requires = 'boost/1.71.0@conan/stable', 'fmt/6.1.2', 'openssl/1.1.1d', 'zlib/1.2.11', 'bzip2/1.0.8'
+    requires = 'boost/1.71.0@conan/stable', 'fmt/6.1.2'
     build_requires = 'gtest/1.10.0'
     options = {"fPIC": [True, False], "shared": [True, False]}
-    default_options = {"fPIC": True, "shared": False, "boost:shared": False, "OpenSSL:shared": False}
+    default_options = {
+        "fPIC": True,
+        "shared": False,
+        "OpenSSL:shared": False,
+        "boost:header_only": True,
+    }
     no_copy_source = True
 
     def set_version(self):
@@ -38,7 +43,7 @@ class XdevBaseConan(ConanFile):
         return self.cmake
 
     def configure(self):
-        tools.check_min_cppstd(self, "20")
+        # tools.check_min_cppstd(self, "20")
         if self.settings.os == "Windows":
             del self.options.fPIC
 
