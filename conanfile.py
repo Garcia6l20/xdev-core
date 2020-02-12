@@ -15,32 +15,15 @@ class XdevBaseConan(ConanFile):
         "url": "https://github.com/Garcia6l20/xdev-core.git",
         "revision": "auto"
     }
-    requires = 'boost/1.71.0@conan/stable', 'fmt/6.1.2', 'openssl/1.1.1d', 'zlib/1.2.11', 'bzip2/1.0.8'
+    requires = 'boost/1.71.0@conan/stable', 'fmt/6.1.2'
     build_requires = 'gtest/1.10.0'
     options = {"fPIC": [True, False], "shared": [True, False]}
-    default_options = {"fPIC": True,
-                       "shared": False,
-                       "OpenSSL:shared": False,
-                       "boost:error_code_header_only": True,
-                       "boost:without_chrono": True,
-                       "boost:without_coroutine": True,
-                       "boost:without_filesystem": True,
-                       "boost:without_graph": True,
-                       "boost:without_graph_parallel": True,
-                       "boost:without_iostreams": True,
-                       "boost:without_locale": True,
-                       "boost:without_log": True,
-                       "boost:without_math": True,
-                       "boost:without_mpi": True,
-                       "boost:without_program_options": True,
-                       "boost:without_python": True,
-                       "boost:without_random": True,
-                       "boost:without_regex": True,
-                       "boost:without_thread": True,
-                       "boost:without_timer": True,
-                       "boost:without_type_erasure": True,
-                       "boost:without_wave": True,
-                       }
+    default_options = {
+        "fPIC": True,
+        "shared": False,
+        "OpenSSL:shared": False,
+        "boost:header_only": True,
+    }
     no_copy_source = True
 
     def set_version(self):

@@ -18,7 +18,7 @@ conan remote add xdev-center https://api.bintray.com/conan/6l20garcia/xdev
 - Linux:
 ```bash
 mkdir build && cd build
-conan install -s build_type=<BUILD_TYPE> .. --build missing
+conan install .. -s build_type=<BUILD_TYPE> -pr ../.conan/profiles/<COMPILER_ID> --build missing
 cmake -DXDEV_UNIT_TESTING=ON -DCMAKE_BUILD_TYPE=<BUILD_TYPE> ..
 cmake --build .
 ctest
