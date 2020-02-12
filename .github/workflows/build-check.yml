@@ -65,8 +65,8 @@ jobs:
 
       - name: Run test build
         run: |
-          mkdir build-debug
-          cd build-debug
+          mkdir build
+          cd build
           conan install .. --profile=../.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
           cmake -DCMAKE_BUILD_TYPE=Debug -DXDEV_UNIT_TESTING=ON ..
           make -j
@@ -74,4 +74,39 @@ jobs:
 
       - name: Build conan package
         run: |
-          conan create -s build_type=Debug --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} .
+          conan create . -s build_type=Debug --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
+
+  windows:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [windows-2019]
+
+        include:
+          - name: windows-2019
+            os: windows-2019
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3
+    - name: Install conan
+      run: |
+        python -m pip install --upgrade pip
+        pip install conan
+    - name: Run test build
+      run: |
+        mkdir build
+        cd build
+        conan install .. -s build_type=Debug --build missing
+        cmake -DCMAKE_BUILD_TYPE=Debug -DXDEV_UNIT_TESTING=ON -DXDEV_CORE_NO_TEST_VARIANT=ON ..
+        cmake --build . --config Debug
+        cmake --build . --config Debug --target RUN_TESTS
+    - name: Build conan package
+      run: |
+        conan create . -s build_type=Debug --build missing
