@@ -41,11 +41,3 @@ if(NOT WIN32)
     target_compile_options(${PROJECT_NAME} PUBLIC -fconcepts)
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
 endif()
-
-include(CheckIncludeFileCXX)
-
-check_include_file_cxx(concepts XDEV_HAS_CONCEPTS_HEADER)
-if(XDEV_HAS_CONCEPTS_HEADER)
-    message(STATUS "concepts library seems implemented... consider removing std-concepts")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC XDEV_HAS_CONCEPTS_HEADER=1)
-endif()

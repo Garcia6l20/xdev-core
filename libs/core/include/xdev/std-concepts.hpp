@@ -9,6 +9,11 @@
 
 #pragma GCC system_header
 
+#ifdef __cpp_lib_concepts
+#error "Concepts library implemented, you should not use this header"
+#endif
+
+
 #include <type_traits>
 #include <functional>
 #include <utility>

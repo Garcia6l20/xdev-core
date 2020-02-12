@@ -14,7 +14,7 @@
 #include <condition_variable>
 #include <algorithm>
 
-#ifdef XDEV_HAS_CONCEPTS_HEADER
+#ifdef __cpp_lib_concepts
 #include <concepts>
 #else
 #include <xdev/std-concepts.hpp>
