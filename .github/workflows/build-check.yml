@@ -73,7 +73,4 @@ jobs:
 
       - name: Build conan package
         run: |
-          mkdir build-release
-          cd build-release
-          cmake -DCMAKE_BUILD_TYPE=Release -DCONAN_CONFIG=ON ..
-          conan create --profile=./conan_profile ..
+          conan create --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }}

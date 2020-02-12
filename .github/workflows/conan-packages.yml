@@ -73,8 +73,6 @@ jobs:
 
           git clean -fd
 
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
-          conan create --profile=./conan_profile ..
+          conan create -s build_type=${{ matrix.build_type }} --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }}
           conan user -p ${CONAN_XDEV_TOKEN} -r xdev 6l20garcia
           conan upload --all --confirm -r xdev xdev-core
