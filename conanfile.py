@@ -15,7 +15,7 @@ class XdevBaseConan(ConanFile):
         "url": "https://github.com/Garcia6l20/xdev-core.git",
         "revision": "auto"
     }
-    requires = 'boost/1.71.0@conan/stable', 'fmt/6.1.2'
+    requires = 'boost/1.71.0@conan/stable', 'fmt/6.1.2', 'lyra/1.3.0'
     build_requires = 'gtest/1.10.0'
     options = {"fPIC": [True, False], "shared": [True, False]}
     default_options = {

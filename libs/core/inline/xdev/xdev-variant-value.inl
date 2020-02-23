@@ -35,19 +35,19 @@ Value::Value(Value&&other): _value(std::move(other._value)) { other._value = XNo
 Value& Value::operator=(Value&&other) { _value = std::move(other._value); other._value = XNone{}; return *this; }
 
 template<typename T>
-    requires !std::same_as<Value, T>
+    requires (!std::same_as<Value, T>)
 Value::Value(const T&value): _value(value) {}
 
 template<typename T>
-    requires !std::same_as<Value, T>
+    requires (!std::same_as<Value, T>)
 Value& Value::operator=(const T&value) { _value = value; return *this; }
 
 template<typename T>
-    requires !std::same_as<Value, T>
+    requires (!std::same_as<Value, T>)
 Value::Value(T&&value): _value(std::forward<T>(value)) { }
 
 template<typename T>
-    requires !std::same_as<Value, T>
+    requires (!std::same_as<Value, T>)
 Value& Value::operator=(T&&value) { _value = std::forward<T>(value); return *this; }
 
 Value::Value(const char* value): _value(std::string(value)) {}

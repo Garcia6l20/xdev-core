@@ -128,6 +128,7 @@ public:
     inline bool empty() const;
 
     static XDEV_CORE_EXPORT Variant FromJSON(const std::string&);
+    static XDEV_CORE_EXPORT Variant FromYAML(const std::string&);
 
     static constexpr const char* ctti_nameof()
     {

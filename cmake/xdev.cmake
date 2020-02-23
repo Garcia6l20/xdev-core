@@ -107,7 +107,7 @@ function(xdev_resources target directory)
         OUTPUT ${generated_files}
         DEPENDS ${_deps}
         COMMAND ${RC_EXE_OR_TARGET} ARGS ${target} ${CMAKE_CURRENT_SOURCE_DIR}/${directory}
-        COMMENT "Generating resources for ${target}"
+        COMMENT "Generating resources for ${target} (${output_dir})"
         WORKING_DIRECTORY ${output_dir}
     )
     message(STATUS "${target}: ${generated_files}")

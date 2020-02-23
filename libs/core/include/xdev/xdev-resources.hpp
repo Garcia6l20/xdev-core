@@ -53,6 +53,9 @@ namespace xdev {
         XVariant getJson(const string& key) const {
             return XVariant::FromJSON(getString(key));
         }
+        XVariant getYaml(const string& key) const {
+            return XVariant::FromYAML(getString(key));
+        }
         const any& get(const string& key) const
         {
             return m_resources.at(key);

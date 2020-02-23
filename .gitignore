@@ -3,3 +3,13 @@ build*/
 
 # ide folders
 .idea/
+.clangd/
+
+*.user
+*.user.*
+
+# dependences
+.deps/
+
+# python
+__pycache__/

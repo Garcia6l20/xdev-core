@@ -17,13 +17,14 @@ public:
         using XException::XException;
 	};
 
-    XBasicResourceCompiler(const string& name, const filesystem::path& resource_path);
+    XBasicResourceCompiler(const string& name, const filesystem::path& resource_path, bool verbose = false);
     void compile();
 
 private:
 	void processFile(const filesystem::path& path, const string& root);
 	void createResourceFiles();
 
+  bool _verbose = false;
 	string m_name;
 	filesystem::path m_path;
 

@@ -18,7 +18,7 @@ class Array;
 
 template <typename T>
 concept is_xfunction = requires(T f) {
-    {f(Array())} -> Variant;
+    {f(Array())} -> std::convertible_to<Variant>;
 };
 
 template <typename T, typename...Args>

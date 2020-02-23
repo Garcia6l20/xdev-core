@@ -1,5 +1,9 @@
 #include <xdev/xdev-basic-rc.hpp>
 
+#include <lyra/lyra.hpp>
+#include <fmt/format.h>
+#include <fmt/color.h>
+
 #include <iostream>
 
 using namespace xdev;
@@ -11,26 +15,33 @@ void help()
 	cout << "    Build application resources." << std::endl;
 }
 
-int main(int argc, char** argv) try
-{
-    if (argc < 3)
-	{
-        std::cerr << "argument(s) missing..." << std::endl;
-		help();
-		return -1;
-	}
+int main(int argc, char** argv) {
 
-	string name = argv[1];
-    std::cout << "project: " << name << std::endl;
+    bool help = false;
+    bool verbose = false;
+    string project_name;
+    filesystem::path resource_path;
+    auto cli = lyra::help(help) |
+            lyra::opt(verbose, "verbose")["-v"]["--verbose"]("Let me talk about me !") |
+            lyra::arg(project_name, "project name")("The name of the project") |
+            lyra::arg(resource_path, "resource path")("Path to the resources to compile");
 
-	filesystem::path path = argv[2];
-    std::cout << "resource path: " << path << std::endl;
+    auto res = cli.parse({argc, argv});
+    if (!res) {
+         fmt::print(fg(fmt::color::red), "error: {}\n", res.errorMessage());
+         return -1;
+    }
 
-	XBasicResourceCompiler(name, path).compile();
+    if (help) {
+        std::cout << cli << '\n';
+        return 0;
+    }
 
-	return 0;
-}
-catch (const XBasicResourceCompiler::CompileError& error) {
-    cerr << "Compilation error: " << error.what() << endl;
-    return -1;
+    try {
+        XBasicResourceCompiler(project_name, resource_path).compile();
+        return 0;
+    } catch (const XBasicResourceCompiler::CompileError& error) {
+        fmt::print(fg(fmt::color::red), "Compilation error: {}\n", error.what());
+        return -2;
+    }
 }

@@ -27,19 +27,19 @@ public:
     inline Value& operator=(Value&&other);
 
     template<typename T>
-        requires !std::same_as<Value, T>
+        requires (!std::same_as<Value, T>)
     inline Value(const T&value);
 
     template<typename T>
-        requires !std::same_as<Value, T>
+        requires (!std::same_as<Value, T>)
     inline Value& operator=(const T&value);
 
     template<typename T>
-        requires !std::same_as<Value, T>
+        requires (!std::same_as<Value, T>)
     inline Value(T&&value);
 
     template<typename T>
-        requires !std::same_as<Value, T>
+        requires (!std::same_as<Value, T>)
     inline Value& operator=(T&&value);
 
     inline Value(const char* value);
