@@ -1,0 +1,4 @@
+[submodule "cmake/MeltingPot"]
+	path = cmake/MeltingPot
+	url = https://github.com/Garcia6l20/MeltingPot.git
+	branch = master
