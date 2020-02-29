@@ -17,18 +17,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
   list(APPEND MELT_EXTRA_FLAGS -Wno-error=conversion)
 endif()
 
-option(XDEV_MELTINGPOT_DEV "Use MetlingPot as submodule" OFF)
-if(XDEV_MELTINGPOT_DEV)
-  # as MP developer
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/MeltingPot)
-else()
-  # as MP user
-  if(NOT EXISTS "${CMAKE_BINARY_DIR}/MeltingPot.cmake")
-    message(STATUS "Downloading MeltingPot.cmake from https://github.com/Garcia6l20/MeltingPot")
-    file(DOWNLOAD "https://raw.githubusercontent.com/Garcia6l20/MeltingPot/v0.1.x/dist/MeltingPot.cmake" "${CMAKE_BINARY_DIR}/MeltingPot.cmake")
-  endif()
-  include(${CMAKE_BINARY_DIR}/MeltingPot.cmake)
-endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(xdev)
 
@@ -38,6 +26,16 @@ conan_requires(
     "lyra/1.3.0"
   OPTIONS
     "boost:header_only=True"
+)
+
+conan_package(
+  AUTHOR "Garcia Sylvain <garcia.6l20@gmail.com>"
+  LICENSE "MIT"
+  URL "https://github.com/Garcia6l20/xdev-core"
+  TOPICS serialization reflection templating
+  DESCRIPTION "The XDev framework aims to ease modern c++ development, providing"
+              "reflection, templating, serialization, and much more."
+  BUILD_MODULES cmake/xdev.cmake
 )
 
 if(MSVC)

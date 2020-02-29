@@ -1,28 +1,27 @@
 from conans import ConanFile, CMake, tools
 
 
-class XdevBaseConan(ConanFile):
+class MeltConanFile(ConanFile):
     name = "xdev-core"
     license = "MIT"
-    author = "Sylvain Garcia <garcia.6l20@gmail.com>"
+    author = "Garcia Sylvain <garcia.6l20@gmail.com>"
     url = "https://github.com/Garcia6l20/xdev-core"
-    description = "@PACKAGE_DESCRIPTION@"
-    topics = ("xdev", "reflexion", "templating", "moderncpp")
+    description = "The XDev framework aims to ease modern c++ development, providing reflection, templating, serialization, and much more."
+    topics = ("conan", "serialization", "reflection", "templating")
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake"
+    generators = "cmake", "cmake_find_package"
     scm = {
         "type": "git",  # Use "type": "svn", if local repo is managed using SVN
-        "url": "https://github.com/Garcia6l20/xdev-core.git",
+        "url": "https://github.com/Garcia6l20/xdev-core",
         "revision": "auto"
     }
-    requires = 'boost/1.71.0@conan/stable', 'fmt/6.1.2', 'lyra/1.3.0'
-    build_requires = 'gtest/1.10.0'
-    options = {"fPIC": [True, False], "shared": [True, False]}
+    requires = "boost/1.71.0", "fmt/6.1.0", "lyra/1.3.0"
+    build_requires = "gtest/1.10.0", "catch2/2.11.0"
+    options = {"fPIC": [True, False], "shared": [True, False], }
     default_options = {
         "fPIC": True,
         "shared": False,
-        "OpenSSL:shared": False,
-        "boost:header_only": True,
+        "boost:header_only": True
     }
     no_copy_source = True
 
@@ -38,12 +37,12 @@ class XdevBaseConan(ConanFile):
             return self.cmake
         self.cmake = CMake(self)
         self.run_tests = tools.get_env("CONAN_RUN_TESTS", False)
-        self.cmake.definitions["XDEV_UNIT_TESTING"] = "ON" if self.run_tests else "OFF"
+        self.cmake.definitions["BUILD_TESTING"] = "ON" if self.run_tests else "OFF"
         self.cmake.configure()
         return self.cmake
 
     def configure(self):
-        # tools.check_min_cppstd(self, "20")
+        tools.check_min_cppstd(self, "20")
         if self.settings.os == "Windows":
             del self.options.fPIC
 
@@ -60,4 +59,4 @@ class XdevBaseConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         self.cpp_info.bindirs = ['bin']
-        self.cpp_info.build_modules.append('cmake/xdev.cmake')
+        self.cpp_info.build_modules.extend(["cmake/xdev.cmake"])

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cstdlib>
 #include <unordered_map>
 #include <regex>
 #include <stack>
@@ -154,7 +155,7 @@ struct MappingNode: Node {
                 return;
             }
             auto sep = std::find(lstart, lend, ':');
-            string key = std::string(lstart, sep);
+            string key{lstart, sep};
             tools::trim(key);
             begin = sep + 1;
             auto node = Node::Parse(begin, end);
@@ -176,7 +177,7 @@ struct JsonMappingNode: Node {
                 return;
             }
             auto sep = std::find(begin, this_end, ':');
-            string key = std::string(begin, sep);
+            string key{begin, sep};
             tools::trim(key);
             begin = sep + 1;
             auto node = Node::Parse(begin, this_end);

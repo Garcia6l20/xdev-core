@@ -9,7 +9,20 @@ set(XDEV_MODULE_DIR ${CMAKE_CURRENT_LIST_DIR})
 include(FetchContent)
 include(CTest)
 
-include(${CMAKE_CURRENT_LIST_DIR}/MeltingPot/MeltingPot.cmake)
+
+option(XDEV_MELTINGPOT_DEV "Use MetlingPot as submodule" OFF)
+if(XDEV_MELTINGPOT_DEV)
+  # as MP developer
+  include(${CMAKE_CURRENT_LIST_DIR}/MeltingPot/MeltingPot.cmake)
+else()
+  # as MP user
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/MeltingPot.cmake")
+    message(STATUS "Downloading MeltingPot.cmake from https://github.com/Garcia6l20/MeltingPot")
+    file(DOWNLOAD "https://raw.githubusercontent.com/Garcia6l20/MeltingPot/v0.1.x/dist/MeltingPot.cmake" "${CMAKE_BINARY_DIR}/MeltingPot.cmake")
+  endif()
+  include(${CMAKE_BINARY_DIR}/MeltingPot.cmake)
+endif()
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

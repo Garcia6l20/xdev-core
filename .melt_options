@@ -2,7 +2,7 @@
 WARNINGS_AS_ERRORS = ON
 
 # just warn shadowing
-EXTRA_FLAGS = -Wno-error=shadow
+GNU_EXTRA_FLAGS = -Wno-error=shadow
 
 # no ipo
 ENABLE_IPO = OFF
