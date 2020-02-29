@@ -67,11 +67,11 @@ jobs:
         run: |
           mkdir build
           cd build
-          conan install .. --profile=../.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
+          # conan install .. --profile=../.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
           cmake -DCMAKE_BUILD_TYPE=Debug -DXDEV_UNIT_TESTING=ON ..
           make -j
           ctest
 
-      - name: Build conan package
-        run: |
-          conan create . -s build_type=Debug --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
+      # - name: Build conan package
+      #   run: |
+      #     conan create . -s build_type=Debug --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing

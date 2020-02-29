@@ -42,7 +42,7 @@ XObjectBase::ptr TestObjectStaticClass::Create() const
     objectMetadata(instance.get()).events.insert({"trigger", instance->trigger});
 
     instance->initialize();
-    return std::move(instance);
+    return instance;
 }
 
 TestObjectStaticClass::ptr TestObjectStaticClass::_instance = []() {
@@ -63,12 +63,12 @@ TestObject::TestObject():
     forceCrashIfFreed(make_shared<int>(0)),
     destroyed(false)
 {
-    onTriggered = [this](double&&value) {
-        cout << __PRETTY_FUNCTION__ << " " << objectName() << " got " << value << endl;
-        this->value = value;
+    onTriggered = [this](double&&val) {
+        cout << __PRETTY_FUNCTION__ << " " << objectName() << " got " << val << endl;
+        this->value = val;
         if (destroyed)
             throw runtime_error("object has been destroyed");
-        *forceCrashIfFreed = value;
+        *forceCrashIfFreed = int(val);
     };
     testTrigger = [this]() {
         *forceCrashIfFreed = 0;

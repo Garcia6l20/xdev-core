@@ -106,7 +106,7 @@ auto find_scope_end(IterT start, IterT end, TokenT open_tok, TokenT close_tok) {
 
 string get_class_body(const std::string& filecontent, size_t startpos)
 {
-	auto p = get_class_body(filecontent.begin() + startpos, filecontent.end());
+	auto p = get_class_body(filecontent.begin() + ssize_t(startpos), filecontent.end());
 	return string(p.first, p.second);
 }
 

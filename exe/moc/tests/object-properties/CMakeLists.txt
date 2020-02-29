@@ -1,9 +1,12 @@
-xdev_add_test(
-    NAME obj-props-test-compile
-    FILES ../basic/test-compile.cpp test_object.h
+xdev_add_test(obj-props-compile-test
+    SOURCES
+      test-compile.cpp
+      ../basic/test-compile.cpp
+      test_object.h
 )
-xdev_add_test(
-    NAME obj-props-test-basic
-    FILES test-basic.cpp test_object.h
-    XMOC
+xdev_add_test(obj-props-compile-basic
+    SOURCES
+      test-basic.cpp
+      test_object.h
+    MOC
 )

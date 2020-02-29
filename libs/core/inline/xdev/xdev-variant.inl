@@ -5,6 +5,8 @@
 
 #include <boost/type_index.hpp>
 
+#include <fmt/format.h>
+
 #include <algorithm>
 
 namespace std {
@@ -131,7 +133,7 @@ namespace variant {
     }
 
     template<typename T>
-    T Variant::convert() const {        
+    T Variant::convert() const {
         return visit([&](auto&&value) -> T {
             using TVal = std::decay_t<decltype(value)>;
             if constexpr (std::is_convertible<TVal, T>::value) {
@@ -143,7 +145,7 @@ namespace variant {
 
     template <bool inner>
     std::string Variant::typeName() const {
-        return visit<inner>([] (auto&&value) -> std::string {            
+        return visit<inner>([] (auto&&value) -> std::string {
             using T = std::decay_t<decltype(value)>;
             // return boost::typeindex::type_id<T>().pretty_name();
             return ctti::nameof<T>().str();
@@ -170,7 +172,7 @@ namespace variant {
             if constexpr (is_one_of<T, Value, Array, Dict>::value)
                 return value.toString();
             else if constexpr (is_same_v<T, ObjectPtr>)
-                return value->objectName() + "[0x" + to_string((uint64_t)value.get()) + "]";
+                return fmt::format("{}[0x{}]", value->objectName(), static_cast<void*>(value.get()));
             else throw std::runtime_error("Shall not append");
         });
     }

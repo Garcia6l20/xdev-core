@@ -109,7 +109,6 @@ using concurrent::scoped_subscription;
 TEST(Concurrent, Publisher) {
     subscription_channel<int> to_thread;
     auto sub1 = async([&rx = to_thread] {
-        auto tid = this_thread::get_id();
         scoped_subscription sub(rx);
         int value;
         do {
@@ -117,7 +116,6 @@ TEST(Concurrent, Publisher) {
         } while (value != -1);
     });
     auto sub2 = async([&rx = to_thread] {
-        auto tid = this_thread::get_id();
         scoped_subscription sub(rx);
         int value;
         do {

@@ -11,18 +11,28 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# clangd support
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-list(APPEND CMAKE_CXX_FLAGS -fconcepts)
-list(APPEND CMAKE_CXX_REQUIRED_FLAGS -fconcepts)
-
+option(XDEV_MELTINGPOT_DEV "Use MetlingPot as submodule" OFF)
+if(XDEV_MELTINGPOT_DEV)
+  # as MP developer
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/MeltingPot)
+else()
+  # as MP user
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/MeltingPot.cmake")
+    message(STATUS "Downloading MeltingPot.cmake from https://github.com/Garcia6l20/MeltingPot")
+    file(DOWNLOAD "https://raw.githubusercontent.com/Garcia6l20/MeltingPot/v0.1.x/dist/MeltingPot.cmake" "${CMAKE_BINARY_DIR}/MeltingPot.cmake")
+  endif()
+  include(${CMAKE_BINARY_DIR}/MeltingPot.cmake)
+endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
-
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
 include(xdev)
+
+conan_requires(
+    "boost/1.71.0"
+    "fmt/6.1.0"
+    "lyra/1.3.0"
+  OPTIONS
+    "boost:header_only=True"
+)
 
 if(MSVC)
     add_compile_options("/std:c++latest")

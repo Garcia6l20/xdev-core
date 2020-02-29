@@ -1,10 +1,8 @@
-xdev_add_test(
-    NAME test-compile
-    FILES test_object.h
+xdev_add_test(compile
+    SOURCES test_object.h
 )
 
-xdev_add_test(
-    NAME test-basic
-    FILES test_object.h
-    XMOC
+xdev_add_test(basic
+    SOURCES test_object.h
+    MOC
 )

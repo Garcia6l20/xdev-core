@@ -1,5 +1,4 @@
-#ifndef TESTOBJECT_H
-#define TESTOBJECT_H
+#pragma once
 
 // #include <testobject.xdev.hpp>
 #include <xdev/xdev-object.hpp>
@@ -42,5 +41,3 @@ public:
 
     bool destroyed;
 };
-
-#endif // TESTOBJECT_H

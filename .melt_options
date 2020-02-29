@@ -1,0 +1,18 @@
+# no treat errors as warnings
+WARNINGS_AS_ERRORS = ON
+
+# just warn shadowing
+EXTRA_FLAGS = -Wno-error=shadow
+
+# no ipo
+ENABLE_IPO = OFF
+
+# testing backends
+TESTING_BACKENDS = gtest/1.10.0 \
+                   catch2/2.11.0
+
+TESTING_DEFAULT_BACKEND = GTEST
+
+#Suppress warnings
+#SUPPRESS_WARNINGS = -Wuseless-cast \
+#                    -Wduplicated-cond

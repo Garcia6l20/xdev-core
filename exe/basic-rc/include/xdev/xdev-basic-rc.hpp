@@ -24,9 +24,9 @@ private:
 	void processFile(const filesystem::path& path, const string& root);
 	void createResourceFiles();
 
-  bool _verbose = false;
 	string m_name;
 	filesystem::path m_path;
+	bool _verbose = false;
 
 	struct rc_map {
 		std::string key;

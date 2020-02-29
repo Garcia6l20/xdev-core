@@ -10,11 +10,12 @@ project(xdev-moc)
 # FetchContent_MakeAvailable(cppast)
 
 xdev_library(${PROJECT_NAME}-lib
-    PUBLIC_HEADERS
+    HEADERS
         include/xdev/xdev-moc.hpp
     SOURCES
         src/xdev-moc.cpp
-    PUBLIC_LIBRARIES XDev::template
+    LIBRARIES XDev::template
+    ALIAS XDev::moc
     RESOURCES_DIRS resources
     FOLDER xdev
 )

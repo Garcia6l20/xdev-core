@@ -23,14 +23,15 @@ inline void for_each_lines(const Iterator& begin, const Iterator& end, Callable 
 }
 
 template <typename Iterator>
-inline size_t getindent(Iterator& begin, const Iterator& end) {
+inline ssize_t getindent(Iterator& begin, const Iterator& end) {
     if (*begin == '\n') ++begin;
     return std::distance(begin, std::find_if_not(begin, end, static_cast<int(*)(int)>(std::isspace)));
 }
 
 struct Node {
+    virtual ~Node() noexcept = default;
     using iterator = std::string::const_iterator;
-    virtual void process(iterator &begin, const iterator &end) {};
+    virtual void process(iterator &, const iterator &) {};
     static Node Parse(iterator &begin, const iterator &end);
     XVariant value;
 };
@@ -169,9 +170,7 @@ struct JsonMappingNode: Node {
         begin = std::find(begin, end, '{') + 1;
         auto this_end = get_closing_token(begin, end, '{', '}');
         value = XDict();
-        auto root_indent = getindent(begin, end);
         while(begin != end) {
-            auto indent = getindent(begin, end);
             if (*begin == '}') {
                 ++begin;
                 return;
@@ -224,9 +223,7 @@ struct JsonSequenceNode: Node {
         begin = std::find(begin, end, '[') + 1;
         auto this_end = get_closing_token(begin, end, '[', ']');
         value = XArray();
-        auto root_indent = getindent(begin, end);
         while(begin != end) {
-            auto indent = getindent(begin, end);
             if (*begin == ']') {
                 ++begin;
                 return;
@@ -245,7 +242,6 @@ struct JsonSequenceNode: Node {
 };
 
 Node Node::Parse(iterator &begin, const iterator &end) {
-    auto subend = end;
     auto subbegin = find_if_not(begin, end, [] (auto&c) { return isspace(c); });
     static const char non_scalar_seps[] = {'{', '[', ':', '-', '\n'};
     iterator test = find_first_of(subbegin, end, non_scalar_seps, non_scalar_seps + sizeof (non_scalar_seps));

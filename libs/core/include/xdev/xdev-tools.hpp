@@ -200,12 +200,12 @@ void walk_directory(const std::filesystem::path& root, Lambda on_file_callback, 
 			on_file_callback(p, root);
 		}
 	}
-};
+}
 
 inline void hex_dump(uint8_t c, char out[2])
 {
     char low_bits = c & 0x0f;
-    char high_bits = c >> 4;
+    char high_bits = static_cast<char>(c >> 4);
     if (low_bits < 10)
         out[1] = low_bits + '0';
     else out[1] = low_bits - 10 + 'a';
@@ -221,7 +221,7 @@ inline std::string hexlify(const char* input, size_t length)
     size_t ii = 0;
     for (; ii < length; ++ii)
     {
-        hex_dump(input[ii], &buffer[ii * 2]);
+        hex_dump(static_cast<uint8_t>(input[ii]), &buffer[ii * 2]);
     }
     return buffer;
 }

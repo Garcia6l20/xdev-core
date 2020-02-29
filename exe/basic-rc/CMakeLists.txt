@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.7)
 project(xdev-rc)
 
 xdev_library(${PROJECT_NAME}-lib
-    PUBLIC_HEADERS include/xdev/xdev-basic-rc.hpp
+    HEADERS include/xdev/xdev-basic-rc.hpp
     SOURCES src/xdev-basic-rc.cpp
-    PUBLIC_LIBRARIES XDev::core CONAN_PKG::lyra CONAN_PKG::fmt
+    LIBRARIES XDev::core CONAN_PKG::lyra CONAN_PKG::fmt
     ALIAS XDev::rc
     FOLDER xdev
 )

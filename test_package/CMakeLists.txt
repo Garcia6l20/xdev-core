@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 if(MSVC)
     add_compile_options("/std:c++latest")
 else()
-    add_compile_options("-fconcepts")
+    # add_compile_options("-fconcepts")
 endif()
 
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)

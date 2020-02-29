@@ -8,7 +8,9 @@
 
 #include <map>
 
+#ifdef _WIN32
 #pragma warning( disable : 4455) // disable user-defined literals
+#endif
 
 #define XPOOLREGISTER(__name, ...) \
     extern XObjectPool __name ## Pool; \

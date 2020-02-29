@@ -7,7 +7,9 @@ using namespace xdev;
 //
 
 XObjectBase::XObjectBase():
-    _metaData { "undefined", {}}
+    _metaData {
+      .objectName = "undefined"
+    }
 {
 }
 

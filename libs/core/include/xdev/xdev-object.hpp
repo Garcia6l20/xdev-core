@@ -12,12 +12,15 @@
 #include <xdev/xdev-concepts.hpp>
 #include <xdev/xdev-variant-dict.hpp>
 
+#include <ctti/type_id.hpp>
+
 #include <typeinfo>
 #include <typeindex>
 #include <functional>
 #include <memory>
 #include <map>
 #include <set>
+#include <vector>
 #include <mutex>
 
 /**
@@ -44,6 +47,8 @@
 
 namespace xdev {
 
+using namespace std;
+
 namespace variant {
     class Variant;
     class Dict;
@@ -60,8 +65,8 @@ namespace variant {
     class XObjectBase;
 
     struct XDEV_CORE_EXPORT MetaFunctionBase {
-        MetaFunctionBase(const string&name, ctti::type_id_t ret, vector<ctti::type_id_t> args):
-            name(name),
+        MetaFunctionBase(const string&p_name, ctti::type_id_t ret, vector<ctti::type_id_t> args):
+            name(p_name),
             returnType(ret),
             argumentsTypes(args) {
         }
@@ -75,13 +80,13 @@ namespace variant {
 
     template <typename RetT, typename...ArgsT>
     struct MetaFunction<RetT(ArgsT...)>: MetaFunctionBase {
-        MetaFunction(const string&name): MetaFunctionBase(name, ctti::type_id<RetT>(), {ctti::type_id<ArgsT>()...}) {
+        MetaFunction(const string&p_name): MetaFunctionBase(p_name, ctti::type_id<RetT>(), {ctti::type_id<ArgsT>()...}) {
         }
     };
 
     template <typename...ArgsT>
     struct MetaEvent: MetaFunctionBase {
-        MetaEvent(const string&name): MetaFunctionBase(name, ctti::type_id<void>(), {ctti::type_id<ArgsT>()...}) {
+        MetaEvent(const string&p_name): MetaFunctionBase(p_name, ctti::type_id<void>(), {ctti::type_id<ArgsT>()...}) {
         }
     };
 
@@ -96,8 +101,8 @@ namespace variant {
         template <typename...ArgsT>
         inline void operator()(ArgsT&&...args);
     protected:
-        XFunction* _function;
         Event * _event;
+        XFunction* _function;
         bool _valid = true;
         friend struct Event;
     };
@@ -128,11 +133,11 @@ namespace variant {
 
     struct ObjectMetadata {
         string objectName;
-        map<string, XFunction> functions;
-        map<string, reference_wrapper<Event>> events;
-        map<string, reference_wrapper<XPropertyBase>> properties;
-        vector<PropertyListenerBase::ptr> bounded_props;
-        vector<Connection::ptr> connections;
+        map<string, XFunction> functions = {};
+        map<string, reference_wrapper<Event>> events = {};
+        map<string, reference_wrapper<XPropertyBase>> properties = {};
+        vector<PropertyListenerBase::ptr> bounded_props = {};
+        vector<Connection::ptr> connections = {};
     };
 
     class XDEV_CORE_EXPORT XStaticClass
@@ -195,12 +200,12 @@ namespace variant {
 
         template<typename ObjT>
         static typename ObjT::ptr Make() {
-            typename ObjT::ptr instance { new ObjT(), [](ObjT* instance){
-                instance->destroy();
-                delete instance;
+            typename ObjT::ptr instance { new ObjT(), [](ObjT* ptr){
+                ptr->destroy();
+                delete ptr;
             }};
             instance->_init();
-            return std::move(instance);
+            return instance;
         }
     };
 

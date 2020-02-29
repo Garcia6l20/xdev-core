@@ -33,7 +33,7 @@ TemplateExpression::TemplateExpression(const string& content) :
     vector<string> function_args;
     if (ExtractFunction(m_content, function_name, function_args))
     {
-        m_functionCalls.push_back({ RenderFunctions.at(function_name), function_args });
+        m_functionCalls.push_back({RenderFunctions.at(function_name), function_args});
     }
     else if (regex_match(m_content.c_str(), what, pipe_expr))
     {
@@ -44,12 +44,12 @@ TemplateExpression::TemplateExpression(const string& content) :
         tools::fast_foreach(raw_pipes, [this](string& raw_pipe)
         {
             tools::trim(raw_pipe);
-            vector<string> function_args;
-            string function_name = raw_pipe;
-            if (ExtractFunction(raw_pipe, function_name, function_args) ||
-                !function_name.empty())
+            vector<string> fargs;
+            string fname = raw_pipe;
+            if (ExtractFunction(raw_pipe, fname, fargs) ||
+                !fname.empty())
             {
-                m_functionCalls.push_back({ RenderFunctions.at(function_name), function_args });
+                m_functionCalls.push_back({RenderFunctions.at(fname), fargs});
             }
         });
     }
@@ -119,7 +119,7 @@ XVariant TemplateExpression::eval(const XDict& context, const XResources::ptr& r
 TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
 {
     TemplateExpression::RenderFunctionMap map;
-    map["date"] = [](const XArray& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["date"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         string fmt = "%c %Z";
         if (args.size() > 0)
             fmt = args[0].get<string>();
@@ -131,38 +131,38 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
 
     };
 
-    map["upper"] = [](const XArray& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["upper"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         string input = args[0].get<string>();
         tools::to_upper(input);
-        return std::move(input);
+        return input;
     };
 
-    map["lower"] = [](const XArray& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["lower"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         string input = args[0].get<string>();
         tools::to_lower(input);
-        return std::move(input);
+        return input;
     };
 
-    map["replace"] = [](const XArray& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["replace"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         string str = args[0].get<string>();
         string from = args[1].get<string>();
         string to = args[2].get<string>();
         tools::replace(str, from, to);
-        return std::move(str);
+        return str;
     };
 
-    map["length"] = [](const XArray& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["length"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         if (args[0].is<XDict>())
         {
-            return (int)args[0].get<XDict>().size();
+            return int(args[0].get<XDict>().size());
         }
         else if (args[0].is<XArray>())
         {
-            return (int)args[0].get<XArray>().size();
+            return int(args[0].get<XArray>().size());
         }
         else if (args[0].is<string>())
         {
-            return (int)args[0].get<string>().size();
+            return int(args[0].get<string>().size());
         }
         throw Expression::Error("Cannot apply 'length' to "s/* + args[0].typeName()*/);
     };
@@ -218,7 +218,7 @@ bool TemplateExpression::ExtractFunction(const string& raw_content, string& func
     function_name = what[1];
     tools::trim(function_name);
     vector<string> raw_args = tools::split(what[2], ',', true);
-    tools::fast_foreach(raw_args, [&args, &function_name](string& arg)
+    tools::fast_foreach(raw_args, [&args](string& arg)
     {
         tools::trim(arg);
         args.push_back(arg);
@@ -266,11 +266,11 @@ struct OperatorVisitor
 //    {
 //        return false; //m_left.get<XObject::ptr>() == right;
 //    }
-    bool operator()(const XArray& right)
+    bool operator()(const XArray& /*right*/)
     {
         return false; //m_left.get<XArray>() == right;
     }
-    bool operator()(const XDict& right)
+    bool operator()(const XDict& /*right*/)
     {
         return false; //m_left.get<XDict>() == right;
     }
@@ -306,7 +306,7 @@ TestExpression::OperatorMap TestExpression::InitOperators()
         return right.visit(OperatorVisitor<std::greater>(left));
     };
     return test_operators;
-};
+}
 
 TestExpression::OperatorMap TestExpression::Operators = TestExpression::InitOperators();
 

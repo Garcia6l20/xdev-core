@@ -1,1 +1,1 @@
-xdev_add_simple_tests()
+xdev_discover_tests()

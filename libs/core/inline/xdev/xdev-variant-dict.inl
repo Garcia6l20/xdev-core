@@ -34,19 +34,18 @@ size_t Dict::size() const { return _value.size(); }
 
 size_t Dict::hash() const {
     return std::accumulate(begin(), end(), _value.size(), [](size_t seed, std::pair<Variant, Variant> ii){
-        return seed ^ (ii.first.hash() ^ ii.second.hash()) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed ^ ((ii.first.hash() ^ ii.second.hash()) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
     });
 }
 
 std::string Dict::toString() const {
     std::string res = "{";
     res += tools::join(*this, ", ", [](auto&&item) {
-        using T = std::decay_t<decltype(item.second)>;
         std::string tmp = std::string("\"") + item.first.toString() + "\": ";
         if (item.second.template is<std::string>())
             tmp += std::string("\"") + item.second.toString() + "\"";
         else tmp += item.second.toString();
-        return std::move(tmp);
+        return tmp;
     });
     res += "}";
     return res;

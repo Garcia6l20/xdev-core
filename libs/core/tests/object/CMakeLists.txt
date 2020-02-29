@@ -1,5 +1,5 @@
-xdev_add_test(NAME dumb-test)
+xdev_add_test(dumb)
 
-xdev_add_test(NAME test-object
-    FILES testobject.cpp testobject.h
+xdev_add_test(object
+    SOURCES testobject.cpp testobject.h
 )

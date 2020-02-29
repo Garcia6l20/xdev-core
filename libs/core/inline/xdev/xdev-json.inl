@@ -53,7 +53,7 @@ std::string Parser::parse_string(IterT& begin, const IterT& end)
     for (; begin != end; ++begin) {
         switch (*begin) {
         case '"':
-            return std::move(result);
+            return result;
         case '\\': {
             // handle escape char
             switch (*++begin) {
@@ -74,7 +74,7 @@ std::string Parser::parse_string(IterT& begin, const IterT& end)
             case 'u':
                 throw std::runtime_error("Unicode not implemented yet !!");
             default:
-                throw std::runtime_error("Unknown escape character: " + *begin);
+                throw std::runtime_error(fmt::format("Unknown escape character: {}", *begin));
             }
             break;
         }
@@ -90,8 +90,8 @@ template <typename IterT>
 XVariant Parser::parse_number(IterT& begin, const IterT& end)
 {
     double result = 0.;
-    size_t sz = 0;
-    result = std::stod(std::string(begin, end), &sz);
+    ssize_t sz = 0;
+    result = std::stod(std::string(begin, end), reinterpret_cast<size_t*>(&sz));
     begin += sz - 1;
     if (sz == 0)
         throw std::runtime_error("Error occured while parsing number");

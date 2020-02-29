@@ -6,11 +6,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(XDEV_MODULE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-include(GenerateExportHeader)
 include(FetchContent)
 include(CTest)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/find)
+include(${CMAKE_CURRENT_LIST_DIR}/MeltingPot/MeltingPot.cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -22,19 +21,6 @@ if(NOT TARGET RERUN_CMAKE)
     add_custom_target(RERUN_CMAKE COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR})
     set_target_properties(RERUN_CMAKE PROPERTIES FOLDER CMakePredefinedTargets)
 endif()
-
-find_program(VALGRIND_EXE valgrind)
-if (VALGRIND_EXE)
-    set(CTEST_MEMORYCHECK_COMMAND "${VALGRIND_EXE}")
-endif()
-
-string(STRIP ${CMAKE_CXX_COMPILER_VERSION} XDEV_CXX_COMPILER_VERSION)
-string(REGEX REPLACE "^([0-9]+).*$" "\\1"
-       XDEV_CXX_COMPILER_VERSION_MAJOR ${XDEV_CXX_COMPILER_VERSION})
-string(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*$" "\\2"
-       XDEV_CXX_COMPILER_VERSION_MINOR ${XDEV_CXX_COMPILER_VERSION})
-string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$" "\\3"
-       XDEV_CXX_COMPILER_VERSION_PATCH ${XDEV_CXX_COMPILER_VERSION})
 
 #
 # Setup moccing for the given @target
@@ -61,7 +47,7 @@ function(xdev_moc_target target)
     list(APPEND generated_files ${CMAKE_CURRENT_BINARY_DIR}/${target}-pools.xdev.cpp)
     set(full_path_header_files ${header_files})
     list(TRANSFORM full_path_header_files PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
-    message("Moc[${target}] files: ${full_path_header_files}")
+    # message("Moc[${target}] files: ${full_path_header_files}")
     if (NOT TARGET xdev-moc)
         find_program(MOC_EXE_OR_TARGET xdev-moc)
         set(_deps ${header_files})
@@ -110,7 +96,6 @@ function(xdev_resources target directory)
         COMMENT "Generating resources for ${target} (${output_dir})"
         WORKING_DIRECTORY ${output_dir}
     )
-    message(STATUS "${target}: ${generated_files}")
     source_group(xdev/resources FILES ${resource_files})
     source_group(xdev/resources/generated FILES ${generated_files})
     target_sources(${target} PRIVATE ${generated_files} ${resource_files})
@@ -129,158 +114,52 @@ if (TARGET ${library})
 endif()
 endmacro()
 
-macro(xdev_add_test)
+# override melt parsing
+set(_MELT_TARGET_PARSE_OPTIONS ${_MELT_TARGET_PARSE_OPTIONS}
+  MOC
+)
+set(_MELT_TARGET_PARSE_MULTI_VALUE_ARGS ${_MELT_TARGET_PARSE_MULTI_VALUE_ARGS}
+  RESOURCES_DIRS
+)
 
-    if(NOT XDEV_UNIT_TESTING)
-        return()
+macro(xdev_add_test _name)
+
+    melt_add_test(${_name} ${ARGN})
+
+    if (MELT_ARGS_MOC)
+        message(STATUS "Mocing: ${_target}")
+        xdev_moc_target(${_target} "")
     endif()
 
-    set(options NO_GTEST XMOC)
-    set(oneValueArgs NAME WORKING_DIRECTORY)
-    set(multiValueArgs FILES LINK_LIBRARIES XRES_DIRS)
-    cmake_parse_arguments(TEST
-        "${options}"
-        "${oneValueArgs}"
-        "${multiValueArgs}"
-        ${ARGN}
-    )
-
-    set(TEST_TARGET ${PROJECT_NAME}-${TEST_NAME})
-    # add cache variable to disable this test
-    set(_no_test_var_name "${PROJECT_NAME}_NO_${TEST_NAME}")
-    string(TOUPPER ${_no_test_var_name} _no_test_var_name)
-    string(REPLACE "-" "_" _no_test_var_name ${_no_test_var_name})
-    set(${_no_test_var_name} OFF CACHE BOOL "Disable ${PROJECT_NAME}-${TEST_NAME} while running tests")
-#    message(STATUS "TEST_TARGET: ${TEST_TARGET}")
-    if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${TEST_NAME}.cpp)
-        list(APPEND TEST_FILES ${TEST_NAME}.cpp)
-    endif()
-#    message(STATUS "TEST_FILES: ${TEST_FILES}")
-    add_executable(${TEST_TARGET} ${TEST_FILES})
-    target_link_libraries(${TEST_TARGET} PRIVATE ${TEST_LINK_LIBRARIES})
-    _link_if_is_library(${TEST_TARGET} ${PROJECT_NAME})
-    _link_if_is_library(${TEST_TARGET} ${PROJECT_NAME}-lib)
-
-    # create project-test group
-    if (NOT TARGET ${PROJECT_NAME}-tests)
-        add_custom_target(${PROJECT_NAME}-tests)
-    endif()
-    add_dependencies(${PROJECT_NAME}-tests ${TEST_TARGET})
-
-    if (TEST_XMOC)
-        message(STATUS "Mocing: ${TEST_TARGET}")
-        xdev_moc_target(${TEST_TARGET} "")
-    endif()
-    if (TEST_XRES_DIRS)
-        foreach(dir ${TEST_XRES_DIRS})
-            xdev_resources(${TEST_TARGET} ${dir})
+    if (MELT_ARGS_RESOURCES_DIRS)
+        foreach(dir ${MELT_ARGS_RESOURCES_DIRS})
+            xdev_resources(${_target} ${dir})
         endforeach()
     endif()
-    if (NOT TEST_WORKING_DIRECTORY)
-        set(TEST_WORKING_DIRECTORY ${${PROJECT_NAME}_BINARY_DIR})
-    endif()
-    target_link_libraries(${TEST_TARGET} PRIVATE CONAN_PKG::gtest Threads::Threads)
-    if (NOT ${${_no_test_var_name}})
-        add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
-    else()
-        message(STATUS "test ${TEST_TARGET} disabled")
-    endif()
-    if(TARGET ${PROJECT_NAME})
-        get_target_property(_test_folder ${PROJECT_NAME} FOLDER)
-        if(_test_folder)
-            set(_test_folder "${_test_folder}/${PROJECT_NAME}-tests")
-        endif()
-    endif()
-    set_target_properties(${TEST_TARGET} PROPERTIES FOLDER ${_test_folder})
+
 endmacro()
 
 
-macro(xdev_add_simple_tests)
-    file(GLOB _files *.cpp)
+macro(xdev_discover_tests)
+    file(GLOB _files test-*.cpp)
     foreach(_file ${_files})
         get_filename_component(_name ${_file} NAME_WE)
-        xdev_add_test(NAME ${_name})
+        string(REGEX REPLACE "test-(.*)" [[\1]] _name ${_name})
+        xdev_add_test(${_name})
     endforeach()
 endmacro()
 
 function(xdev_library _target)
-    set(options MOC SHARED NO_INSTALL)
-    set(oneValueArgs ALIAS CXX_STANDARD FOLDER)
-    set(multiValueArgs
-        SOURCES
-        PUBLIC_HEADERS
-        PUBLIC_LIBRARIES
-        PUBLIC_DEFINITIONS
-        PUBLIC_INCLUDE_DIRS
-        RESOURCES_DIRS
-    )
-    cmake_parse_arguments(LIB
-        "${options}"
-        "${oneValueArgs}"
-        "${multiValueArgs}"
-        ${ARGN}
-    )
 
-    if(LIB_SHARED)
-        set(_lib_type SHARED)
-    endif()
+    melt_library(${_target} ${ARGN})
 
-    add_library(${_target} ${_lib_type} ${LIB_SOURCES} ${LIB_PUBLIC_HEADERS})
-
-    if(LIB_FOLDER)
-        set_target_properties(${_target} PROPERTIES FOLDER ${LIB_FOLDER})
-        set(_generated_include_dirs ${PROJECT_BINARY_DIR}/include/${LIB_FOLDER})
-    else()
-        set(_generated_include_dirs ${PROJECT_BINARY_DIR}/include)
-    endif()
-
-    generate_export_header(${_target} EXPORT_FILE_NAME ${_generated_include_dirs}/${_target}-export.hpp)
-    list(APPEND LIB_PUBLIC_HEADERS ${_generated_include_dirs}/${_target}-export.hpp)
-    target_sources(${_target} PUBLIC ${_generated_include_dirs}/${_target}-export.hpp)
-    target_include_directories(${_target} PUBLIC include inline ${PROJECT_BINARY_DIR}/include ${LIB_PUBLIC_INCLUDE_DIRS})
-    target_link_libraries(${_target} PUBLIC ${LIB_PUBLIC_LIBRARIES})
-
-    if(LIB_ALIAS)
-        add_library(${LIB_ALIAS} ALIAS ${_target})
-    endif()
-
-    if(LIB_CXX_STANDARD)
-        set_target_properties(${_target} PROPERTIES CXX_STANDARD ${LIB_CXX_STANDARD})
-        set_target_properties(${_target} PROPERTIES CXX_STANDARD_REQUIRED ON)
-    endif()
-
-
-    if (LIB_MOC)
+    if (MELT_ARGS_MOC)
         xdev_moc_target(${_target} "")
     endif()
 
-    if (LIB_RESOURCES_DIRS)
-        foreach(_dir ${LIB_RESOURCES_DIRS})
+    if (MELT_ARGS_RESOURCES_DIRS)
+        foreach(_dir ${MELT_ARGS_RESOURCES_DIRS})
             xdev_resources(${_target} ${_dir})
         endforeach()
-    endif()
-
-    if (EXISTS ${${_target}_SOURCE_DIR}/tests)
-        add_subdirectory(${${_target}_SOURCE_DIR}/tests)
-    endif()
-
-    if(LIB_PUBLIC_HEADERS)
-        set_target_properties(${_target} PROPERTIES PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}")
-    endif()
-
-    if(LIB_PUBLIC_DEFINITIONS)
-        target_compile_definitions(${_target} PUBLIC LIB_PUBLIC_DEFINITIONS)
-    endif()
-
-    if(NOT LIB_NO_INSTALL)
-        install(TARGETS ${_target}
-            LIBRARY
-              DESTINATION lib
-              COMPONENT Libraries
-              NAMELINK_COMPONENT Development
-            PUBLIC_HEADER
-              DESTINATION include/${LIB_FOLDER}
-              COMPONENT Development
-        )
     endif()
 endfunction()

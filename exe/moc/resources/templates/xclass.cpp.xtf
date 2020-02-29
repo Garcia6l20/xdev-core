@@ -41,7 +41,7 @@ XObjectBase::ptr {{ xclass.name }}StaticClass::Create() const
     objectMetadata(instance.get()).events.insert({"{{ event.name }}", instance->{{ event.name }}});
     {% endfor %}
     instance->initialize();
-    return std::move(instance);
+    return instance;
 }
 
 {{ xclass.name }}StaticClass::ptr {{ xclass.name }}StaticClass::_instance = []() {

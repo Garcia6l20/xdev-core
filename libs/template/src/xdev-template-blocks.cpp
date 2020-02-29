@@ -28,7 +28,7 @@ bool BaseBlock::ExtractFunction(const string& raw_content, string& function_name
     function_name = what[1];
     tools::trim(function_name);
     vector<string> raw_args = tools::split(what[2], ',', true);
-    tools::fast_foreach(raw_args, [&args, &function_name](string& arg)
+    tools::fast_foreach(raw_args, [&args](string& arg)
     {
         tools::trim(arg);
         args.push_back(arg);
@@ -88,7 +88,7 @@ RenderBlock::ptr RenderBlock::TryLoad(const string& input, size_t& offset, const
 string ControlBlock::BlockStart = "{%";
 string ControlBlock::BlockEnd = "%}";
 
-int ControlBlock::NextBlockOf(const string& input, const vector<string>& commands, size_t offset, block_match_t& match)
+ssize_t ControlBlock::NextBlockOf(const string& input, const vector<string>& commands, size_t offset, block_match_t& match)
 {
     match.block_end.end = offset;
     while ((match.block_start.begin = input.find(BlockStart, match.block_end.end)) != string::npos)
@@ -101,7 +101,7 @@ int ControlBlock::NextBlockOf(const string& input, const vector<string>& command
         }
         match.block_end.end = match.block_end.begin + BlockEnd.size();
         match.command.begin = input.find_first_not_of(' ', match.block_start.end);
-        for (int ii = 0; ii < commands.size(); ++ii)
+        for (size_t ii = 0; ii < commands.size(); ++ii)
         {
             const string& command = commands[ii];
             match.command.end = match.command.begin + command.size();
@@ -109,7 +109,7 @@ int ControlBlock::NextBlockOf(const string& input, const vector<string>& command
             {
                 match.content.begin = input.find_first_not_of(' ', match.command.end);
                 match.content.end = input.find_last_not_of(' ', match.block_end.begin);
-                return ii;
+                return ssize_t(ii);
             }
         }
     }
@@ -156,7 +156,7 @@ ControlBlock::ptr ControlBlock::TryLoad(const string& input, size_t& offset, con
 
 string ControlBlock::GetContent(const string& input, const block_match_t& start_block, const block_match_t& end_block)
 {
-    return string(input.begin() + start_block.block_end.end, input.begin() + end_block.block_start.begin);
+    return string(input.begin() + ssize_t(start_block.block_end.end), input.begin() + ssize_t(end_block.block_start.begin));
 }
 
 //
@@ -207,25 +207,25 @@ BlockList TreeBlock::Load(const string & input, const XResources::ptr& resources
         if (offset == string::npos)
         {
             // end of file reached, add a TextBlock with remaining data
-            lst.push_back(make_shared<TextBlock>(string(input.begin() + prev_pos, input.end())));
+            lst.push_back(make_shared<TextBlock>(string(input.begin() + ssize_t(prev_pos), input.end())));
             break;
         }
         BaseBlock::ptr child = nullptr;
-        if (child = RenderBlock::TryLoad(input, offset, resources))
+        if (child = RenderBlock::TryLoad(input, offset, resources); child)
         {
             // add a TextBlock with previous data
             if (start_pos - prev_pos > 0)
             {
-                lst.push_back(make_shared<TextBlock>(string(input.begin() + prev_pos, input.begin() + start_pos)));
+                lst.push_back(make_shared<TextBlock>(string(input.begin() + ssize_t(prev_pos), input.begin() + ssize_t(start_pos))));
             }
             lst.push_back(child);
         }
-        else if (child = ControlBlock::TryLoad(input, offset, resources))
+        else if (child = ControlBlock::TryLoad(input, offset, resources); child)
         {
             // add a TextBlock with previous data
             if (start_pos - prev_pos > 0)
             {
-                lst.push_back(make_shared<TextBlock>(string(input.begin() + prev_pos, input.begin() + start_pos)));
+                lst.push_back(make_shared<TextBlock>(string(input.begin() + ssize_t(prev_pos), input.begin() + ssize_t(start_pos))));
             }
             ExtendBlock::ptr extend_block = dynamic_pointer_cast<ExtendBlock>(child);
             if (extend_block)
@@ -257,11 +257,10 @@ BlockList TreeBlock::Load(const string & input, const XResources::ptr& resources
 // IfBlock
 //
 
-IfBlock::IfBlock(const string & block, const string & input, size_t & offset, const XResources::ptr& resources):
+IfBlock::IfBlock(const string & /*block*/, const string & input, size_t & offset, const XResources::ptr& resources):
     ControlBlock(resources)
 {
     int level = 0;
-    size_t content_start = offset;
     block_match_t bmatch, if_match;
     bmatch.block_end.end = offset;
 
@@ -283,7 +282,7 @@ IfBlock::IfBlock(const string & block, const string & input, size_t & offset, co
     do
     {
         static const vector<string> block_lookups = { "if", "elif", "else", "endif" };
-        int index = NextBlockOf(input, block_lookups, bmatch.block_end.end, bmatch);
+        ssize_t index = NextBlockOf(input, block_lookups, bmatch.block_end.end, bmatch);
         // next for lookup
         if (index == 0)
         {
@@ -370,13 +369,12 @@ string IfBlock::process(const XDict& context)
 ForBlock::ForBlock(const string & block, const string & input, size_t & offset, const XResources::ptr& resources):
     ControlBlock(resources)
 {
-    size_t content_start = offset;
     block_match_t bmatch, for_bmatch, endfor_bmatch;
     bmatch.block_end.end = offset;
     int level = 0;
     do {
         static const vector<string> block_lookups = { "for", "endfor" };
-        int index = NextBlockOf(input, block_lookups, bmatch.block_end.end, bmatch);
+        ssize_t index = NextBlockOf(input, block_lookups, bmatch.block_end.end, bmatch);
         // next for lookup
         if (index == 0)
         {
@@ -498,12 +496,11 @@ BlockBlock::BlockBlock(const string& block, const string& input, size_t& offset,
     }
     m_id = match[1];
 
-    size_t content_start = offset;
     block_match_t bmatch, block_bmatch;
     bmatch.block_end.end = offset;
     int level = 0;
     do {
-        int index = NextBlockOf(input, { "block", "endblock" }, bmatch.block_end.end, bmatch);
+        auto index = NextBlockOf(input, { "block", "endblock" }, bmatch.block_end.end, bmatch);
         if (index == 0)
         {
             // block
@@ -527,16 +524,16 @@ string BlockBlock::process(const XDict & context)
     string result;
     XDict child_ctx = context;
     temp::TemplateExpression::RenderFunctionMap& function_map = temp::TemplateExpression::RenderFunctions;
-    string super_key = "super#" + std::to_string((uint64_t) this);
-    function_map[super_key] = [this, child_ctx](const XArray& args, const XDict& context, const XResources::ptr& res) {
+    string super_key = fmt::format("super#{}", static_cast<void*>(this));
+    function_map[super_key] = [this, child_ctx](const XArray& /*args*/, const XDict& /*context*/, const XResources::ptr& /*res*/) {
         //BlockBlock::ptr super = m_super.lock();
         BlockBlock::ptr super = m_super;
-        string result;
+        string res;
         if (super)
         {
-            result = super->process(child_ctx);
+            res = super->process(child_ctx);
         }
-        return result;
+        return res;
     };
     child_ctx["$super_key"] = super_key;
     for (auto& item : m_children)

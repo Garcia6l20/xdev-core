@@ -8,7 +8,7 @@ namespace std {
 template <>
 struct hash<xdev::XFunction>
 {
-    std::size_t operator()(const xdev::XFunction& var) const
+    std::size_t operator()(const xdev::XFunction& /*var*/) const
     {
         throw xdev::XException("Dont use xdev::XFunction as keys");
     }
@@ -76,7 +76,7 @@ ResultT Function::apply(XArray&& args) {
     return base::operator()(std::forward<XArray>(args));
 }
 
-template <typename ResultT = XVariant, typename FirstT, typename...RestT>
+template <typename ResultT, typename FirstT, typename...RestT>
 ResultT Function::operator()(FirstT&&first, RestT&&...rest) {
     if constexpr (is_same_v<ResultT, XVariant>)
         return apply<ResultT>(XArray{xfwd(first), xfwd(rest)...});
@@ -85,7 +85,7 @@ ResultT Function::operator()(FirstT&&first, RestT&&...rest) {
     else return apply<ResultT>(XArray{xfwd(first), xfwd(rest)...}).template get<ResultT>();
 }
 
-template <typename ResultT = XVariant>
+template <typename ResultT>
 ResultT Function::operator()() {
     if constexpr (is_same_v<ResultT, XVariant>)
         return apply<ResultT>(XArray{});

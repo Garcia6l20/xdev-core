@@ -6,9 +6,9 @@ file(GLOB src_files src/xdev-*.cpp)
 file(GLOB hdr_files_pub include/xdev-*.hpp)
 
 xdev_library(${PROJECT_NAME} STATIC
-    PUBLIC_HEADERS ${hdr_files_pub}
+    HEADERS ${hdr_files_pub}
     SOURCES ${src_files}
-    PUBLIC_LIBRARIES XDev::core
+    LIBRARIES XDev::core
     CXX_STANDARD 20
     ALIAS XDev::template
     FOLDER xdev

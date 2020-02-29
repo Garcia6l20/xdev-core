@@ -20,7 +20,7 @@ public:
 /**
  * @brief BaseBlock
  */
-class BaseBlock 
+class BaseBlock
 {
 public:
     using ptr = shared_ptr<BaseBlock>;
@@ -85,7 +85,7 @@ public:
         m_content(content)
     {
     }
-    virtual string process(const XDict& context) override
+    virtual string process(const XDict& /*context*/) override
     {
         return m_content;
     }
@@ -132,10 +132,10 @@ protected:
         bounds_t block_end;
         bounds_t command;
         bounds_t content;
-        static const size_t npos = (size_t)-1;
+        static const size_t npos = size_t(-1);
         static inline string get(const string& input, const bounds_t& bounds)
         {
-            return string(input.begin() + bounds.begin, input.begin() + bounds.end);
+            return string(input.begin() + ssize_t(bounds.begin), input.begin() + ssize_t(bounds.end));
         }
         static inline size_t size(const bounds_t& bounds)
         {
@@ -168,7 +168,7 @@ protected:
         }
     } block_match_t;
     static string GetContent(const string& input, const block_match_t& start_block, const block_match_t& end_block);
-    static int NextBlockOf(const string& input, const vector<string>& commands, size_t offset, block_match_t& match);
+    static ssize_t NextBlockOf(const string& input, const vector<string>& commands, size_t offset, block_match_t& match);
 };
 
 /**

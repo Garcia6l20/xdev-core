@@ -101,7 +101,7 @@ struct TestData {
 
 TEST(Channels, Nominal) {
     bool received = false;
-    auto sub = channels::subscribe<TestData>("test", [&received](const auto& data) {
+    auto sub = channels::subscribe<TestData>("test", [&received](const auto&/*data*/) {
         received = true;
     });
     channels::post<TestData>("test", {});
@@ -110,7 +110,7 @@ TEST(Channels, Nominal) {
 
 TEST(Channels, Unsubscibe) {
     int received_counter = 0;
-    auto test_handler = [&received_counter](const auto& data) {
+    auto test_handler = [&received_counter](const auto& /*data*/) {
         ++received_counter;
     };
     auto sub = channels::subscribe<TestData>("test", test_handler);

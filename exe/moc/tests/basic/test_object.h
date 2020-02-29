@@ -17,7 +17,7 @@ public:
         *AStringValue = "Original";
         ObjectNum = ++*InstanceCounter;
         cout << "TestObject " << *ObjectNum << " created" << endl;
-        onTriggered = [](double value) {
+        onTriggered = [](double /*value*/) {
             cout << __PRETTY_FUNCTION__ << " called" << endl;
         };
         /*printThisTestObject = [](const TestObject::ptr& obj) {

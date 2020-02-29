@@ -137,9 +137,9 @@ inline_array: [1,2,3,4,5]
     ASSERT_TRUE(array[3].is<int>());
     ASSERT_EQ(array[3], 42);
     auto inline_array = d["inline_array"].get<XArray>();
-    for (int ii = 0; ii < 4; ++ii) {
+    for (size_t ii = 0; ii < 4; ++ii) {
         ASSERT_TRUE(inline_array[ii].is<int>());
-        ASSERT_EQ(inline_array[ii], ii + 1);
+        ASSERT_EQ(inline_array[ii], int(ii + 1));
     }
 
 }

@@ -9,7 +9,7 @@ static const std::string _chars =
              "abcdefghijklmnopqrstuvwxyz"
              "0123456789+/";
 
-static inline bool is_base64(unsigned char c) {
+static inline bool is_base64(uint8_t c) {
   return (isalnum(c) || (c == '+') || (c == '/'));
 }
 

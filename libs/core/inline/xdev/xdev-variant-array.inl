@@ -92,7 +92,7 @@ Array::iterator Array::find(Variant &&value) {
 
 size_t Array::hash() const {
     return std::accumulate(begin(), end(), _value.size(), [](size_t seed, Variant ii){
-        return seed ^ ii.hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed ^ (ii.hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2));
     });
 }
 

@@ -33,6 +33,5 @@ TEST(VariantFunctionsTest, Lambda) {
 
     XVariant func = XFunction(lambda);
 
-    auto are = "are";
     ASSERT_NEAR(func.get<XFunction>()(41.8, 0.2).get<double>(), 42., 0.001);
 }

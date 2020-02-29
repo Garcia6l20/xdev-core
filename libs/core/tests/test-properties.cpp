@@ -18,12 +18,12 @@ TEST(Properties, Listen) {
 
 TEST(Properties, ScopedListen) {
     property<int> intProp = 2;
-    auto lobj = intProp.listen([&](int value) {
+    auto guard = intProp.listen([&](int value) {
         ASSERT_EQ(intProp, value);
     });
     intProp = 3;
     {
-        auto lobj = intProp.listen([&](int value) {
+        auto inner_guard = intProp.listen([&](int value) {
             ASSERT_EQ(intProp, value);
         });
         intProp = 4;
@@ -35,7 +35,7 @@ TEST(Properties, ScopedListen) {
 TEST(Properties, StopListen) {
     property<int> intProp = 2;
     bool first = true;
-    auto lobj = intProp.listen([&](int value) {
+    auto lobj = intProp.listen([&](int/*value*/) {
         ASSERT_TRUE(first);
         first = false;
     });
