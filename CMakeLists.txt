@@ -11,6 +11,12 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+  list(APPEND CMAKE_CXX_FLAGS -fconcepts)
+  # gcc-9 uses int for basic operator - use gcc-10
+  list(APPEND MELT_EXTRA_FLAGS -Wno-error=conversion)
+endif()
+
 option(XDEV_MELTINGPOT_DEV "Use MetlingPot as submodule" OFF)
 if(XDEV_MELTINGPOT_DEV)
   # as MP developer
