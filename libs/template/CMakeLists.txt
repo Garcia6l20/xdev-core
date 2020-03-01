@@ -5,7 +5,7 @@ project(xdev-template)
 file(GLOB src_files src/xdev-*.cpp)
 file(GLOB hdr_files_pub include/xdev-*.hpp)
 
-xdev_library(${PROJECT_NAME} STATIC
+melt_library(${PROJECT_NAME} STATIC
     HEADERS ${hdr_files_pub}
     SOURCES ${src_files}
     LIBRARIES XDev::core
