@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import pyxdev
+from pyxdev import Dict
 
 lib = pyxdev.load('pyxdev-test-lib')
 
@@ -7,10 +8,10 @@ lib = pyxdev.load('pyxdev-test-lib')
 def main():
     print(lib.name())
     print(lib.path())
-    d = pyxdev.Dict({
-        "response": 42
-    })
-    d["hello"] = "world"
+    d = Dict.fromYaml("""
+    hello: world
+    response: 42
+    """)
     assert d["hello"] == "world"
     assert d["response"] == 42
 

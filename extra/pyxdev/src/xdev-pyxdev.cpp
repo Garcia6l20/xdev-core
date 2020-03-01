@@ -136,8 +136,13 @@ PYBIND11_MODULE(pyxdev, m) {
     .def("__getitem__", [](XDict& self, py::handle k) {
         return self[py::cast<XVariant>(k)];
     })
+    .def_static("fromJson", [](const std::string& str){
+        return XVariant::FromJSON(str).get<XDict>();
+    })
+    .def_static("fromYaml", [](const std::string& str){
+        return XVariant::FromYAML(str).get<XDict>();
+    })
     .def("__str__", &XDict::toString);
-    //py::implicitly_convertible<py::dict, XDict>();
 
     py::class_<XArray>(m, "Array")
     .def(py::init<>())
@@ -162,7 +167,6 @@ PYBIND11_MODULE(pyxdev, m) {
         return self[py::cast<size_t>(index)];
     })
     .def("__str__", &XArray::toString);
-    py::implicitly_convertible<py::args, XArray>();
 
     py::class_<XFunction>(m, "Function")
     .def("__call__", [](XFunction& self) {
@@ -175,6 +179,14 @@ PYBIND11_MODULE(pyxdev, m) {
         }
         return self.apply(std::move(a));
     });
+
+    py::implicitly_convertible<py::dict, XDict>();
+    py::implicitly_convertible<py::args, XArray>();
+    py::implicitly_convertible<py::tuple, XArray>();
+    py::implicitly_convertible<py::list, XArray>();
+    py::implicitly_convertible<XArray, XVariant>();
+    py::implicitly_convertible<XDict, XVariant>();
+    py::implicitly_convertible<XFunction, XVariant>();
 
     py::class_<XObjectBase, std::shared_ptr<XObjectBase>>(m, "Object")
     .def("__getattr__", [](std::shared_ptr<XObjectBase>& self, const std::string& attr)
