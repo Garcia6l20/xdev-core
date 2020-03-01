@@ -195,6 +195,22 @@ bool XPropertyBase::operator==(T& other) const {
     else return value() == other;
 }
 
+template <typename T>
+T& XPropertyBase::get() {
+    // TODO(me) handle access
+    if constexpr (is_xobject<T>)
+        return (*dynamic_cast<property<XObjectBase::ptr>&>(*this))->cast<T>();
+    else return *dynamic_cast<property<T>&>(*this);
+}
+
+template <typename T>
+const T& XPropertyBase::get() const {
+    // TODO(me) handle access
+    if constexpr (is_xobject<T>)
+        return (*dynamic_cast<property<XObjectBase::ptr>&>(*this))->cast<T>();
+    else return *dynamic_cast<property<T>&>(*this);
+}
+
 template <typename T, XPropertyBase::Access access>
 void property<T, access>::operator=(const XVariant& value) {
     if constexpr (access > Access::ReadWrite)
@@ -256,15 +272,14 @@ void XObjectBase::setObjectName(const string& name) {
     _metaData.objectName = name;
 }
 
-void XObjectBase::setProperty(const string& name, const XVariant& variant)
-{
-    prop(name) = variant;
+template <typename T>
+inline T& XObjectBase::prop(const string& name) {
+    prop(name).get<T>();
 }
 
-// XVariant getter
-inline XVariant XObjectBase::getProperty(const string& name)
-{
-    return prop(name).value();
+template <typename T>
+inline const T& XObjectBase::prop(const string& name) const {
+    prop(name).get<T>();
 }
 
 XPropertyBase& XObjectBase::prop(const string& name) try {
@@ -273,18 +288,17 @@ XPropertyBase& XObjectBase::prop(const string& name) try {
     throw NoSuchProperty("cannot access property " + name, e);
 }
 
-template <typename ReqT>
-auto XObjectBase::getProperty(const string& name) {
-    if constexpr (is_xobject<ReqT>)
-        return prop(name).value().get<XObjectBase::ptr>()->cast<ReqT>();
-    else return prop(name).value().get<ReqT>();
+const XPropertyBase& XObjectBase::prop(const string& name) const try {
+    return _metaData.properties.at(name).get();
+} catch (const out_of_range& e) {
+    throw NoSuchProperty("cannot access property " + name, e);
 }
 
 void XObjectBase::bind(const string& prop_name, const XObjectBase::ptr& source, string source_pname) {
     if (source_pname.empty())
         source_pname = prop_name;
     auto listener = source->listen(source_pname, [&](auto value) {
-        this->setProperty(prop_name, value);
+        this->prop(prop_name) = value;
     });
     _metaData.bounded_props.push_back(listener);
 }

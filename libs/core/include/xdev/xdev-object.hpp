@@ -63,6 +63,13 @@ namespace variant {
     using XFunction = variant::Function;
 
 
+    template <typename T>
+    static inline constexpr bool is_xvariant = is_same<T, XVariant>::value;
+
+    template <typename T>
+    static inline constexpr bool is_xobject = is_base_of<XObjectBase, T>::value;
+
+
     class XObjectBase;
 
     struct XDEV_CORE_EXPORT MetaFunctionBase {
@@ -261,26 +268,14 @@ namespace variant {
             return ObjectClass::StaticClass().Create()->template cast<ObjectClass>();
         }
 
-        template <typename T>
-        static inline constexpr bool is_xvariant = is_same<T, XVariant>::value;
-
-        template <typename T>
-        static inline constexpr bool is_xobject = is_base_of<XObjectBase, T>::value;
-
-        /**
-         * Default property getter for XVariant
-         */
-        inline XVariant getProperty(const string& name);
-
-        /**
-         * Property getter for inner variant types
-         */
-        template <typename ReqT>
-        auto getProperty(const string& name);
-
-        inline void setProperty(const string& name, const XVariant& variant);
-
         inline XPropertyBase& prop(const string& name);
+        inline const XPropertyBase& prop(const string& name) const;
+
+        template <typename T>
+        inline T& prop(const string& name);
+
+        template <typename T>
+        inline const T& prop(const string& name) const;
 
         virtual string toString() const
         {

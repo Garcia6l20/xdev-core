@@ -33,7 +33,7 @@ public:
     XINVOKABLE void printTestObject(const TestObject::ptr&);
 
     property<string, ReadOnly>    strProp;
-    property<int> intProp;
+    property<int>    intProp;
     property<double> value;
     property<int>    id;
 

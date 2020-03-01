@@ -9,21 +9,26 @@ X(class) TestObject: public xdev::XObject<TestObject>
 public:
     virtual void initialize() override
     {
-        ADoubleValue = 1.0;
-        *AStringValue = "Original";
-        ObjectNum = ++*InstanceCounter;
-        std::cout << "TestObject " << *ObjectNum << " created\n";
+        double_value = 1.0;
+        *string_value = "Original";
+        object_num = ++*InstanceCounter;
+        std::cout << "TestObject " << *object_num << " created\n";
+        *dict = {
+            {"hello", "world"}
+        };
     }
 
     virtual void destroy() override
     {
-        std::cout << "TestObject " << *ObjectNum << " destroyed\n";
-        --*InstanceCounter;
+        std::cout << "TestObject " << *object_num << " destroyed\n";
     }
-    property<double, ReadOnly>         AReadOnlyValue;
-    property<double>                   ADoubleValue;
-    property<string>                   AStringValue;
-    property<int>                      ObjectNum;
-    static property<int>               InstanceCounter;
+    property<double, ReadOnly>          ro_value;
+    property<double>                    double_value;
+    property<string>                    string_value;
+    property<int>                       object_num;
+    static property<int>                InstanceCounter;
+    property<XObjectBase::ptr>          sub_object;
+    property<XDict>                     dict;
+    property<XArray>                    array;
 };
 #include <test-lib.xdev.hpp>

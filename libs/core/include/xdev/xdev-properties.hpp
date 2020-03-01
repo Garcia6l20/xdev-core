@@ -131,6 +131,16 @@ struct XPropertyBase {
     inline void stopListening(const PropertyListenerBase::ptr&);
     template <typename ListenT = XVariant>
     const PropertyListenerBase::ptr listen(typename PropertyListener<ListenT>::WatchFunc watch);
+
+    template <typename T>
+    bool is() {
+        return ctti::type_id<T>() == typeId();
+    }
+    template <typename T>
+    T& get();
+    template <typename T>
+    const T& get() const;
+
 protected:
     inline XPropertyBase(const ctti::type_id_t&type_id, Access access = Access::ReadWrite, Kind kind = Kind::Normal);
     ctti::type_id_t _typeId;
