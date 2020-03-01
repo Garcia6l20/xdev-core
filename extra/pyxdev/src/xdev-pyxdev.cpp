@@ -139,15 +139,54 @@ PYBIND11_MODULE(pyxdev, m) {
     .def("__str__", &XDict::toString);
     //py::implicitly_convertible<py::dict, XDict>();
 
+    py::class_<XArray>(m, "Array")
+    .def(py::init<>())
+    .def(py::init([](const py::tuple& in) {
+        auto* self = new XArray();
+        for (const auto& v: in) {
+            (*self).push(py::cast<XVariant>(v));
+        }
+        return self;
+    }))
+    .def(py::init([](const py::args& in) {
+        auto* self = new XArray();
+        for (const auto& v: in) {
+            (*self).push(py::cast<XVariant>(v));
+        }
+        return self;
+    }))
+    .def("__setitem__", [](XArray& self, py::int_ index, py::handle v) {
+        self[py::cast<size_t>(index)] = py::cast<XVariant>(v);
+    })
+    .def("__getitem__", [](XArray& self, py::int_ index) {
+        return self[py::cast<size_t>(index)];
+    })
+    .def("__str__", &XArray::toString);
+    py::implicitly_convertible<py::args, XArray>();
 
-    py::class_<XArray>(m, "Array");
+    py::class_<XFunction>(m, "Function")
+    .def("__call__", [](XFunction& self) {
+        return self();
+    })
+    .def("__call__", [](XFunction& self, const py::args& args) {
+        XArray a;
+        for (const auto& v: args) {
+            a.push(py::cast<XVariant>(v));
+        }
+        return self.apply(std::move(a));
+    });
 
     py::class_<XObjectBase, std::shared_ptr<XObjectBase>>(m, "Object")
-    .def("__getattr__", [](std::shared_ptr<XObjectBase>& self, const std::string& attr) -> std::variant<XVariant, std::reference_wrapper<XDict>> {
-        auto& prop = self->prop(attr);
-        if (prop.is<XDict>())
-            return std::ref(prop.get<XDict>());
-        return prop.value();
+    .def("__getattr__", [](std::shared_ptr<XObjectBase>& self, const std::string& attr)
+            -> std::variant<XVariant, std::reference_wrapper<XDict>, XFunction> {
+        if (self->has_prop(attr)) {
+            auto& prop = self->prop(attr);
+            if (prop.is<XDict>())
+                return std::ref(prop.get<XDict>());
+            return prop.value();
+        } else {
+            return self->method(attr);
+        }
     })
     .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XDict& var){
         return self->prop(attr) = var;

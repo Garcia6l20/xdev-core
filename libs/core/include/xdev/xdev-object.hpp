@@ -268,6 +268,8 @@ namespace variant {
             return ObjectClass::StaticClass().Create()->template cast<ObjectClass>();
         }
 
+        inline bool has_prop(const std::string& name) const;
+
         inline XPropertyBase& prop(const string& name);
         inline const XPropertyBase& prop(const string& name) const;
 
@@ -333,6 +335,8 @@ namespace variant {
         inline XVariant call(string&& method, XArray&&args);
         inline XVariant call(const string& method, const XArray&args);
         inline XVariant apply(const string& method, const XArray&args);
+
+        inline XFunction method(const std::string& name) const;
 
         inline void connect(string&& event_name, const XObjectBase::ptr& target, string&& function_name);
 

@@ -30,5 +30,10 @@ public:
     property<XObjectBase::ptr>          sub_object;
     property<XDict>                     dict;
     property<XArray>                    array;
+
+    XINVOKABLE
+    void call_me();
+    XINVOKABLE
+    std::string say_my_name(const std::string& your_name);
 };
 #include <test-lib.xdev.hpp>

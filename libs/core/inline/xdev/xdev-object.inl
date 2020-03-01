@@ -272,6 +272,10 @@ void XObjectBase::setObjectName(const string& name) {
     _metaData.objectName = name;
 }
 
+bool XObjectBase::has_prop(const std::string& name) const {
+    return _metaData.properties.contains(name);
+}
+
 template <typename T>
 inline T& XObjectBase::prop(const string& name) {
     prop(name).get<T>();
@@ -359,6 +363,10 @@ void XObjectBase::connect(string&& event_name, const XObjectBase::ptr& target, s
     auto& src = _metaData.events.at(xfwd(event_name)).get();
     auto& dst = target->_metaData.functions.at(xfwd(function_name));
     target->_metaData.connections.push_back(src.connect(dst));
+}
+
+XFunction XObjectBase::method(const std::string& name) const {
+    return _metaData.functions.at(name);
 }
 
 } // namespace xdev
