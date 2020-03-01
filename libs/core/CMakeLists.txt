@@ -30,12 +30,12 @@ if(NOT ctti-fetch_POPULATED)
 endif()
 install(DIRECTORY ${ctti_SOURCE_DIR}/include/ctti DESTINATION include)
 
-xdev_library(${PROJECT_NAME} STATIC
+xdev_library(${PROJECT_NAME} SHARED
     HEADERS ${header_files} ${inline_files}
     SOURCES ${source_files}
     SYSTEM_INCLUDE_DIRS ${ctti-fetch_SOURCE_DIR}/include
     INCLUDE_DIRS ${dlfcn-win32-fetch_SOURCE_DIR}
-    LIBRARIES Threads::Threads dl CONAN_PKG::boost CONAN_PKG::fmt
+    LIBRARIES Threads::Threads dl CONAN_PKG::boost CONAN_PKG::fmt CONAN_PKG::spdlog
     DEFINITIONS BOOST_SYSTEM_NO_DEPRECATED
     CXX_STANDARD 20
     ALIAS XDev::core

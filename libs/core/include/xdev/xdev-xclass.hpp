@@ -21,19 +21,17 @@ public:
     template <typename BaseObjectT>
     static vector<XStaticClass::ptr> SubClassesOf();
     static XStaticClass::ptr Class(const string& name);
-    ~XClass();
 private:
-    XClass();
     static XClass& Get();
     struct XDEV_CORE_EXPORT ClassData {
-        XStaticClass::ptr staticClass;
+        XStaticClass::wptr staticClass;
         create_func_t create;
         ClassData(const XStaticClass::ptr& clazz, create_func_t create_func): staticClass(clazz), create(create_func) {}
         bool operator==(const string& name) const {
-            return staticClass->name() == name;
+            return staticClass.lock()->name() == name;
         }
         bool operator==(const XStaticClass* clazz) const {
-            return staticClass.get() == clazz;
+            return staticClass.lock().get() == clazz;
         }
     };
     vector<ClassData> _classes;

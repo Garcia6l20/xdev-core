@@ -13,6 +13,7 @@
 #include <xdev/xdev-variant-dict.hpp>
 
 #include <ctti/type_id.hpp>
+#include <spdlog/spdlog.h>
 
 #include <typeinfo>
 #include <typeindex>
@@ -144,12 +145,14 @@ namespace variant {
     {
     public:
         using ptr = shared_ptr<XStaticClass>;
+        using wptr = weak_ptr<XStaticClass>;
+
         XStaticClass(const string& name):
             _name(name),
             _instanceCount(0)
         {
         }
-        virtual ~XStaticClass();
+        virtual ~XStaticClass() noexcept = default;
 
         virtual shared_ptr<XObjectBase> Create() const = 0;
 
@@ -199,25 +202,19 @@ namespace variant {
         friend class XObjectBase;
 
         template<typename ObjT>
-        static typename ObjT::ptr Make() {
-            typename ObjT::ptr instance { new ObjT(), [](ObjT* ptr){
-                ptr->destroy();
-                delete ptr;
-            }};
-            instance->_init();
-            return instance;
-        }
+        static typename ObjT::ptr Make();
     };
 
     class XDEV_CORE_EXPORT XObjectBase: public enable_shared_from_this<XObjectBase>
     {
     protected:
         XObjectBase();
-        virtual ~XObjectBase();
         size_t _init();
 
         using BaseStaticClass = XStaticClass;
     public:
+        virtual ~XObjectBase() noexcept = default;
+
         virtual void initialize() {}
         virtual void destroy() {}
 

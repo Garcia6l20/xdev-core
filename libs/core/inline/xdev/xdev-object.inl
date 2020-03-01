@@ -20,6 +20,17 @@ ostream& operator<<(ostream& stream, const XObjectPointerT& obj) {
 namespace xdev {
 
 
+template<typename ObjT>
+typename ObjT::ptr XStaticClass::Make() {
+    XObjectBase::ptr instance = { new ObjT(), [](ObjT* ptr){        
+        ptr->destroy();
+        delete ptr;
+    }};
+    spdlog::debug("XObjectBase: creating {}", instance->staticClass().name());
+    instance->_init();
+    return std::dynamic_pointer_cast<ObjT>(instance);
+}
+
 //
 // Event
 //

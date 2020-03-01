@@ -10,6 +10,8 @@
 
 #include <xdev-moc-lib-resources.hpp>
 
+#include <spdlog/spdlog.h>
+
 using namespace xdev;
 namespace fs = xdev::filesystem;
 

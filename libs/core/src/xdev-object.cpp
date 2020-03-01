@@ -18,9 +18,3 @@ size_t XObjectBase::_init() {
     _metaData.objectName = staticClass().name() + "#" + to_string(instance_num);
     return instance_num;
 }
-
-XObjectBase::~XObjectBase()
-{
-}
-
-XStaticClass::~XStaticClass() {}
