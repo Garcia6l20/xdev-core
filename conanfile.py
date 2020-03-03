@@ -15,7 +15,7 @@ class MeltConanFile(ConanFile):
         "url": "https://github.com/Garcia6l20/xdev-core",
         "revision": "auto"
     }
-    requires = "boost/1.71.0", "fmt/6.1.0", "lyra/1.3.0"
+    requires = "boost/1.71.0", "fmt/6.1.0", "lyra/1.3.0", "spdlog/1.5.0", "pybind11/2.3.0@conan/stable"
     build_requires = "gtest/1.10.0", "catch2/2.11.0"
     options = {"fPIC": [True, False], "shared": [True, False], }
     default_options = {

@@ -214,7 +214,7 @@ template <typename T>
 const T& XPropertyBase::get() const {
     // TODO(me) handle access
     if constexpr (is_xobject<T>)
-        return (*dynamic_cast<property<XObjectBase::ptr>&>(*this))->cast<T>();
+        return (*dynamic_cast<const property<XObjectBase::ptr>&>(*this))->cast<T>();
     else return *dynamic_cast<property<T>&>(*this);
 }
 
@@ -297,13 +297,13 @@ bool XObjectBase::has_prop(const std::string& name) const {
 }
 
 template <typename T>
-inline T& XObjectBase::prop(const string& name) {
-    return prop(name).get<T>();
+inline property<T>& XObjectBase::prop(const string& name) {
+    return dynamic_cast<property<T>&>(prop(name));
 }
 
 template <typename T>
-inline const T& XObjectBase::prop(const string& name) const {
-    return prop(name).get<T>();
+inline const property<T>& XObjectBase::prop(const string& name) const {
+    return dynamic_cast<const property<T>&>(prop(name));
 }
 
 XPropertyBase& XObjectBase::prop(const string& name) try {

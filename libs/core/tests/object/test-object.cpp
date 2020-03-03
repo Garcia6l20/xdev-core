@@ -15,26 +15,26 @@ using namespace xdev;
 using namespace std;
 
 SCENARIO("object properties shall be access checked", "[object.properties]") {
-    GIVEN("An object object with an integer property") {
+    GIVEN("An object with an integer property") {
         auto test = XClass::Create<TestObject>("TestObject");
         test->prop("intProp") = 42;
         REQUIRE(test->prop("intProp").is<int>());
         REQUIRE(test->prop("intProp") == 42);
-        REQUIRE(test->prop<int>("intProp") == 42);
+        REQUIRE(*test->prop<int>("intProp") == 42);
         WHEN("the value is changed using variant access") {
             test->prop("intProp") = 43;
             THEN("the value sould be changed") {
                 REQUIRE(test->prop("intProp").is<int>());
                 REQUIRE(test->prop("intProp") == 43);
-                REQUIRE(test->prop<int>("intProp") == 43);
+                REQUIRE(*test->prop<int>("intProp") == 43);
             }
         }
         WHEN("the value incremented using reference access") {
-            test->prop<int>("intProp")++;
+            (*test->prop<int>("intProp"))++;
             THEN("the value sould be changed") {
                 REQUIRE(test->prop("intProp").is<int>());
                 REQUIRE(test->prop("intProp") == 43);
-                REQUIRE(test->prop<int>("intProp") == 43);
+                REQUIRE(*test->prop<int>("intProp") == 43);
             }
         }
     }
@@ -49,12 +49,31 @@ SCENARIO("object properties shall be access checked", "[object.properties]") {
             };
             THEN("an exceptions should be raised") {
                 REQUIRE_THROWS_AS(illegal_access(), XPropertyBase::IllegalAccess);
-//                REQUIRE_THROWS_MATCHES(illegal_access(), XPropertyBase::IllegalAccess,
-//                                       Catch::Matchers::Predicate<XPropertyBase::IllegalAccess>([](auto const& e) { return e.what() == "property is readonly"; }));
             }
         }
     }
 }
+
+SCENARIO("object properies should notify listeners", "[object.properties]") {
+    GIVEN("An object with an integer property and a bounded listener") {
+        auto test = XClass::Create<TestObject>("TestObject");
+        test->prop("intProp") = 42;
+        REQUIRE(test->prop("intProp").is<int>());
+        REQUIRE(test->prop("intProp") == 42);
+        REQUIRE(*test->prop<int>("intProp") == 42);
+        int result = -1;
+        test->prop<int>("intProp").listen([&result](int value) {
+            result = value;
+        });
+        WHEN("the property is changed") {
+            test->prop("intProp") = 42;
+            THEN("the corresponding listener should be called") {
+                REQUIRE(result == 42);
+            }
+        }
+    }
+}
+
 /*
 TEST(TestObject, Simple) {
     auto test = XClass::Create<TestObject>("TestObject");

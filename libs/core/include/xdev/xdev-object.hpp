@@ -274,10 +274,10 @@ namespace variant {
         inline const XPropertyBase& prop(const string& name) const;
 
         template <typename T>
-        inline T& prop(const string& name);
+        inline property<T>& prop(const string& name);
 
         template <typename T>
-        inline const T& prop(const string& name) const;
+        inline const property<T>& prop(const string& name) const;
 
         virtual string toString() const
         {

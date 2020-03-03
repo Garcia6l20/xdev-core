@@ -207,11 +207,11 @@ inline void hex_dump(uint8_t c, char out[2])
     char low_bits = c & 0x0f;
     char high_bits = static_cast<char>(c >> 4);
     if (low_bits < 10)
-        out[1] = low_bits + '0';
-    else out[1] = low_bits - 10 + 'a';
+        out[1] = static_cast<char>(low_bits + '0');
+    else out[1] = static_cast<char>(low_bits - 10 + 'a');
     if (high_bits < 10)
-        out[0] = high_bits + '0';
-    else out[0] = high_bits - 10 + 'a';
+        out[0] = static_cast<char>(high_bits + '0');
+    else out[0] = static_cast<char>(high_bits - 10 + 'a');
 }
 
 inline std::string hexlify(const char* input, size_t length)
