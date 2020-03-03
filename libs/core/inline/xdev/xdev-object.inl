@@ -189,7 +189,14 @@ XVariant XPropertyBase::value() const {
 }
 
 template <typename T>
-bool XPropertyBase::operator==(T& other) const {
+bool XPropertyBase::operator==(T&& other) const {
+    if constexpr (is_base_of_v<XPropertyBase, T>)
+        return value() == other.value();
+    else return value() == other;
+}
+
+template <typename T>
+bool XPropertyBase::operator==(const T& other) const {
     if constexpr (is_base_of_v<XPropertyBase, T>)
         return value() == other.value();
     else return value() == other;
@@ -213,9 +220,11 @@ const T& XPropertyBase::get() const {
 
 template <typename T, XPropertyBase::Access access>
 void property<T, access>::operator=(const XVariant& value) {
-    if constexpr (access > Access::ReadWrite)
-        throw IllegalAccess("property is not writable");
-    else _value = value.convert<T>(); // make sure is convertible to T
+    if constexpr (access > Access::ReadWrite) {
+        throw IllegalAccess("property is readonly");
+    } else {
+        _value = value.convert<T>(); // make sure is convertible to T
+    }
     for (auto wlit = _listeners.begin(); wlit != _listeners.end(); ++wlit) {
         if (auto listener = wlit->lock(); listener != nullptr) {
             listener->notify(value);
@@ -227,9 +236,10 @@ void property<T, access>::operator=(const XVariant& value) {
 
 template <typename T, XPropertyBase::Access access>
 T& property<T, access>::operator=(const T& value) {
-    if constexpr (access < Access::ReadWrite)
-        throw IllegalAccess("property is not writable");
-    else {
+    if constexpr (access > Access::ReadWrite) {
+        static_assert (always_false<T>::value, "property is readonly");
+        throw IllegalAccess("property is readonly");
+    } else {
         _value = value;
         for (auto wlit = _listeners.begin(); wlit != _listeners.end(); ++wlit) {
             if (auto listener = wlit->lock(); listener != nullptr) {
@@ -249,6 +259,16 @@ XVariant property<T, access>::value() const {
 
 template <typename T, XPropertyBase::Access access>
 T& property<T, access>::operator*() {
+    if constexpr (access > Access::ReadWrite) {
+        static_assert (always_false<T>::value, "property is readonly");
+        throw IllegalAccess("property is readonly");
+    } else {
+        return _value;
+    }
+}
+
+template <typename T, XPropertyBase::Access access>
+const T& property<T, access>::operator*() const {
     return _value;
 }
 
@@ -278,12 +298,12 @@ bool XObjectBase::has_prop(const std::string& name) const {
 
 template <typename T>
 inline T& XObjectBase::prop(const string& name) {
-    prop(name).get<T>();
+    return prop(name).get<T>();
 }
 
 template <typename T>
 inline const T& XObjectBase::prop(const string& name) const {
-    prop(name).get<T>();
+    return prop(name).get<T>();
 }
 
 XPropertyBase& XObjectBase::prop(const string& name) try {
@@ -370,3 +390,25 @@ XFunction XObjectBase::method(const std::string& name) const {
 }
 
 } // namespace xdev
+
+
+#pragma once
+
+#include <xdev/xdev-variant-fmt.hpp>
+
+//
+// fmt formatter
+//
+
+template <>
+struct fmt::formatter<xdev::XPropertyBase>: fmt::formatter<xdev::XVariant> {
+    using base = fmt::formatter<xdev::XVariant>;
+
+    // Formats the point p using the parsed format specification (presentation)
+    // stored in this formatter.
+    template <typename FormatContext>
+    auto format(const xdev::XPropertyBase& v, FormatContext& ctx) {
+        return base::format(v.value(), ctx);
+    }
+};
+

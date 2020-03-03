@@ -7,6 +7,7 @@ TestObjectStaticClass::TestObjectStaticClass():
 {
     _properties.insert({"strProp", XMetaProperty<string, ReadOnly>("strProp")});
     _properties.insert({"intProp", XMetaProperty<int>("intProp")});
+    _properties.insert({"roIntProp", XMetaProperty<int, ReadOnly>("roIntProp")});
     _properties.insert({"value", XMetaProperty<double>("value")});
     _properties.insert({"id", XMetaProperty<int>("id")});
 }
@@ -22,6 +23,7 @@ XObjectBase::ptr TestObjectStaticClass::Create() const
     // properties
     objectMetadata(instance.get()).properties.insert({"strProp", instance->strProp});
     objectMetadata(instance.get()).properties.insert({"intProp", instance->intProp});
+    objectMetadata(instance.get()).properties.insert({"roIntProp", instance->roIntProp});
     objectMetadata(instance.get()).properties.insert({"value", instance->value});
     objectMetadata(instance.get()).properties.insert({"id", instance->id});
 

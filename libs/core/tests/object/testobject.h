@@ -34,6 +34,7 @@ public:
 
     property<string, ReadOnly>    strProp;
     property<int>    intProp;
+    property<int, ReadOnly>    roIntProp = 42;
     property<double> value;
     property<int>    id;
 

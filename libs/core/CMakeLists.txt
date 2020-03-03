@@ -40,6 +40,7 @@ xdev_library(${PROJECT_NAME} SHARED
     CXX_STANDARD 20
     ALIAS XDev::core
     FOLDER xdev
+    PCH <string> <variant> <vector> <map> <list> <type_traits> <memory> <concepts> <typeinfo> <typeindex>
 )
 
 if(NOT WIN32)
