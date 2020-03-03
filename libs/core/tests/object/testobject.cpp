@@ -5,11 +5,11 @@
 TestObjectStaticClass::TestObjectStaticClass():
     XStaticClass("TestObject")
 {
-    _properties.insert({"strProp", XMetaProperty<string, ReadOnly>("strProp")});
-    _properties.insert({"intProp", XMetaProperty<int>("intProp")});
-    _properties.insert({"roIntProp", XMetaProperty<int, ReadOnly>("roIntProp")});
-    _properties.insert({"value", XMetaProperty<double>("value")});
-    _properties.insert({"id", XMetaProperty<int>("id")});
+    _properties.emplace("strProp", XMetaProperty<string, ReadOnly>("strProp"));
+    _properties.emplace("intProp", XMetaProperty<int>("intProp"));
+    _properties.emplace("roIntProp", XMetaProperty<int, ReadOnly>("roIntProp"));
+    _properties.emplace("value", XMetaProperty<double>("value"));
+    _properties.emplace("id", XMetaProperty<int>("id"));
 }
 
 TestObjectStaticClass::~TestObjectStaticClass() {
@@ -21,27 +21,27 @@ XObjectBase::ptr TestObjectStaticClass::Create() const
     weak_ptr<TestObject> weak_instance = instance;
 
     // properties
-    objectMetadata(instance.get()).properties.insert({"strProp", instance->strProp});
-    objectMetadata(instance.get()).properties.insert({"intProp", instance->intProp});
-    objectMetadata(instance.get()).properties.insert({"roIntProp", instance->roIntProp});
-    objectMetadata(instance.get()).properties.insert({"value", instance->value});
-    objectMetadata(instance.get()).properties.insert({"id", instance->id});
+    objectMetadata(instance.get()).properties.emplace("strProp", instance->strProp);
+    objectMetadata(instance.get()).properties.emplace("intProp", instance->intProp);
+    objectMetadata(instance.get()).properties.emplace("roIntProp", instance->roIntProp);
+    objectMetadata(instance.get()).properties.emplace("value", instance->value);
+    objectMetadata(instance.get()).properties.emplace("id", instance->id);
 
     // functions
     if (!instance->onTriggered) {
         throw XException("uninitialized function 'onTriggered' in object 'TestObject'");
     }
-    objectMetadata(instance.get()).functions.insert({"onTriggered", instance->onTriggered});
-    objectMetadata(instance.get()).functions.insert({"testTrigger", instance->testTrigger});
+    objectMetadata(instance.get()).functions.emplace("onTriggered", instance->onTriggered);
+    objectMetadata(instance.get()).functions.emplace("testTrigger", instance->testTrigger);
 
     // invokables
     objectMetadata(instance.get()).functions
-            .insert({"printTestObject", function<void(XObjectBase::ptr)>([&instance](const XObjectBase::ptr& obj) {
+            .emplace("printTestObject", function<void(XObjectBase::ptr)>([&instance](const XObjectBase::ptr& obj) {
                          instance->printTestObject(obj->cast<TestObject>());
-                     })});
+                     }));
 
     // events
-    objectMetadata(instance.get()).events.insert({"trigger", instance->trigger});
+    objectMetadata(instance.get()).events.emplace("trigger", instance->trigger);
 
     instance->initialize();
     return instance;
