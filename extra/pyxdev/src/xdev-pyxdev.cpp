@@ -10,8 +10,13 @@ using namespace xdev;
 
 namespace py = pybind11;
 
+namespace pybind11::detail {
+
 struct xvariant_to_python {
-    static const constexpr char* ni = "not implemented";
+
+    return_value_policy _policy;
+    handle _parent;
+
     py::handle operator()(const bool&item) {
         py::bool_ out{item};
         out.inc_ref();
@@ -32,27 +37,26 @@ struct xvariant_to_python {
         out.inc_ref();
         return out.ptr();
     }
-    py::handle operator()(const XDict& item) {
-        return nullptr;
+    py::handle operator()(const XNone&) {
+        return py::none{};
     }
-    py::handle operator()(const XArray&item) {
-        return nullptr;
+    py::handle operator()(XDict& item) {
+        return type_caster_base<XDict>::cast(item, _policy, _parent);
     }
-    py::handle operator()(const XObjectBase::ptr&) {
-        return PyUnicode_FromString(ni);
+    py::handle operator()(XArray&item) {
+        return type_caster_base<XArray>::cast(item, _policy, _parent);
+    }
+    py::handle operator()(XObjectBase::ptr& item) {
+        return type_caster_base<XObjectBase>::cast(*item, _policy, _parent);
+    }
+    py::handle operator()(const XFunction& item) {
+        return type_caster_base<XFunction>::cast(item, _policy, _parent);
     }
     py::handle operator()(const XValue&) {
         throw std::runtime_error("might never append");
     }
-    py::handle operator()(const XNone&) {
-        return py::none{};
-    }
-    py::handle operator()(const XFunction&) {
-        throw std::runtime_error("functions not handled here");
-    }
 };
 
-namespace pybind11::detail {
 template <> struct type_caster<XVariant>: public type_caster_base<XVariant> {
 public:
     /**
@@ -101,14 +105,12 @@ public:
      * ``return_value_policy::reference_internal``) and are generally
      * ignored by implicit casters.
      */
-    static handle cast(XVariant src, return_value_policy policy, handle parent) {
-//        handle h = type_caster_base<XVariant>::cast(src, policy, parent);
-//        if (h)
-//            return h;
-        return src.visit(xvariant_to_python{});
+    static handle cast(XVariant&& src, return_value_policy policy, handle parent) {
+        return src.visit(xvariant_to_python{policy, parent});
     }
 };
 }
+
 
 PYBIND11_MODULE(pyxdev, m) {
 
@@ -121,6 +123,7 @@ PYBIND11_MODULE(pyxdev, m) {
       .def("name", &XLibrary::name);
 
     py::class_<XVariant>(m, "Variant");
+
     py::class_<XDict>(m, "Dict")
     .def(py::init<>())
     .def(py::init([](const py::dict& in) {
@@ -134,7 +137,7 @@ PYBIND11_MODULE(pyxdev, m) {
         self[py::cast<XVariant>(k)] = py::cast<XVariant>(v);
     })
     .def("__getitem__", [](XDict& self, py::handle k) {
-        return self[py::cast<XVariant>(k)];
+        return self[std::forward<XVariant>(py::cast<XVariant&>(k))];
     })
     .def_static("fromJson", [](const std::string& str){
         return XVariant::FromJSON(str).get<XDict>();
@@ -187,6 +190,8 @@ PYBIND11_MODULE(pyxdev, m) {
     py::implicitly_convertible<XArray, XVariant>();
     py::implicitly_convertible<XDict, XVariant>();
     py::implicitly_convertible<XFunction, XVariant>();
+    py::implicitly_convertible<XObjectBase::ptr, XVariant>();
+    py::implicitly_convertible<XObjectBase, XVariant>();
 
     py::class_<XObjectBase, std::shared_ptr<XObjectBase>>(m, "Object")
     .def("__getattr__", [](std::shared_ptr<XObjectBase>& self, const std::string& attr)
@@ -200,7 +205,13 @@ PYBIND11_MODULE(pyxdev, m) {
             return self->method(attr);
         }
     })
+    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XObjectBase::ptr& var){
+        return self->prop(attr) = var;
+    })
     .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XDict& var){
+        return self->prop(attr) = var;
+    })
+    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XArray& var){
         return self->prop(attr) = var;
     })
     .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XVariant& var){

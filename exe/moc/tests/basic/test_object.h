@@ -12,8 +12,8 @@ X(class) TestObject: public XObject<TestObject>
 {
 public:
     TestObject() {
-        ADoubleValue = 1.0;
-        AReadOnlyValue = 42.;
+        *ADoubleValue = 1.0;
+        AReadOnlyValue(this) = 42.;
         *AStringValue = "Original";
         ObjectNum = ++*InstanceCounter;
         cout << "TestObject " << *ObjectNum << " created" << endl;
@@ -33,7 +33,7 @@ public:
 
     XMETADATA(TestMeta,         {"hello": "world"})
 
-    property<double, ReadOnly>         AReadOnlyValue;
+    property<double, ReadOnly>         AReadOnlyValue{this, 43.};
     property<double>                   ADoubleValue;
     property<string>                   AStringValue;
     property<int>                      ObjectNum;

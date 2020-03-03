@@ -18,14 +18,14 @@ TEST(Properties, Access) {
         ASSERT_THROW(roProp = XVariant{3}, XPropertyBase::IllegalAccess); // Variant-based access checked at runtime
         // int& recRoProp = *roProp; // does not compile (ro property)
         const int& crefRoProp = *roProp.as_const(); // const acces OK
-        ASSERT_EQ(crefRoProp, 3);
+        ASSERT_EQ(crefRoProp, 2);
     }
 
     {
         const property<int, PropertyAccess::ReadOnly> croProp = 2;
-        ASSERT_EQ(*croProp, 3);
+        ASSERT_EQ(*croProp, 2);
         auto crefRoProp = *croProp;
-        ASSERT_EQ(crefRoProp, 3);
+        ASSERT_EQ(crefRoProp, 2);
     }
 }
 

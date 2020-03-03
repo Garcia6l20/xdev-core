@@ -11,11 +11,23 @@ def main():
     d = Dict.fromYaml("""
     hello: world
     response: 42
+    complex:
+        test: 1
+        other_test: 2
     """)
     assert d["hello"] == "world"
     assert d["response"] == 42
+    assert d["complex"]["test"] == 1
+    assert d["complex"]["other_test"] == 2
 
     obj = pyxdev.new('TestObject')
+    sub_obj = pyxdev.new('TestObject')
+    obj.sub_object = sub_obj
+    assert obj.sub_object.double_value == 1.0
+    obj.sub_object.double_value = 42.0
+    assert obj.sub_object.double_value == 42.0
+    assert sub_obj.double_value == obj.sub_object.double_value
+
     obj.dict = d
     obj.dict["the answer is"] = 42
     print(str(obj.dict))

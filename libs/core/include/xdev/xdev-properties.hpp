@@ -151,6 +151,7 @@ protected:
     ctti::type_id_t _typeId;
     Access _access;
     Kind _kind;
+    XObjectBase* _owner = nullptr;
     vector<PropertyListenerBase::wptr> _listeners;
 };
 
@@ -159,8 +160,18 @@ struct property: XPropertyBase {
     property(): XPropertyBase(ctti::type_id<T>(), access) {
     }
     property(const T& value): property() { _value = value; }
+    property(XObjectBase* owner): property() { _owner = owner; }
+    property(XObjectBase* owner, const T& value): property() { _value = value; _owner = owner; }
     virtual void operator=(const XVariant&) override;
     virtual XVariant value() const override;
+
+    // read-only access operator
+    T& operator()(XObjectBase* owner) {
+        if(_owner != owner) {
+            throw IllegalAccess{"you are not the owner of this property"};
+        }
+        return _value;
+    }
 
     T& operator*();
     const T& operator*() const;
