@@ -4,13 +4,13 @@
 {{ xclass.name }}StaticClass::{{ xclass.name }}StaticClass():
         BaseStaticClass("{{ xclass.name }}")
 {   // properties{% for prop in xclass.properties %}
-    _properties.insert({"{{ prop.name }}", XMetaProperty<{{ prop.raw_args }}>("{{ prop.name }}")});{% endfor %}
+    _properties.emplace("{{ prop.name }}", XMetaProperty<{{ prop.raw_args }}>("{{ prop.name }}"));{% endfor %}
     // functions{% for function in xclass.functions %}
-    _functions.push_back(MetaFunction<{{function.raw_args}}>("{{ function.name }}"));{% endfor %}
+    _functions.emplace_back(MetaFunction<{{function.raw_args}}>{"{{ function.name }}"});{% endfor %}
     // invokables{% for invokable in xclass.invokables %}
-    _functions.push_back(MetaFunction<{{ invokable.return_type }}({{ invokable.args_types }})>("{{ invokable.name }}"));{% endfor %}
+    _functions.emplace_back(MetaFunction<{{ invokable.return_type }}({{ invokable.args_types }})>{"{{ invokable.name }}"});{% endfor %}
     // events{% for event in xclass.events %}
-    _events.push_back(MetaFunction<void({{ event.raw_args }})>("{{ event.name }}"));{% endfor %}
+    _events.emplace_back(MetaFunction<void({{ event.raw_args }})>{"{{ event.name }}"});{% endfor %}
     {% for key, value in xclass.metadata %}
     _metadata["{{ key }}"] = XVariant::FromJSON(R"({{ value }})");{% endfor %}
 }
@@ -23,22 +23,22 @@ XObjectBase::ptr {{ xclass.name }}StaticClass::Create() const
     auto instance = Make<{{ xclass.name }}>();
     weak_ptr<{{ xclass.name }}> weak_instance = instance;
     // properties{% for prop in xclass.properties %}
-    objectMetadata(instance.get()).properties.insert({"{{ prop.name }}", instance->{{ prop.name }}});{% endfor %}
+    objectMetadata(instance.get()).properties.emplace("{{ prop.name }}", instance->{{ prop.name }});{% endfor %}
     {% for prop in xclass.properties %}{% if prop.autowire %}instance->{{ prop.name }} = {{ prop.autowire.pool.name }}Pool["{{ prop.autowire.name }}"]->cast<{{ prop.autowire.name }}>();{% endif %}{% endfor %}
     // functions{% for function in xclass.functions %}
     if (!instance->{{ function.name }}) {
         throw XException("uninitialized function '{{ function.name }}' in class '{{ xclass.name }}'");
     }
-    objectMetadata(instance.get()).functions.insert({"{{ function.name }}", instance->{{ function.name }}});
+    objectMetadata(instance.get()).functions.emplace("{{ function.name }}", instance->{{ function.name }});
     {% endfor %}
     // invokables{% for invokable in xclass.invokables %}
     objectMetadata(instance.get()).functions
-        .insert({"{{ invokable.name }}", function<{{ invokable.return_type }}({{ invokable.args_types }})>([instance]({{ invokable.args_decl }}) {
-                    {% if invokable.return_type != "void" %}return {% endif %}instance->{{ invokable.name }}({{ invokable.args_names }});
-                })});{% endfor %}
+        .emplace("{{ invokable.name }}", function<{{ invokable.return_type }}({{ invokable.args_types }})>([instance]({{ invokable.args_decl }}) {
+                   {% if invokable.return_type != "void" %}return {% endif %}instance->{{ invokable.name }}({{ invokable.args_names }});
+                }));{% endfor %}
 
     // events{% for event in xclass.events %}
-    objectMetadata(instance.get()).events.insert({"{{ event.name }}", instance->{{ event.name }}});
+    objectMetadata(instance.get()).events.emplace("{{ event.name }}", instance->{{ event.name }});
     {% endfor %}
     instance->initialize();
     return instance;

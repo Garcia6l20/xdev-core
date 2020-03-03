@@ -10,6 +10,8 @@
 
 #include <xdev-moc-lib-resources.hpp>
 
+#include <spdlog/spdlog.h>
+
 using namespace xdev;
 namespace fs = xdev::filesystem;
 
@@ -255,7 +257,7 @@ void XMetaObjectCompiler::processFile(const fs::path& path) try
         auto body_start = match[0].second;
         auto body_end = find_scope_end(body_start, file_content.cend(), '{', '}');
         string body{body_start, body_end + 1}; // + 1 = keep ';'
-        tools::regex_foreach(body, regex(R"(property\s*<([\w\s,<>:]*)>\s+(\w+)(\s*=\s*[\w\d]+)?;)"), [&](auto& match) {
+        tools::regex_foreach(body, regex(R"(property\s*<([\w\s,<>:]*)>\s+(\w+).*(?=;))"), [&](auto& match) {
             class_def["properties"].get<XArray>().push(XDict{
                 {"raw_args", match[1]},
                 {"name", match[2]},

@@ -13,6 +13,7 @@
 #include <xdev/xdev-variant-dict.hpp>
 
 #include <ctti/type_id.hpp>
+#include <spdlog/spdlog.h>
 
 #include <typeinfo>
 #include <typeindex>
@@ -60,6 +61,13 @@ namespace variant {
     using XDict = variant::Dict;
     using XArray = variant::Array;
     using XFunction = variant::Function;
+
+
+    template <typename T>
+    static inline constexpr bool is_xvariant = is_same<T, XVariant>::value;
+
+    template <typename T>
+    static inline constexpr bool is_xobject = is_base_of<XObjectBase, T>::value;
 
 
     class XObjectBase;
@@ -144,12 +152,14 @@ namespace variant {
     {
     public:
         using ptr = shared_ptr<XStaticClass>;
+        using wptr = weak_ptr<XStaticClass>;
+
         XStaticClass(const string& name):
             _name(name),
             _instanceCount(0)
         {
         }
-        virtual ~XStaticClass();
+        virtual ~XStaticClass() noexcept = default;
 
         virtual shared_ptr<XObjectBase> Create() const = 0;
 
@@ -199,25 +209,19 @@ namespace variant {
         friend class XObjectBase;
 
         template<typename ObjT>
-        static typename ObjT::ptr Make() {
-            typename ObjT::ptr instance { new ObjT(), [](ObjT* ptr){
-                ptr->destroy();
-                delete ptr;
-            }};
-            instance->_init();
-            return instance;
-        }
+        static typename ObjT::ptr Make();
     };
 
     class XDEV_CORE_EXPORT XObjectBase: public enable_shared_from_this<XObjectBase>
     {
     protected:
         XObjectBase();
-        virtual ~XObjectBase();
         size_t _init();
 
         using BaseStaticClass = XStaticClass;
     public:
+        virtual ~XObjectBase() noexcept = default;
+
         virtual void initialize() {}
         virtual void destroy() {}
 
@@ -264,26 +268,16 @@ namespace variant {
             return ObjectClass::StaticClass().Create()->template cast<ObjectClass>();
         }
 
-        template <typename T>
-        static inline constexpr bool is_xvariant = is_same<T, XVariant>::value;
-
-        template <typename T>
-        static inline constexpr bool is_xobject = is_base_of<XObjectBase, T>::value;
-
-        /**
-         * Default property getter for XVariant
-         */
-        inline XVariant getProperty(const string& name);
-
-        /**
-         * Property getter for inner variant types
-         */
-        template <typename ReqT>
-        auto getProperty(const string& name);
-
-        inline void setProperty(const string& name, const XVariant& variant);
+        inline bool has_prop(const std::string& name) const;
 
         inline XPropertyBase& prop(const string& name);
+        inline const XPropertyBase& prop(const string& name) const;
+
+        template <typename T>
+        inline property<T>& prop(const string& name);
+
+        template <typename T>
+        inline const property<T>& prop(const string& name) const;
 
         virtual string toString() const
         {
@@ -341,6 +335,8 @@ namespace variant {
         inline XVariant call(string&& method, XArray&&args);
         inline XVariant call(const string& method, const XArray&args);
         inline XVariant apply(const string& method, const XArray&args);
+
+        inline XFunction method(const std::string& name) const;
 
         inline void connect(string&& event_name, const XObjectBase::ptr& target, string&& function_name);
 

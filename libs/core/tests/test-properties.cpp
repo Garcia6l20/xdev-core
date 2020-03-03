@@ -4,8 +4,29 @@
 using namespace xdev;
 
 TEST(Properties, Access) {
-    property<int> intProp = 2;
-    ASSERT_EQ(intProp, 2);
+    {
+        property<int> intProp = 2;
+        ASSERT_EQ(intProp, 2);
+        int& propRef = *intProp;
+        ASSERT_EQ(++propRef, 3);
+    }
+
+    {
+        property<int, PropertyAccess::ReadOnly> roProp = 2;
+        // ASSERT_EQ(*roProp, 3); // nope property should be const
+        // ASSERT_THROW(roProp = 3, XPropertyBase::IllegalAccess); // does not compile (ro property)
+        ASSERT_THROW(roProp = XVariant{3}, XPropertyBase::IllegalAccess); // Variant-based access checked at runtime
+        // int& recRoProp = *roProp; // does not compile (ro property)
+        const int& crefRoProp = *roProp.as_const(); // const acces OK
+        ASSERT_EQ(crefRoProp, 2);
+    }
+
+    {
+        const property<int, PropertyAccess::ReadOnly> croProp = 2;
+        ASSERT_EQ(*croProp, 2);
+        auto crefRoProp = *croProp;
+        ASSERT_EQ(crefRoProp, 2);
+    }
 }
 
 TEST(Properties, Listen) {

@@ -121,8 +121,13 @@ struct XPropertyBase {
     inline virtual void operator=(const XVariant&);
     inline virtual XVariant value() const;
     ctti::type_id_t typeId() const { return _typeId; }
+
     template <typename T>
-    bool operator==(T& other) const;
+    bool operator==(T&& other) const;
+
+    template <typename T>
+    bool operator==(const T& other) const;
+
     inline virtual ~XPropertyBase();
     inline void listen(const PropertyListenerBase::ptr& listener);
     inline void stopListening(const PropertyListenerBase::ptr&);
@@ -131,11 +136,22 @@ struct XPropertyBase {
     inline void stopListening(const PropertyListenerBase::ptr&);
     template <typename ListenT = XVariant>
     const PropertyListenerBase::ptr listen(typename PropertyListener<ListenT>::WatchFunc watch);
+
+    template <typename T>
+    bool is() {
+        return ctti::type_id<T>() == typeId();
+    }
+    template <typename T>
+    T& get();
+    template <typename T>
+    const T& get() const;
+
 protected:
     inline XPropertyBase(const ctti::type_id_t&type_id, Access access = Access::ReadWrite, Kind kind = Kind::Normal);
     ctti::type_id_t _typeId;
     Access _access;
     Kind _kind;
+    XObjectBase* _owner = nullptr;
     vector<PropertyListenerBase::wptr> _listeners;
 };
 
@@ -144,10 +160,24 @@ struct property: XPropertyBase {
     property(): XPropertyBase(ctti::type_id<T>(), access) {
     }
     property(const T& value): property() { _value = value; }
+    property(XObjectBase* owner): property() { _owner = owner; }
+    property(XObjectBase* owner, const T& value): property() { _value = value; _owner = owner; }
     virtual void operator=(const XVariant&) override;
     virtual XVariant value() const override;
+
+    // read-only access operator
+    T& operator()(XObjectBase* owner) {
+        if(_owner != owner) {
+            throw IllegalAccess{"you are not the owner of this property"};
+        }
+        return _value;
+    }
+
     T& operator*();
+    const T& operator*() const;
+
     T& operator=(const T&);
+
     template <typename Lambda>
     const PropertyListenerBase::ptr listen(Lambda watcher) {
         return XPropertyBase::listen<T>(typename PropertyListener<T>::WatchFunc(watcher));
@@ -160,8 +190,14 @@ struct property: XPropertyBase {
     bool operator!=(const OtherT& other) const {
         return _value != other;
     }
+
+    const auto& as_const() const {
+        return std::add_const_t<decltype(*this)>(*this);
+    }
 private:
     T _value;
 };
 
 } // xdev
+
+#include <xdev/xdev-properties.inl>

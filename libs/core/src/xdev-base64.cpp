@@ -13,8 +13,8 @@ std::string encode(uint8_t const* bytes_to_encode, unsigned int in_len) {
     char_array_3[i++] = *(bytes_to_encode++);
     if (i == 3) {
       char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-      char_array_4[1] = uint8_t((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-      char_array_4[2] = uint8_t((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+      char_array_4[1] = static_cast<uint8_t>(((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4));
+      char_array_4[2] = static_cast<uint8_t>(((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6));
       char_array_4[3] = char_array_3[2] & 0x3f;
 
       for(i = 0; (i <4) ; i++)
@@ -29,8 +29,8 @@ std::string encode(uint8_t const* bytes_to_encode, unsigned int in_len) {
       char_array_3[j] = '\0';
 
     char_array_4[0] = ( char_array_3[0] & 0xfc) >> 2;
-    char_array_4[1] = uint8_t((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-    char_array_4[2] = uint8_t((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+    char_array_4[1] = static_cast<uint8_t>(((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4));
+    char_array_4[2] = static_cast<uint8_t>(((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6));
 
     for (j = 0; (j < i + 1); j++)
       ret += _chars[char_array_4[j]];
@@ -59,9 +59,9 @@ std::string decode(std::string const& encoded_string) {
       for (i = 0; i <4; i++)
         char_array_4[i] = uint8_t(_chars.find(char(char_array_4[i])));
 
-      char_array_3[0] = uint8_t( char_array_4[0] << 2       ) + ((char_array_4[1] & 0x30) >> 4);
-      char_array_3[1] = uint8_t((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-      char_array_3[2] = uint8_t((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
+      char_array_3[0] = static_cast<uint8_t>(( char_array_4[0] << 2       ) + ((char_array_4[1] & 0x30) >> 4));
+      char_array_3[1] = static_cast<uint8_t>(((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2));
+      char_array_3[2] = static_cast<uint8_t>(((char_array_4[2] & 0x3) << 6) +   char_array_4[3]);
 
       for (i = 0; (i < 3); i++)
         ret += char(char_array_3[i]);
@@ -73,8 +73,8 @@ std::string decode(std::string const& encoded_string) {
     for (j = 0; j < i; j++)
       char_array_4[j] = uint8_t(_chars.find(char(char_array_4[j])));
 
-    char_array_3[0] = uint8_t(char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-    char_array_3[1] = uint8_t((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+    char_array_3[0] = static_cast<uint8_t>((char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4));
+    char_array_3[1] = static_cast<uint8_t>(((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2));
 
     for (j = 0; (j < i - 1); j++) ret += char(char_array_3[j]);
   }

@@ -20,6 +20,17 @@ ostream& operator<<(ostream& stream, const XObjectPointerT& obj) {
 namespace xdev {
 
 
+template<typename ObjT>
+typename ObjT::ptr XStaticClass::Make() {
+    XObjectBase::ptr instance = { new ObjT(), [](ObjT* ptr){        
+        ptr->destroy();
+        delete ptr;
+    }};
+    spdlog::debug("XObjectBase: creating {}", instance->staticClass().name());
+    instance->_init();
+    return std::dynamic_pointer_cast<ObjT>(instance);
+}
+
 //
 // Event
 //
@@ -178,17 +189,42 @@ XVariant XPropertyBase::value() const {
 }
 
 template <typename T>
-bool XPropertyBase::operator==(T& other) const {
+bool XPropertyBase::operator==(T&& other) const {
     if constexpr (is_base_of_v<XPropertyBase, T>)
         return value() == other.value();
     else return value() == other;
 }
 
+template <typename T>
+bool XPropertyBase::operator==(const T& other) const {
+    if constexpr (is_base_of_v<XPropertyBase, T>)
+        return value() == other.value();
+    else return value() == other;
+}
+
+template <typename T>
+T& XPropertyBase::get() {
+    // TODO(me) handle access
+    if constexpr (is_xobject<T>)
+        return (*dynamic_cast<property<XObjectBase::ptr>&>(*this))->cast<T>();
+    else return *dynamic_cast<property<T>&>(*this);
+}
+
+template <typename T>
+const T& XPropertyBase::get() const {
+    // TODO(me) handle access
+    if constexpr (is_xobject<T>)
+        return (*dynamic_cast<const property<XObjectBase::ptr>&>(*this))->cast<T>();
+    else return *dynamic_cast<property<T>&>(*this);
+}
+
 template <typename T, XPropertyBase::Access access>
 void property<T, access>::operator=(const XVariant& value) {
-    if constexpr (access > Access::ReadWrite)
-        throw IllegalAccess("property is not writable");
-    else _value = value.convert<T>(); // make sure is convertible to T
+    if constexpr (access > Access::ReadWrite) {
+        throw IllegalAccess("property is readonly");
+    } else {
+        _value = value.convert<T>(); // make sure is convertible to T
+    }
     for (auto wlit = _listeners.begin(); wlit != _listeners.end(); ++wlit) {
         if (auto listener = wlit->lock(); listener != nullptr) {
             listener->notify(value);
@@ -200,9 +236,10 @@ void property<T, access>::operator=(const XVariant& value) {
 
 template <typename T, XPropertyBase::Access access>
 T& property<T, access>::operator=(const T& value) {
-    if constexpr (access < Access::ReadWrite)
-        throw IllegalAccess("property is not writable");
-    else {
+    if constexpr (access > Access::ReadWrite) {
+        static_assert (always_false<T>::value, "property is readonly");
+        throw IllegalAccess("property is readonly");
+    } else {
         _value = value;
         for (auto wlit = _listeners.begin(); wlit != _listeners.end(); ++wlit) {
             if (auto listener = wlit->lock(); listener != nullptr) {
@@ -222,6 +259,16 @@ XVariant property<T, access>::value() const {
 
 template <typename T, XPropertyBase::Access access>
 T& property<T, access>::operator*() {
+    if constexpr (access > Access::ReadWrite) {
+        static_assert (always_false<T>::value, "property is readonly");
+        throw IllegalAccess("property is readonly");
+    } else {
+        return _value;
+    }
+}
+
+template <typename T, XPropertyBase::Access access>
+const T& property<T, access>::operator*() const {
     return _value;
 }
 
@@ -245,15 +292,18 @@ void XObjectBase::setObjectName(const string& name) {
     _metaData.objectName = name;
 }
 
-void XObjectBase::setProperty(const string& name, const XVariant& variant)
-{
-    prop(name) = variant;
+bool XObjectBase::has_prop(const std::string& name) const {
+    return _metaData.properties.contains(name);
 }
 
-// XVariant getter
-inline XVariant XObjectBase::getProperty(const string& name)
-{
-    return prop(name).value();
+template <typename T>
+inline property<T>& XObjectBase::prop(const string& name) {
+    return dynamic_cast<property<T>&>(prop(name));
+}
+
+template <typename T>
+inline const property<T>& XObjectBase::prop(const string& name) const {
+    return dynamic_cast<const property<T>&>(prop(name));
 }
 
 XPropertyBase& XObjectBase::prop(const string& name) try {
@@ -262,18 +312,17 @@ XPropertyBase& XObjectBase::prop(const string& name) try {
     throw NoSuchProperty("cannot access property " + name, e);
 }
 
-template <typename ReqT>
-auto XObjectBase::getProperty(const string& name) {
-    if constexpr (is_xobject<ReqT>)
-        return prop(name).value().get<XObjectBase::ptr>()->cast<ReqT>();
-    else return prop(name).value().get<ReqT>();
+const XPropertyBase& XObjectBase::prop(const string& name) const try {
+    return _metaData.properties.at(name).get();
+} catch (const out_of_range& e) {
+    throw NoSuchProperty("cannot access property " + name, e);
 }
 
 void XObjectBase::bind(const string& prop_name, const XObjectBase::ptr& source, string source_pname) {
     if (source_pname.empty())
         source_pname = prop_name;
     auto listener = source->listen(source_pname, [&](auto value) {
-        this->setProperty(prop_name, value);
+        this->prop(prop_name) = value;
     });
     _metaData.bounded_props.push_back(listener);
 }
@@ -336,4 +385,30 @@ void XObjectBase::connect(string&& event_name, const XObjectBase::ptr& target, s
     target->_metaData.connections.push_back(src.connect(dst));
 }
 
+XFunction XObjectBase::method(const std::string& name) const {
+    return _metaData.functions.at(name);
+}
+
 } // namespace xdev
+
+
+#pragma once
+
+#include <xdev/xdev-variant-fmt.hpp>
+
+//
+// fmt formatter
+//
+
+template <>
+struct fmt::formatter<xdev::XPropertyBase>: fmt::formatter<xdev::XVariant> {
+    using base = fmt::formatter<xdev::XVariant>;
+
+    // Formats the point p using the parsed format specification (presentation)
+    // stored in this formatter.
+    template <typename FormatContext>
+    auto format(const xdev::XPropertyBase& v, FormatContext& ctx) {
+        return base::format(v.value(), ctx);
+    }
+};
+
