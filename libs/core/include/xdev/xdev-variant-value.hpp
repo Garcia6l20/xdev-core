@@ -14,53 +14,64 @@
 
 namespace xdev::variant {
 
-struct None: std::monostate {};
+struct None: std::monostate {
+    auto operator==(const None&) const {return false;};
+};
 
 class Value {
 public:
 
-    inline Value();
+    inline Value() noexcept;
 
-    inline Value(const Value&other);
-    inline Value& operator=(const Value&other);
-    inline Value(Value&&other);
-    inline Value& operator=(Value&&other);
+    inline Value(const Value&other) noexcept;
+    inline Value& operator=(const Value&other) noexcept;
+
+    inline Value(Value&&other) noexcept;
+    inline Value& operator=(Value&&other) noexcept;
 
     template<typename T>
-        requires (!std::same_as<Value, T>)
+        requires (!std::same_as<Value, std::decay_t<T>>)
     inline Value(const T&value);
 
     template<typename T>
-        requires (!std::same_as<Value, T>)
+        requires (!std::same_as<Value, std::decay_t<T>>)
     inline Value& operator=(const T&value);
 
     template<typename T>
-        requires (!std::same_as<Value, T>)
+        requires (!std::same_as<Value, std::decay_t<T>>)
     inline Value(T&&value);
 
     template<typename T>
-        requires (!std::same_as<Value, T>)
+        requires (!std::same_as<Value, std::decay_t<T>>)
     inline Value& operator=(T&&value);
 
     inline Value(const char* value);
     inline Value& operator=(const char* value);
 
-    template <typename T>
-    inline bool operator==(const T& value);
-
-    inline bool operator==(const Value& value);
-    inline bool operator==(const char* value);
+//     std::weak_ordering operator<=>(const Value&) const;
 
     template <typename T>
-    inline bool operator!=(const T& value);
+    inline bool operator==(const T& value) const;
 
-    inline bool operator!=(const Value& value);
-    inline bool operator!=(const char* value);
+    inline bool operator==(const Value& value) const;
+    inline bool operator==(const char* value) const;
+
+    template <typename T>
+    inline bool operator!=(const T& value) const;
+
+    inline bool operator!=(const Value& value) const;
+    inline bool operator!=(const char* value) const;
 
     inline bool operator<(const Value& other) const;
     inline bool operator>(const Value& other) const;
     inline bool operator<=(const Value& other) const;
     inline bool operator>=(const Value& other) const;
+
+    inline Value& operator++();
+    inline Value operator++(int);
+
+    inline Value& operator--();
+    inline Value operator--(int);
 
     template <typename T>
     inline T& get();

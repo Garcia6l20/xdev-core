@@ -75,10 +75,17 @@ public:
              >
     inline Variant& operator=(T&&value);
 
+//    auto operator<=>(const Variant&) const = default;
+//    bool operator==(const Variant&) const = default;
+
     inline bool operator==(const Variant& other) const;
     inline bool operator!=(const Variant& other) const;
+
     inline bool operator<(const Variant& other) const;
     inline bool operator>(const Variant& other) const;
+
+//    template <typename T>
+//    friend bool operator<(const T& lhs, const Variant&rhs);
 
     /**
      * @brief Get value as @c T.
@@ -134,6 +141,14 @@ public:
     {
         return "XVariant";
     }
+
+    // in/decrement operators
+
+    inline Value& operator++();
+    inline Value operator++(int);
+
+    inline Value& operator--();
+    inline Value operator--(int);
 
 private:
     using value_t = std::variant<Value, Array, Dict, Function, ObjectPtr>;
