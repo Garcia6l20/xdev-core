@@ -50,6 +50,7 @@ struct Function: std::function<Variant(Array)> {
     template <typename ResultT = Variant>
     ResultT apply(const Array& args);
 
+    auto operator<=>(const Function&) const = default;
     inline bool operator ==(const Function&) const;
 };
 

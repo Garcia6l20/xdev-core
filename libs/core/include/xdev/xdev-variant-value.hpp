@@ -50,22 +50,27 @@ public:
 
 //     std::weak_ordering operator<=>(const Value&) const;
 
-    template <typename T>
-    inline bool operator==(const T& value) const;
+    inline bool operator==(const Value& rhs) const;
+    inline std::weak_ordering operator<=>(const Value& rhs) const;
+    inline bool operator==(char const* rhs) const;
+    inline std::weak_ordering operator<=>(const char* rhs) const;
 
-    inline bool operator==(const Value& value) const;
-    inline bool operator==(const char* value) const;
+//    template <typename T>
+//    inline bool operator==(const T& value) const;
 
-    template <typename T>
-    inline bool operator!=(const T& value) const;
+//    inline bool operator==(const Value& value) const;
+//    inline bool operator==(const char* value) const;
 
-    inline bool operator!=(const Value& value) const;
-    inline bool operator!=(const char* value) const;
+//    template <typename T>
+//    inline bool operator!=(const T& value) const;
 
-    inline bool operator<(const Value& other) const;
-    inline bool operator>(const Value& other) const;
-    inline bool operator<=(const Value& other) const;
-    inline bool operator>=(const Value& other) const;
+//    inline bool operator!=(const Value& value) const;
+//    inline bool operator!=(const char* value) const;
+
+//    inline bool operator<(const Value& other) const;
+//    inline bool operator>(const Value& other) const;
+//    inline bool operator<=(const Value& other) const;
+//    inline bool operator>=(const Value& other) const;
 
     inline Value& operator++();
     inline Value operator++(int);

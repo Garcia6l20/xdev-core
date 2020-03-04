@@ -70,6 +70,8 @@ public:
     friend inline Array& operator<<(Array& array, Variant&&var);
     friend inline Array& operator-(Array& array, size_t count);
 
+    auto operator<=>(const Array&) const = default;
+
     static constexpr const char* ctti_nameof()
     {
         return "XArray";

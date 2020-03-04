@@ -248,4 +248,44 @@ struct SharedMaker {
     }
 };
 
+//
+// visit tools
+//
+
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; }; // (1)
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;  // (2)
+
+/**
+ * @brief visit_2way
+ * @param handler a Callable taking an lhs value and an rhs value
+ * @param lhs The lhs std::variant value
+ * @param rhs The rhs std::variant value
+ */
+auto visit_2way(auto handler, auto lhs, auto rhs) {
+    return std::visit(overloaded{
+       [&handler, &rhs](const auto& lhs_item) {
+          return std::visit(overloaded{
+             [&handler, lhs_item](const auto& rhs_item) {
+                 return handler(lhs_item, rhs_item);
+             },
+          }, rhs);
+       },
+    }, lhs);
+}
+
+// TODO(me) Implement this sexy thing !!!
+
+//template <typename FirstT, typename...Ts>
+//auto visit_nway(auto handler, FirstT lhs, Ts...rhss) {
+//    return std::visit(overloaded{
+//       [&handler, &rhs](const auto& lhs_item) {
+//          return std::visit(overloaded{
+//             [&handler, lhs_item](const auto& rhs_item) {
+//                 return handler(lhs_item, rhs_item);
+//             },
+//          }, rhs);
+//       },
+//    }, lhs);
+//}
+
 } // namespace xdev::tools

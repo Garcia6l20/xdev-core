@@ -45,6 +45,8 @@ public:
     inline const Variant& dotAt(const std::string& key) const;
     inline std::string toString() const;
 
+    auto operator<=>(const Dict&) const = default;
+
     template <typename T>
     inline bool has(const T& key) const {
         try {

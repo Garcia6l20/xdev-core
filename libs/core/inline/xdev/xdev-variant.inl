@@ -73,30 +73,30 @@ Variant& Variant::operator=(const T&value) {
     return *this;
 }
 
-bool Variant::operator==(const Variant& other) const {
-    return hash() == other.hash();
-}
+//bool Variant::operator==(const Variant& other) const {
+//    return hash() == other.hash();
+//}
 
-bool Variant::operator!=(const Variant& other) const {
-    return hash() != other.hash();
-}
+//bool Variant::operator!=(const Variant& other) const {
+//    return hash() != other.hash();
+//}
 
-bool Variant::operator<(const Variant& other) const {
-    if (is<Value>() && other.is<Value>())
-        return get<Value>() < other.get<Value>();
-    throw std::runtime_error("Comparaison only applyable on Value types");
-}
+//bool Variant::operator<(const Variant& other) const {
+//    if (is<Value>() && other.is<Value>())
+//        return get<Value>() < other.get<Value>();
+//    throw std::runtime_error("Comparaison only applyable on Value types");
+//}
 
-template <typename T>
-bool operator<(const T& lhs, const Variant&rhs) {
-    return lhs < rhs.get<Value>();
-}
+//template <typename T>
+//bool operator<(const T& lhs, const Variant&rhs) {
+//    return lhs < rhs.get<Value>();
+//}
 
-bool Variant::operator>(const Variant& other) const {
-    if (is<Value>() && other.is<Value>())
-        return get<Value>() > other.get<Value>();
-    throw std::runtime_error("Comparaison only applyable on Value types");
-}
+//bool Variant::operator>(const Variant& other) const {
+//    if (is<Value>() && other.is<Value>())
+//        return get<Value>() > other.get<Value>();
+//    throw std::runtime_error("Comparaison only applyable on Value types");
+//}
 
 template<typename T>
 T& Variant::get() {

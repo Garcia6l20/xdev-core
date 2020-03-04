@@ -75,14 +75,14 @@ public:
              >
     inline Variant& operator=(T&&value);
 
-//    auto operator<=>(const Variant&) const = default;
-//    bool operator==(const Variant&) const = default;
+    auto operator<=>(const Variant&) const = default;
+    bool operator==(const Variant&) const = default;
 
-    inline bool operator==(const Variant& other) const;
-    inline bool operator!=(const Variant& other) const;
+//    inline bool operator==(const Variant& other) const;
+//    inline bool operator!=(const Variant& other) const;
 
-    inline bool operator<(const Variant& other) const;
-    inline bool operator>(const Variant& other) const;
+//    inline bool operator<(const Variant& other) const;
+//    inline bool operator>(const Variant& other) const;
 
 //    template <typename T>
 //    friend bool operator<(const T& lhs, const Variant&rhs);

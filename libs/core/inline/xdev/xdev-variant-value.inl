@@ -1,4 +1,5 @@
 #include <xdev/xdev-variant.hpp>
+#include <xdev/xdev-tools.hpp>
 
 #include <type_traits>
 #include <concepts>
@@ -55,33 +56,90 @@ Value::Value(const char* value): _value(std::string(value)) {}
 
 Value& Value::operator=(const char* value) { _value = std::string(value); return *this; }
 
-template <typename T>
-bool Value::operator==(const T& val) const {
-    if constexpr (std::same_as<T, Variant>)
-        return val.template get<Value>() == *this;
-    else return is<T>() ? get<T>() == val : false;
+bool Value::operator==(const Value& b) const {
+    return tools::visit_2way(tools::overloaded{
+       []<typename T>(const T& lhs, const T& rhs){
+           return lhs == rhs;
+       },
+       []<typename T, typename U>(const T&, const U&){
+           return false;
+       },
+       [](const std::string& lhs, const std::string& rhs){
+          return lhs.size() == rhs.size() &&
+            std::strcmp(lhs.c_str(), rhs.c_str()) == 0;
+       }
+    }, _value, b._value);
 }
 
-bool Value::operator==(const Value& value) const {
-    return hash() == value.hash();
+std::weak_ordering Value::operator<=>(const Value& b) const {
+    return tools::visit_2way(tools::overloaded{
+         []<typename T>(const T&lhs, const T&rhs){
+             auto cmp = lhs <=> rhs;
+             return cmp == std::partial_ordering::unordered ? std::strong_ordering::less : std::strong_ordering::greater;
+         },
+       []<typename T, typename U>(const T&, const U&){
+           return std::strong_ordering::less;
+       },
+      []<typename T>(const T&, const std::string&){
+          return std::strong_ordering::less;
+      },
+      []<typename T>(const std::string&, const T&){
+          return std::strong_ordering::less;
+      },
+       [](const std::string& lhs, const std::string& rhs){
+          return std::strcmp(lhs.c_str(), rhs.c_str()) <=> 0;
+       }
+    }, _value, b._value);
 }
 
-bool Value::operator==(const char* value) const {
-    return is<std::string>() ? get<std::string>().compare(value) == 0 : false;
+bool Value::operator==(char const* b) const {
+    return std::visit(tools::overloaded{
+       []<typename T>(const T&){
+           return false;
+       },
+       [b](const std::string& lhs){
+          return std::strcmp(lhs.c_str(), b) == 0;
+       }
+    }, _value);
+}
+std::weak_ordering Value::operator<=>(const char* b) const {
+    return std::visit(tools::overloaded{
+       []<typename T>(const T&){
+          return std::strong_ordering::less;
+       },
+       [b](const std::string& lhs){
+          return std::strcmp(lhs.c_str(), b) <=> 0;
+       }
+    }, _value);
 }
 
-template <typename T>
-bool Value::operator!=(const T& value) const {
-    return is<T>() ? get<T>() != value : true;
-}
+//template <typename T>
+//bool Value::operator==(const T& val) const {
+//    if constexpr (std::same_as<T, Variant>)
+//        return val.template get<Value>() == *this;
+//    else return is<T>() ? get<T>() == val : false;
+//}
 
-bool Value::operator!=(const Value& value) const {
-    return hash() != value.hash();
-}
+//bool Value::operator==(const Value& value) const {
+//    return hash() == value.hash();
+//}
 
-bool Value::operator!=(const char* value) const {
-    return is<std::string>() ? get<std::string>().compare(value) != 0 : true;
-}
+//bool Value::operator==(const char* value) const {
+//    return is<std::string>() ? get<std::string>().compare(value) == 0 : false;
+//}
+
+//template <typename T>
+//bool Value::operator!=(const T& value) const {
+//    return is<T>() ? get<T>() != value : true;
+//}
+
+//bool Value::operator!=(const Value& value) const {
+//    return hash() != value.hash();
+//}
+
+//bool Value::operator!=(const char* value) const {
+//    return is<std::string>() ? get<std::string>().compare(value) != 0 : true;
+//}
 
 
 // in/decrement operators
@@ -186,41 +244,41 @@ size_t Value::hash() const {
     return std::hash<value_t>{}(_value);
 }
 
-bool Value::operator<(const Value& other) const {
-    return visit([&other]<typename InputT>(InputT&&value) -> bool {
-         using T = std::decay_t<InputT>;
-        if constexpr (std::same_as<T, None>) {
-            return true;
-        } else return value < other.get<std::decay_t<T>>();
-    });
-}
+//bool Value::operator<(const Value& other) const {
+//    return visit([&other]<typename InputT>(InputT&&value) -> bool {
+//         using T = std::decay_t<InputT>;
+//        if constexpr (std::same_as<T, None>) {
+//            return true;
+//        } else return value < other.get<std::decay_t<T>>();
+//    });
+//}
 
-bool Value::operator>(const Value& other) const {
-    return visit([&other]<typename InputT>(InputT&&value) -> bool {
-         using T = std::decay_t<InputT>;
-        if constexpr (std::same_as<T, None>) {
-            return false;
-        } else return value > other.get<std::decay_t<T>>();
-    });
-}
+//bool Value::operator>(const Value& other) const {
+//    return visit([&other]<typename InputT>(InputT&&value) -> bool {
+//         using T = std::decay_t<InputT>;
+//        if constexpr (std::same_as<T, None>) {
+//            return false;
+//        } else return value > other.get<std::decay_t<T>>();
+//    });
+//}
 
-bool Value::operator<=(const Value& other) const {
-    return visit([&other]<typename InputT>(InputT&&value) -> bool {
-         using T = std::decay_t<InputT>;
-        if constexpr (std::same_as<T, None>) {
-            return true;
-        } else return value <= other.get<std::decay_t<T>>();
-    });
-}
+//bool Value::operator<=(const Value& other) const {
+//    return visit([&other]<typename InputT>(InputT&&value) -> bool {
+//         using T = std::decay_t<InputT>;
+//        if constexpr (std::same_as<T, None>) {
+//            return true;
+//        } else return value <= other.get<std::decay_t<T>>();
+//    });
+//}
 
-bool Value::operator>=(const Value& other) const {
-    return visit([&other]<typename InputT>(InputT&&value) -> bool {
-        using T = std::decay_t<InputT>;
-        if constexpr (std::same_as<T, None>) {
-            return false;
-        } else return value >= other.get<std::decay_t<T>>();
-    });
-}
+//bool Value::operator>=(const Value& other) const {
+//    return visit([&other]<typename InputT>(InputT&&value) -> bool {
+//        using T = std::decay_t<InputT>;
+//        if constexpr (std::same_as<T, None>) {
+//            return false;
+//        } else return value >= other.get<std::decay_t<T>>();
+//    });
+//}
 
 //std::weak_ordering Value::operator<=>(const Value& other) const {
 //    auto cmp = visit([&other]<typename InputT>(InputT&&value) {
