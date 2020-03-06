@@ -1,7 +1,12 @@
 //#include <xdev/xdev-variant.hpp>
 #include <xdev/xdev-tools.hpp>
 #include <fmt/format.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #include <ctti/nameof.hpp>
+#pragma GCC diagnostic pop
 
 #include <type_traits>
 #include <concepts>
@@ -39,19 +44,19 @@ Value::Value(Value&&other) noexcept: _value(std::move(other._value)) { other._va
 Value& Value::operator=(Value&&other) noexcept { _value = std::move(other._value); other._value = None{}; return *this; }
 
 template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
 Value::Value(const T&value): _value(value) {}
 
 template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
 Value& Value::operator=(const T&value) { _value = value; return *this; }
 
 template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
 Value::Value(T&&value): _value(std::forward<T>(value)) { }
 
 template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
 Value& Value::operator=(T&&value) { _value = std::forward<T>(value); return *this; }
 
 Value::Value(const char* value) noexcept: _value(std::string(value)) {}
@@ -73,6 +78,7 @@ Value& Value::operator!() {
            value = !value;
        }
     }, _value);
+    return *this;
 }
 
 bool Value::operator==(const Value& b) const {
@@ -109,7 +115,7 @@ std::weak_ordering Value::operator<=>(const Value& b) const {
           return std::strong_ordering::less;
       },
       []<typename T>(const std::string&, const T&){
-          return std::strong_ordering::less;
+          return std::strong_ordering::greater;
       },
        [](const std::string& lhs, const std::string& rhs){
           return std::strcmp(lhs.c_str(), rhs.c_str()) <=> 0;

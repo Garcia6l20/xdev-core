@@ -51,7 +51,7 @@ struct Function: std::function<Variant(Array)> {
     ResultT apply(const Array& args);
 
     auto operator<=>(const Function&) const = default;
-    inline bool operator ==(const Function&) const;
+    bool operator ==(const Function&) const = default;
 };
 
 }

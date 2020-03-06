@@ -12,7 +12,7 @@ List& List::operator=(List&&other) { _value = std::move(other._value); return *t
 List::List(const List&other): _value(other._value) {}
 List& List::operator=(const List&other) { _value = other._value; return *this; }
 
-List::List(std::initializer_list<Variant> value): _value(value) {}
+List::List(const ListInitList& value): _value(value) {}
 
 template <typename...Ts>
     requires (not one_of<std::decay_t<Ts>, Value, Variant, List> && ...)
@@ -27,6 +27,7 @@ Variant& List::back() { return _value.back(); }
 List::const_iterator List::begin() const { return _value.cbegin(); }
 List::const_iterator List::end() const { return _value.cend(); }
 size_t List::size() const { return _value.size(); }
+
 Variant& List::operator[](size_t index) {
     if (_value.size() <= index) {
         throw std::out_of_range("querying index greater than size");

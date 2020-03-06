@@ -20,6 +20,8 @@ struct None: std::monostate {
 
 class Variant;
 class List;
+class Dict;
+class Function;
 
 class Value {
 public:
@@ -37,19 +39,19 @@ public:
     inline Value& operator=(Value&&other) noexcept;
 
     template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
     inline Value(const T&value);
 
     template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
     inline Value& operator=(const T&value);
 
     template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
     inline Value(T&&value);
 
     template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
     inline Value& operator=(T&&value);
 
 

@@ -6,9 +6,13 @@
 #include <boost/type_index.hpp>
 
 #include <fmt/format.h>
-#include <gsl/gsl-lite.hpp>
 
 #include <algorithm>
+
+#include <xdev/xdev-variant-value.inl>
+#include <xdev/xdev-variant-array.inl>
+#include <xdev/xdev-variant-dict.inl>
+//#include <xdev/xdev-variant-function.inl>
 
 namespace std {
 
@@ -57,7 +61,7 @@ bool Variant::operator==(const Variant& b) const {
         (const Value& lhs, const T& rhs){
             return lhs == rhs;
         },
-        []<typename T, typename U>(const T&lhs, const U&rhs){
+        []<typename T, typename U>(const T&, const U&){
             return false;
         }
     }, _value, b._value);
@@ -65,29 +69,44 @@ bool Variant::operator==(const Variant& b) const {
 
 std::weak_ordering Variant::operator<=>(const Variant& b) const {
     return tools::visit_2way(tools::overloaded{
-        []<typename T, typename U>(const T&lhs, const U&rhs){
-            return lhs <=> rhs;
-        },
-        []<typename T>(const T&, const std::string&){
-            return std::weak_ordering::less;
-        },
-        []<typename T>(const std::string&, const T&){
-            return std::weak_ordering::less;
-        },
-        [](const std::string& lhs, const std::string& rhs){
-            return std::strcmp(lhs.c_str(), rhs.c_str()) <=> 0;
-        },
+        // List stuff
         [](const List&lhs, const List&rhs){
             if (lhs == rhs) {
                 return std::weak_ordering::equivalent;
             }
             return std::weak_ordering::less;
         },
-        []<typename T>(const List&, const T&){
+        []<typename T>(const List&, const T&) requires (not std::same_as<T, Dict>) {
             return std::weak_ordering::less;
         },
-        []<typename T>(const T&, const List&){
+        []<typename T>(const T&, const List&) requires (not std::same_as<T, Dict>) {
+            return std::weak_ordering::greater;
+        },
+        // Dict stuff
+        [](const Dict&lhs, const Dict&rhs){
+            if (lhs == rhs) {
+                return std::weak_ordering::equivalent;
+            }
             return std::weak_ordering::less;
+        },
+        []<typename T>(const Dict&, const T&){
+            return std::weak_ordering::less;
+        },
+        []<typename T>(const T&, const Dict&){
+            return std::weak_ordering::greater;
+        },
+        // Value stuff
+        []<typename T, typename U>(const T&lhs, const U&rhs){
+            return lhs <=> rhs;
+        },
+        []<typename T>(const std::string&, const T&){
+            return std::weak_ordering::less;
+        },
+        []<typename T>(const T&, const std::string&){
+            return std::weak_ordering::greater;
+        },
+        [](const std::string& lhs, const std::string& rhs){
+            return std::strcmp(lhs.c_str(), rhs.c_str()) <=> 0;
         },
     }, _value, b._value);
 }
@@ -116,14 +135,14 @@ std::weak_ordering Variant::operator<=>(const char* b) const {
 
 template<typename T>
 T& Variant::get() {
-    if constexpr (is_one_of_v<T, Value, List>)//, Dict, Function, ObjectPtr>)
+    if constexpr (is_one_of_v<T, Value, List, Dict>)//, Function, ObjectPtr>)
         return std::get<T>(_value);
     else return std::get<Value>(_value).get<T>();
 }
 
 template<typename T>
 const T& Variant::get() const {
-    if constexpr (is_one_of_v<T, Value, List>)//, Dict, Function, ObjectPtr>)
+    if constexpr (is_one_of_v<T, Value, List, Dict>)//, Function, ObjectPtr>)
         return std::get<T>(_value);
     else return std::get<Value>(_value).get<T>();
 }
@@ -189,7 +208,7 @@ decltype(auto) Variant::visit(Visitor&&visitor) const {
 std::string Variant::toString() const {
     return visit<false>([](auto&&value) -> std::string {
         using T = std::decay_t<decltype(value)>;
-        if constexpr (is_one_of<T, Value, List>/*, Dict>*/::value)
+        if constexpr (is_one_of<T, Value, List, Dict>::value)
             return value.toString();
         //else if constexpr (is_same_v<T, ObjectPtr>)
         //    return fmt::format("{}[0x{}]", value->objectName(), static_cast<void*>(value.get()));
@@ -225,7 +244,6 @@ Variant::Variant(T&&value): _value{Value{std::forward<T>(value)}} {
 
 
 Variant& Variant::operator!() {
-    gsl_Expects(is<Value>());
     get<Value>() = !get<Value>();
     return *this;
 }
@@ -233,39 +251,66 @@ Variant& Variant::operator!() {
 // in/decrement operators
 
 Value& Variant::operator++() {
-    gsl_Expects(is<Value>());
     return get<Value>().operator++();
 }
 
 Value Variant::operator++(int) {
-    gsl_Expects(is<Value>());
     return get<Value>().operator++(0);
 }
 
 Value& Variant::operator--() {
-    gsl_Expects(is<Value>());
     return get<Value>().operator--();
 }
 
 Value Variant::operator--(int) {
-    gsl_Expects(is<Value>());
     return get<Value>().operator--(0);
 }
+
+// -----------------------------------------
+// Dict API
+//
+
+Variant::Variant(Dict&&value): _value{std::move(value)} {}
+
+Variant& Variant::update(Dict&&dct) { get<Dict>().update(std::forward<Dict>(dct)); return *this; }
 
 // -----------------------------------------
 // List API
 //
 
-Variant::Variant(List&&value): _value(std::move(value)) {}
+Variant::Variant(List&&value): _value{std::move(value)} {}
 
-Variant& Variant::operator[](size_t index) {
-    gsl_Expects(is<List>());
-    return get<List>()[index];
+
+// -----------------------------------------
+// Dict/List API
+//
+
+Variant& Variant::operator[](const Value& index) {
+    return std::visit(tools::overloaded{
+        [&index](List& lst) -> Variant& {
+            return lst[index.get<int>()];
+        },
+        [&index](Dict& dct) -> Variant& {
+            return dct[index];
+        },
+        [](auto&) -> Variant& {
+            throw std::bad_cast();
+        }
+    }, _value);
 }
 
-const Variant& Variant::operator[](size_t index) const {
-    gsl_Expects(is<List>());
-    return get<List>()[index];
+const Variant& Variant::operator[](const Value& index) const {
+    return std::visit(tools::overloaded{
+        [&index](const List& lst) -> const Variant& {
+            return lst[index.get<int>()];
+        },
+        [&index](const Dict& dct) -> const Variant& {
+            return dct.at(index);
+        },
+        [](const auto&) -> const Variant& {
+            throw std::bad_cast();
+        }
+    }, _value);
 }
 
 } // xdev::variant

@@ -23,8 +23,8 @@
 
 #include <xdev/xdev-variant-value.hpp>
 #include <xdev/xdev-variant-array.hpp>
-//#include <xdev/xdev-variant-dict.hpp>
-//#include <xdev/xdev-variant-function.hpp>
+#include <xdev/xdev-variant-dict.hpp>
+#include <xdev/xdev-variant-function.hpp>
 
 namespace xdev {
 
@@ -32,9 +32,6 @@ class XObjectBase;
 
 namespace variant {
 
-//class Dict;
-class List;
-class Variant;
 //using ObjectPtr = std::shared_ptr<XObjectBase>;
 
 class Variant {
@@ -103,13 +100,29 @@ public:
      * @{
      */
 
-    inline Variant(List&&value);
-    inline Variant& operator[](size_t index);
-    inline const Variant& operator[](size_t index) const;
+    inline Variant(List&&dct);
 
     /** @} */
 
+    /**
+     * @defgroup variant_dict_api XVariant dict API
+     * @{
+     */
 
+    inline Variant(Dict&&dct);
+    inline Variant& update(Dict&&dct);
+
+    /** @} */
+
+    /**
+     * @ingroup variant_dict_api variant_list_api
+     * @{
+     **/
+
+    inline Variant& operator[](const Value& index);
+    inline const Variant& operator[](const Value& index) const;
+
+    /** @} */
 
     /**
      * @defgroup variant_value_api XVariant value API
@@ -146,7 +159,7 @@ public:
         return "XVariant";
     }
 private:
-    using value_t = std::variant<Value, List>;//, Dict, Function, ObjectPtr>;
+    using value_t = std::variant<Value, List, Dict>;//, Function, ObjectPtr>;
     value_t _value;
 };
 
@@ -155,14 +168,12 @@ private:
 using XNone     = variant::None;
 using XValue    = variant::Value;
 using XList    = variant::List;
-//using XDict     = variant::Dict;
+using XDict     = variant::Dict;
 //using XFunction = variant::Function;
 using XVariant  = variant::Variant;
 
 } // xdev
 
-#include <xdev/xdev-variant-value.inl>
-#include <xdev/xdev-variant-array.inl>
-//#include <xdev/xdev-variant-dict.inl>
-//#include <xdev/xdev-variant-function.inl>
+#define xvar xdev::XVariant
+
 #include <xdev/xdev-variant.inl>

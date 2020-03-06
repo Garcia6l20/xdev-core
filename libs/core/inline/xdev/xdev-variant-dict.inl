@@ -4,14 +4,14 @@
 
 namespace std {
 
-template <>
-struct hash<xdev::variant::Dict>
-{
-    std::size_t operator()(const xdev::variant::Dict& var) const
-    {
-        return var.hash();
-    }
-};
+//template <>
+//struct hash<xdev::variant::Dict>
+//{
+//    std::size_t operator()(const xdev::variant::Dict& var) const
+//    {
+//        return var.hash();
+//    }
+//};
 
 }
 
@@ -19,7 +19,7 @@ namespace xdev {
 namespace variant {
 
 Dict::Dict(): _value() {}
-Dict::Dict(const Dict::init_list_t& value): _value(value) {}
+Dict::Dict(const DictInitList &value): _value(value) {}
 Dict::Dict(Dict&&other): _value(std::move(other._value)) {}
 Dict& Dict::operator=(Dict&&other) { _value = std::move(other._value); return *this; }
 Dict::Dict(const Dict&other): _value(other._value) {}
@@ -32,11 +32,11 @@ Dict::const_iterator Dict::begin() const { return _value.cbegin(); }
 Dict::const_iterator Dict::end() const { return _value.cend(); }
 size_t Dict::size() const { return _value.size(); }
 
-size_t Dict::hash() const {
-    return std::accumulate(begin(), end(), _value.size(), [](size_t seed, std::pair<Variant, Variant> ii){
-        return seed ^ ((ii.first.hash() ^ ii.second.hash()) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
-    });
-}
+//size_t Dict::hash() const {
+//    return std::accumulate(begin(), end(), _value.size(), [](size_t seed, std::pair<Variant, Variant> ii){
+//        return seed ^ ((ii.first.hash() ^ ii.second.hash()) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+//    });
+//}
 
 std::string Dict::toString() const {
     std::string res = "{";
@@ -51,18 +51,24 @@ std::string Dict::toString() const {
     return res;
 }
 
-Variant& Dict::operator[](Variant&& key) {
-//    auto item = _value.find(key);
-//    if (item == end())
-//        return _value.insert_or_assign(std::forward<Variant>(key), Variant()).first->second;
-//    else return item->second;
-    throw std::runtime_error("not implemented");
+Variant& Dict::operator[](const Value& key) {
+    auto item = _value.find(key);
+    if (item == end())
+        return _value.insert_or_assign(key, Variant()).first->second;
+    else return item->second;
+}
+
+inline Dict& Dict::update(Dict&& other) {
+    for (auto&& [k, v]: other._value) {
+        _value.emplace(std::move(k), std::move(v));
+    }
+    return *this;
 }
 
 template <typename...RestT>
-Variant& Dict::at(Variant&& key, RestT&&...rest) {
+Variant& Dict::at(Value&& key, RestT&&...rest) {
     try {
-        auto& v = _value.at(std::forward<Variant>(key));
+        auto& v = _value.at(std::forward<Value>(key));
         if constexpr (sizeof...(rest) > 0) {
             return v.get<Dict>().at(std::forward<Variant>(rest)...);
         } else {
@@ -77,7 +83,7 @@ Variant& Dict::at(Variant&& key, RestT&&...rest) {
 }
 
 template <typename...RestT>
-Variant& Dict::at(const Variant& key, const RestT&...rest) {
+Variant& Dict::at(const Value &key, const RestT&...rest) {
     try {
         auto& v = _value.at(key);
         if constexpr (sizeof...(rest) > 0) {
@@ -94,7 +100,7 @@ Variant& Dict::at(const Variant& key, const RestT&...rest) {
 }
 
 template <typename...RestT>
-const Variant& Dict::at(const Variant &key, const RestT&...rest) const {
+const Variant& Dict::at(const Value &key, const RestT&...rest) const {
     try {
         auto& v = _value.at(key);
         if constexpr (sizeof...(rest) > 0) {
@@ -111,37 +117,35 @@ const Variant& Dict::at(const Variant &key, const RestT&...rest) const {
 }
 
 Variant& Dict::dotAt(const std::string& key) {
-    throw std::runtime_error("not implemented");
-//    auto skey = tools::split(key, '.');
-//    Dict* d = this;
-//    auto it = skey.begin();
-//    auto end = skey.end();
-//    --end;
-//    for(; it != end; ++it) {
-//        try {
-//            d = &d->_value.at(*it).get<Dict>();
-//        } catch (std::bad_variant_access&) {
-//            throw std::out_of_range("Cannot resolve dot notation");
-//        }
-//    }
-//    return d->_value.at(*it);
+    auto skey = tools::split(key, '.');
+    Dict* d = this;
+    auto it = skey.begin();
+    auto end = skey.end();
+    --end;
+    for(; it != end; ++it) {
+        try {
+            d = &d->_value.at(Value{*it}).get<Dict>();
+        } catch (std::bad_variant_access&) {
+            throw std::out_of_range("Cannot resolve dot notation");
+        }
+    }
+    return d->_value.at(*it);
 }
 
 const Variant& Dict::dotAt(const std::string& key) const {
-    throw std::runtime_error("not implemented");
-//    auto skey = tools::split(key, '.');
-//    const Dict* d = this;
-//    auto it = skey.begin();
-//    auto end = skey.end();
-//    --end;
-//    for(; it != end; ++it) {
-//        try {
-//            d = &d->_value.at(*it).get<Dict>();
-//        } catch (std::bad_variant_access&) {
-//            throw std::out_of_range("Cannot resolve dot notation");
-//        }
-//    }
-//    return d->_value.at(*it);
+    auto skey = tools::split(key, '.');
+    const Dict* d = this;
+    auto it = skey.begin();
+    auto end = skey.end();
+    --end;
+    for(; it != end; ++it) {
+        try {
+            d = &d->_value.at(*it).get<Dict>();
+        } catch (std::bad_variant_access&) {
+            throw std::out_of_range("Cannot resolve dot notation");
+        }
+    }
+    return d->_value.at(*it);
 }
 
 }

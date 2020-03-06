@@ -11,6 +11,7 @@
 namespace xdev::variant {
 
 class Variant;
+using ListInitList = std::initializer_list<Variant>;
 
 class List {
 public:
@@ -27,7 +28,7 @@ public:
     requires (not one_of<std::decay_t<Ts>, Value, Variant, List> && ...)
     inline List(Ts&&...args);
 
-    inline List(std::initializer_list<Variant> value);
+    inline List(const ListInitList& value);
 
     using iterator = list_t::iterator;
     using const_iterator = list_t::const_iterator;
