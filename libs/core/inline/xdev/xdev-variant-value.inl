@@ -1,5 +1,7 @@
-#include <xdev/xdev-variant.hpp>
+//#include <xdev/xdev-variant.hpp>
 #include <xdev/xdev-tools.hpp>
+#include <fmt/format.h>
+#include <ctti/nameof.hpp>
 
 #include <type_traits>
 #include <concepts>
@@ -33,28 +35,45 @@ Value::Value() noexcept: _value(None{}) {}
 
 Value::Value(const Value&other) noexcept: _value(other._value) {}
 Value& Value::operator=(const Value&other) noexcept { _value = other._value; return *this; }
-Value::Value(Value&&other) noexcept: _value(std::move(other._value)) { other._value = XNone{}; }
-Value& Value::operator=(Value&&other) noexcept { _value = std::move(other._value); other._value = XNone{}; return *this; }
+Value::Value(Value&&other) noexcept: _value(std::move(other._value)) { other._value = None{}; }
+Value& Value::operator=(Value&&other) noexcept { _value = std::move(other._value); other._value = None{}; return *this; }
 
 template<typename T>
-    requires (!std::same_as<Value, std::decay_t<T>>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List>)
 Value::Value(const T&value): _value(value) {}
 
 template<typename T>
-    requires (!std::same_as<Value, std::decay_t<T>>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List>)
 Value& Value::operator=(const T&value) { _value = value; return *this; }
 
 template<typename T>
-    requires (!std::same_as<Value, std::decay_t<T>>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List>)
 Value::Value(T&&value): _value(std::forward<T>(value)) { }
 
 template<typename T>
-    requires (!std::same_as<Value, std::decay_t<T>>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List>)
 Value& Value::operator=(T&&value) { _value = std::forward<T>(value); return *this; }
 
-Value::Value(const char* value): _value(std::string(value)) {}
+Value::Value(const char* value) noexcept: _value(std::string(value)) {}
 
-Value& Value::operator=(const char* value) { _value = std::string(value); return *this; }
+Value& Value::operator=(const char* value) noexcept { _value = std::string(value); return *this; }
+
+Value& Value::operator!() {
+    std::visit(tools::overloaded{
+       [this]<typename TInput>(TInput&) {
+           throw std::runtime_error(fmt::format("{} values cannot be negated", ctti::nameof<TInput>().cppstring()));
+       },
+       [](bool& value) {
+           value = !value;
+       },
+       [](int& value) {
+           value = !value;
+       },
+       [](double& value) {
+           value = !value;
+       }
+    }, _value);
+}
 
 bool Value::operator==(const Value& b) const {
     return tools::visit_2way(tools::overloaded{
@@ -75,7 +94,13 @@ std::weak_ordering Value::operator<=>(const Value& b) const {
     return tools::visit_2way(tools::overloaded{
          []<typename T>(const T&lhs, const T&rhs){
              auto cmp = lhs <=> rhs;
-             return cmp == std::partial_ordering::unordered ? std::strong_ordering::less : std::strong_ordering::greater;
+            if (cmp == std::partial_ordering::unordered)
+                return std::strong_ordering::less;
+            else if (cmp == std::partial_ordering::greater)
+                return std::strong_ordering::greater;
+            else if (cmp == std::partial_ordering::less)
+                return std::strong_ordering::less;
+            else return std::strong_ordering::equal;
          },
        []<typename T, typename U>(const T&, const U&){
            return std::strong_ordering::less;
@@ -107,6 +132,13 @@ std::weak_ordering Value::operator<=>(const char* b) const {
        []<typename T>(const T&){
           return std::strong_ordering::less;
        },
+        // gcc bug ? 0-compared values interpreted as char*
+      [b](const bool& val){
+         return val <=> static_cast<const bool>(b);
+      },
+      [b](const int& val){
+         return val <=> reinterpret_cast<size_t>(b);
+      },
        [b](const std::string& lhs){
           return std::strcmp(lhs.c_str(), b) <=> 0;
        }

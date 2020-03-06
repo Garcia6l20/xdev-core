@@ -12,23 +12,25 @@ namespace xdev::variant {
 
 class Variant;
 
-class Array {
+class List {
 public:
-    using array_t = std::list<Variant>;
+    using list_t = std::list<Variant>;
 
-    inline Array();
+    inline List();
 
-    inline Array(Array&&other);
-    inline Array& operator=(Array&&other);
-    inline Array(const Array&other);
-    inline Array& operator=(const Array&other);
+    inline List(List&&other);
+    inline List& operator=(List&&other);
+    inline List(const List&other);
+    inline List& operator=(const List&other);
 
-    inline Array(const std::initializer_list<Variant>&value);
+    template <typename...Ts>
+    requires (not one_of<std::decay_t<Ts>, Value, Variant, List> && ...)
+    inline List(Ts&&...args);
 
-    inline size_t hash() const;
+    inline List(std::initializer_list<Variant> value);
 
-    using iterator = array_t::iterator;
-    using const_iterator = array_t::const_iterator;
+    using iterator = list_t::iterator;
+    using const_iterator = list_t::const_iterator;
     inline iterator begin();
     inline iterator end();
     inline Variant& front();
@@ -59,26 +61,26 @@ public:
     template <Direction direction = Back, typename First, typename...Rest>
     inline void push(First&& first, Rest&&...var);
 
-    inline Array::iterator find(Variant&&value);
+    inline List::iterator find(Variant&&value);
 
     template <typename IteratorT>
     auto erase(IteratorT&& iter) { return _value.erase(xfwd(iter)); }
 
-    friend inline Array& operator>>(Variant&&var, Array& array);
-    friend inline Array& operator-(size_t count, Array& array);
+    friend inline List& operator>>(Variant&&var, List&);
+    friend inline List& operator-(size_t count, List&);
 
-    friend inline Array& operator<<(Array& array, Variant&&var);
-    friend inline Array& operator-(Array& array, size_t count);
+    friend inline List& operator<<(List&, Variant&&var);
+    friend inline List& operator-(List&, size_t count);
 
-    auto operator<=>(const Array&) const = default;
+    friend inline bool operator==(const List&, const List&);
 
     static constexpr const char* ctti_nameof()
     {
-        return "XArray";
+        return "XList";
     }
 
 private:
-    array_t _value;
+    list_t _value;
 };
 
 }

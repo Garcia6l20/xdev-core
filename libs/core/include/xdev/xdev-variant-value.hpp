@@ -18,10 +18,17 @@ struct None: std::monostate {
     auto operator==(const None&) const {return false;};
 };
 
+class Variant;
+class List;
+
 class Value {
 public:
 
     inline Value() noexcept;
+
+
+    inline Value(const char* value) noexcept;
+    inline Value& operator=(const char* value) noexcept;
 
     inline Value(const Value&other) noexcept;
     inline Value& operator=(const Value&other) noexcept;
@@ -30,23 +37,24 @@ public:
     inline Value& operator=(Value&&other) noexcept;
 
     template<typename T>
-        requires (!std::same_as<Value, std::decay_t<T>>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List>)
     inline Value(const T&value);
 
     template<typename T>
-        requires (!std::same_as<Value, std::decay_t<T>>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List>)
     inline Value& operator=(const T&value);
 
     template<typename T>
-        requires (!std::same_as<Value, std::decay_t<T>>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List>)
     inline Value(T&&value);
 
     template<typename T>
-        requires (!std::same_as<Value, std::decay_t<T>>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List>)
     inline Value& operator=(T&&value);
 
-    inline Value(const char* value);
-    inline Value& operator=(const char* value);
+
+
+    inline Value& operator!();
 
 //     std::weak_ordering operator<=>(const Value&) const;
 

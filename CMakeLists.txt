@@ -26,6 +26,7 @@ conan_requires(
     "lyra/1.3.0"
     "spdlog/1.5.0"
     "pybind11/2.3.0@conan/stable"
+    "gsl-lite/0.36.0"
   OPTIONS
     "boost:header_only=True"
   BUILD outdated

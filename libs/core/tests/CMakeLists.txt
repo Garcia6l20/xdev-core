@@ -1,4 +1,4 @@
-link_libraries(XDev::core)
+#link_libraries(XDev::core)
 
 melt_library(xdev-test-catch2-main
   SOURCES catch2-main.cpp

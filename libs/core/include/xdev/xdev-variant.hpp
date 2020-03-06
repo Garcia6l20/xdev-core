@@ -23,8 +23,8 @@
 
 #include <xdev/xdev-variant-value.hpp>
 #include <xdev/xdev-variant-array.hpp>
-#include <xdev/xdev-variant-dict.hpp>
-#include <xdev/xdev-variant-function.hpp>
+//#include <xdev/xdev-variant-dict.hpp>
+//#include <xdev/xdev-variant-function.hpp>
 
 namespace xdev {
 
@@ -32,60 +32,24 @@ class XObjectBase;
 
 namespace variant {
 
-class Dict;
-class Array;
+//class Dict;
+class List;
 class Variant;
-using ObjectPtr = std::shared_ptr<XObjectBase>;
+//using ObjectPtr = std::shared_ptr<XObjectBase>;
 
 class Variant {
 public:
     inline Variant();
-    inline Variant(Value&&value);
 
     inline Variant(Variant&&other);
     inline Variant& operator=(Variant&&other);
+
     inline Variant(const Variant&other);
     inline Variant& operator=(const Variant&other);
 
-    template<typename T,
-             typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, Variant> /*&&
-                                         !std::is_convertible_v<std::decay_t<T>, ObjectPtr>*/
-                                         >
-             >
-    inline Variant(const T&value);
-
-    template<typename T,
-             typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, Variant> /*&&
-                                         !std::is_convertible_v<std::decay_t<T>, ObjectPtr>*/
-                                         >
-             >
-    inline Variant& operator=(const T&value);
-
-    template<typename T,
-             typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, Variant> /*&&
-                                         !std::is_convertible_v<std::decay_t<T>, ObjectPtr>*/
-                                         >
-             >
-    inline Variant(T&&value);
-
-    template<typename T,
-             typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, Variant> /*&&
-                                         !std::is_convertible_v<std::decay_t<T>, ObjectPtr>*/
-                                         >
-             >
-    inline Variant& operator=(T&&value);
-
-    auto operator<=>(const Variant&) const = default;
-    bool operator==(const Variant&) const = default;
-
-//    inline bool operator==(const Variant& other) const;
-//    inline bool operator!=(const Variant& other) const;
-
-//    inline bool operator<(const Variant& other) const;
-//    inline bool operator>(const Variant& other) const;
-
-//    template <typename T>
-//    friend bool operator<(const T& lhs, const Variant&rhs);
+    inline bool operator==(const Variant& b) const;
+    inline std::weak_ordering operator<=>(const Variant& b) const;
+    inline std::weak_ordering operator<=>(const char* b) const;
 
     /**
      * @brief Get value as @c T.
@@ -99,17 +63,17 @@ public:
     template<typename T>
     const T& get() const;
 
-    /**
-     * @brief Get value as @c XObjectBase subclass.
-     */
-    template<XObjectDerived ObjectT>
-    typename ObjectT::ptr get();
+//    /**
+//     * @brief Get value as @c XObjectBase subclass.
+//     */
+//    template<XObjectDerived ObjectT>
+//    typename ObjectT::ptr get();
 
-    /**
-     * @brief Get value as @c XObjectBase subclass (const).
-     */
-    template<XObjectDerived ObjectT>
-    typename ObjectT::ptr get() const;
+//    /**
+//     * @brief Get value as @c XObjectBase subclass (const).
+//     */
+//    template<XObjectDerived ObjectT>
+//    typename ObjectT::ptr get() const;
 
     struct ConvertError : public std::runtime_error { using std::runtime_error::runtime_error; };
 
@@ -119,7 +83,7 @@ public:
     template<typename T>
     T convert() const;
 
-    inline size_t hash() const;
+//    inline size_t hash() const;
 
     template <bool inner = true, typename Visitor>
     decltype(auto) visit(Visitor&&visitor);
@@ -134,13 +98,35 @@ public:
 
     inline bool empty() const;
 
-    static XDEV_CORE_EXPORT Variant FromJSON(const std::string&);
-    static XDEV_CORE_EXPORT Variant FromYAML(const std::string&);
+    /**
+     * @defgroup variant_list_api XVariant list API
+     * @{
+     */
 
-    static constexpr const char* ctti_nameof()
-    {
-        return "XVariant";
-    }
+    inline Variant(List&&value);
+    inline Variant& operator[](size_t index);
+    inline const Variant& operator[](size_t index) const;
+
+    /** @} */
+
+
+
+    /**
+     * @defgroup variant_value_api XVariant value API
+     * @{
+     */
+
+    inline Variant(const char*);
+    inline Variant(Value&&);
+    //inline Variant& operator=(Value&& value);
+
+    template <typename T>
+    requires std::convertible_to<T, Value>
+    Variant(T&&);
+
+    inline Variant& operator!();
+
+    inline bool operator==(char const* b) const;
 
     // in/decrement operators
 
@@ -150,8 +136,17 @@ public:
     inline Value& operator--();
     inline Value operator--(int);
 
+    /** @} */
+
+    static XDEV_CORE_EXPORT Variant FromJSON(const std::string&);
+    static XDEV_CORE_EXPORT Variant FromYAML(const std::string&);
+
+    static constexpr const char* ctti_nameof()
+    {
+        return "XVariant";
+    }
 private:
-    using value_t = std::variant<Value, Array, Dict, Function, ObjectPtr>;
+    using value_t = std::variant<Value, List>;//, Dict, Function, ObjectPtr>;
     value_t _value;
 };
 
@@ -159,15 +154,15 @@ private:
 
 using XNone     = variant::None;
 using XValue    = variant::Value;
-using XArray    = variant::Array;
-using XDict     = variant::Dict;
-using XFunction = variant::Function;
+using XList    = variant::List;
+//using XDict     = variant::Dict;
+//using XFunction = variant::Function;
 using XVariant  = variant::Variant;
 
 } // xdev
 
 #include <xdev/xdev-variant-value.inl>
 #include <xdev/xdev-variant-array.inl>
-#include <xdev/xdev-variant-dict.inl>
-#include <xdev/xdev-variant-function.inl>
+//#include <xdev/xdev-variant-dict.inl>
+//#include <xdev/xdev-variant-function.inl>
 #include <xdev/xdev-variant.inl>

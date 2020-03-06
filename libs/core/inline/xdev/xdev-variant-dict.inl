@@ -52,10 +52,11 @@ std::string Dict::toString() const {
 }
 
 Variant& Dict::operator[](Variant&& key) {
-    auto item = _value.find(key);
-    if (item == end())
-        return _value.insert_or_assign(std::forward<Variant>(key), Variant()).first->second;
-    else return item->second;
+//    auto item = _value.find(key);
+//    if (item == end())
+//        return _value.insert_or_assign(std::forward<Variant>(key), Variant()).first->second;
+//    else return item->second;
+    throw std::runtime_error("not implemented");
 }
 
 template <typename...RestT>
@@ -110,35 +111,37 @@ const Variant& Dict::at(const Variant &key, const RestT&...rest) const {
 }
 
 Variant& Dict::dotAt(const std::string& key) {
-    auto skey = tools::split(key, '.');
-    Dict* d = this;
-    auto it = skey.begin();
-    auto end = skey.end();
-    --end;
-    for(; it != end; ++it) {
-        try {
-            d = &d->_value.at(*it).get<Dict>();
-        } catch (std::bad_variant_access&) {
-            throw std::out_of_range("Cannot resolve dot notation");
-        }
-    }
-    return d->_value.at(*it);
+    throw std::runtime_error("not implemented");
+//    auto skey = tools::split(key, '.');
+//    Dict* d = this;
+//    auto it = skey.begin();
+//    auto end = skey.end();
+//    --end;
+//    for(; it != end; ++it) {
+//        try {
+//            d = &d->_value.at(*it).get<Dict>();
+//        } catch (std::bad_variant_access&) {
+//            throw std::out_of_range("Cannot resolve dot notation");
+//        }
+//    }
+//    return d->_value.at(*it);
 }
 
 const Variant& Dict::dotAt(const std::string& key) const {
-    auto skey = tools::split(key, '.');
-    const Dict* d = this;
-    auto it = skey.begin();
-    auto end = skey.end();
-    --end;
-    for(; it != end; ++it) {
-        try {
-            d = &d->_value.at(*it).get<Dict>();
-        } catch (std::bad_variant_access&) {
-            throw std::out_of_range("Cannot resolve dot notation");
-        }
-    }
-    return d->_value.at(*it);
+    throw std::runtime_error("not implemented");
+//    auto skey = tools::split(key, '.');
+//    const Dict* d = this;
+//    auto it = skey.begin();
+//    auto end = skey.end();
+//    --end;
+//    for(; it != end; ++it) {
+//        try {
+//            d = &d->_value.at(*it).get<Dict>();
+//        } catch (std::bad_variant_access&) {
+//            throw std::out_of_range("Cannot resolve dot notation");
+//        }
+//    }
+//    return d->_value.at(*it);
 }
 
 }

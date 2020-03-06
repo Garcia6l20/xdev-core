@@ -1,74 +1,67 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev.hpp>
-#include <cstring>
+#include <xdev/xdev-variant.hpp>
 
+#include <cstring>
+#include <list>
+#include <algorithm>
+
+using namespace xdev::variant;
 using namespace xdev;
 
-
-struct Tester {
-    std::variant<int, std::string> _value;
-    //int data;
-    //auto operator<=>(const Tester& other) const = default;
-    bool operator==(const Tester& b) const {
-        return tools::visit_2way(tools::overloaded{
-           []<typename T>(const T& lhs, const T& rhs){
-               return lhs == rhs;
-           },
-           []<typename T, typename U>(const T&, const U&){
-               return false;
-           },
-           [](const std::string& lhs, const std::string& rhs){
-              return lhs.size() == rhs.size() &&
-                std::strcmp(lhs.c_str(), rhs.c_str()) == 0;
-           }
-        }, _value, b._value);
+SCENARIO("list types are accessible as normal lists", "[core.api.variant.v1.0]") {
+    GIVEN("A simple list") {
+        Variant val = {{1, 2, "3"}};
+        WHEN("elements are accesseed") {
+            auto v1 = val[0];
+            auto v2 = val[1];
+            auto v3 = val[2];
+            THEN("the resluts should be consistant") {
+                REQUIRE(v1 == 1);
+                REQUIRE(v2 == 2);
+                REQUIRE(v3 == "3");
+            }
+        }
     }
-    auto operator<=>(const Tester& b) const {
-        return tools::visit_2way(tools::overloaded{
-           []<typename T, typename U>(const T&lhs, const U&rhs){
-               return lhs <=> rhs;
-           },
-          []<typename T>(const T&, const std::string&){
-              return std::strong_ordering::less;
-          },
-          []<typename T>(const std::string&, const T&){
-              return std::strong_ordering::less;
-          },
-           [](const std::string& lhs, const std::string& rhs){
-              return std::strcmp(lhs.c_str(), rhs.c_str()) <=> 0;
-           }
-        }, _value, b._value);
-    }
+}
 
-    bool operator==(char const* b) const {
-        return std::visit(tools::overloaded{
-           []<typename T>(const T&){
-               return false;
-           },
-           [b](const std::string& lhs){
-              return std::strcmp(lhs.c_str(), b) == 0;
-           }
-        }, _value);
+SCENARIO("basic types are accessible as normal types", "[core.api.variant.v1.0]") {
+    GIVEN("An basic string value") {
+        Variant val = "42";
+        WHEN("the value is compared") {
+            THEN("the resluts should be consistant") {
+                REQUIRE(val == "42");
+            }
+        }
     }
-    auto operator<=>(const char* b) const {
-        return std::visit(tools::overloaded{
-           []<typename T>(const T&){
-              return std::strong_ordering::less;
-           },
-           [b](const std::string& lhs){
-              return std::strcmp(lhs.c_str(), b) <=> 0;
-           }
-        }, _value);
+    GIVEN("An basic integer value") {
+        Variant val = 42;
+        WHEN("the value is compared") {
+            THEN("the resluts should be consistant") {
+                REQUIRE(val <= 42);
+                REQUIRE(val > 41);
+                REQUIRE(val >= 42);
+                REQUIRE(val == 42);
+                REQUIRE(val < 43);
+            }
+        }
     }
-};
-
-SCENARIO("basic type are accessible as normal types", "[core.api.variant.v1.0]") {
-
-    Tester test{"hello"};
-    REQUIRE(test > Tester{"12"});
-//    Tester test{11};
-//    REQUIRE(test < Tester{12});
+    GIVEN("An basic bool value") {
+        Variant val = true;
+        WHEN("the value is compared") {
+            THEN("the resluts should be consistant") {
+                REQUIRE(val == true);
+                REQUIRE(val != false);
+            }
+        }
+        WHEN("the value is negated") {
+            val = !val;
+            THEN("the resluts should be consistant") {
+                REQUIRE(val == false);
+                REQUIRE(val != true);
+            }
+        }
+    }
 
     GIVEN("An integer variant") {
         XVariant var = 42;

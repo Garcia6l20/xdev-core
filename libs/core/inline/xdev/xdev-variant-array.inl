@@ -1,41 +1,33 @@
-#include <xdev/xdev-variant.hpp>
+//#include <xdev/xdev-variant.hpp>
 #include <xdev/xdev-tools.hpp>
 
 #include <numeric>
 
-namespace std {
+namespace xdev::variant {
 
-template <>
-struct hash<xdev::variant::Array>
-{
-    std::size_t operator()(const xdev::variant::Array& var) const
-    {
-        return var.hash();
-    }
-};
+List::List(): _value() {}
+
+List::List(List&&other): _value(std::move(other._value)) {}
+List& List::operator=(List&&other) { _value = std::move(other._value); return *this; }
+List::List(const List&other): _value(other._value) {}
+List& List::operator=(const List&other) { _value = other._value; return *this; }
+
+List::List(std::initializer_list<Variant> value): _value(value) {}
+
+template <typename...Ts>
+    requires (not one_of<std::decay_t<Ts>, Value, Variant, List> && ...)
+inline List::List(Ts&&...args): List(Variant{std::forward<Ts>(args)}...) {
 
 }
 
-namespace xdev {
-namespace variant {
-
-Array::Array(): _value() {}
-
-Array::Array(Array&&other): _value(std::move(other._value)) {}
-Array& Array::operator=(Array&&other) { _value = std::move(other._value); return *this; }
-Array::Array(const Array&other): _value(other._value) {}
-Array& Array::operator=(const Array&other) { _value = other._value; return *this; }
-
-Array::Array(const std::initializer_list<Variant>&value): _value(value) {}
-
-Array::iterator Array::begin() { return _value.begin(); }
-Array::iterator Array::end() { return _value.end(); }
-Variant& Array::front() { return _value.front(); }
-Variant& Array::back() { return _value.back(); }
-Array::const_iterator Array::begin() const { return _value.cbegin(); }
-Array::const_iterator Array::end() const { return _value.cend(); }
-size_t Array::size() const { return _value.size(); }
-Variant& Array::operator[](size_t index) {
+List::iterator List::begin() { return _value.begin(); }
+List::iterator List::end() { return _value.end(); }
+Variant& List::front() { return _value.front(); }
+Variant& List::back() { return _value.back(); }
+List::const_iterator List::begin() const { return _value.cbegin(); }
+List::const_iterator List::end() const { return _value.cend(); }
+size_t List::size() const { return _value.size(); }
+Variant& List::operator[](size_t index) {
     if (_value.size() <= index) {
         throw std::out_of_range("querying index greater than size");
     }
@@ -44,7 +36,7 @@ Variant& Array::operator[](size_t index) {
     return *it;
 }
 
-const Variant& Array::operator[](size_t index) const {
+const Variant& List::operator[](size_t index) const {
     if (_value.size() <= index) {
         throw std::out_of_range("querying index greater than size");
     }
@@ -53,7 +45,7 @@ const Variant& Array::operator[](size_t index) const {
     return *it;
 }
 
-std::string Array::toString() const {
+std::string List::toString() const {
     std::string res = "[";
     res += tools::join(*this, ", ", [](auto&&item) {
         if (item.template is<std::string>())
@@ -64,8 +56,8 @@ std::string Array::toString() const {
     return res;
 }
 
-template <Array::Direction direction>
-void Array::pop(size_t count) {
+template <List::Direction direction>
+void List::pop(size_t count) {
     while(count--) {
         if constexpr (direction == Front)
             _value.pop_front();
@@ -73,8 +65,8 @@ void Array::pop(size_t count) {
     }
 }
 
-template <Array::Direction direction, typename First, typename...Rest>
-void Array::push(First&&first, Rest&&...rest) {
+template <List::Direction direction, typename First, typename...Rest>
+void List::push(First&&first, Rest&&...rest) {
     if constexpr (direction == Front) {
         if constexpr (sizeof...(rest))
             push<direction>(std::forward<Rest>(rest)...);
@@ -86,37 +78,34 @@ void Array::push(First&&first, Rest&&...rest) {
     }
 }
 
-Array::iterator Array::find(Variant &&value) {
+List::iterator List::find(Variant &&value) {
     return std::find(begin(), end(), std::forward<Variant>(value));
 }
 
-size_t Array::hash() const {
-    return std::accumulate(begin(), end(), _value.size(), [](size_t seed, Variant ii){
-        return seed ^ (ii.hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2));
-    });
+List& operator>>(Variant&&var, List& lst) {
+    lst._value.push_front(std::forward<Variant>(var));
+    return lst;
 }
 
-Array& operator>>(Variant&&var, Array& array) {
-    array._value.push_front(std::forward<Variant>(var));
-    return array;
-}
-
-Array& operator-(size_t count, Array& array) {
+List& operator-(size_t count, List& lst) {
     while(count--)
-        array._value.pop_front();
-    return array;
+        lst._value.pop_front();
+    return lst;
 }
 
-Array& operator<<(Array& array, Variant&&var) {
-    array._value.push_back(std::forward<Variant>(var));
-    return array;
+List& operator<<(List& lst, Variant&&var) {
+    lst._value.push_back(std::forward<Variant>(var));
+    return lst;
 }
 
-Array& operator-(Array& array, size_t count) {
+List& operator-(List& lst, size_t count) {
     while(count--)
-        array._value.pop_back();
-    return array;
+        lst._value.pop_back();
+    return lst;
 }
 
+inline bool operator==(const List& lhs, const List& rhs) {
+    return lhs._value == rhs._value;
 }
+
 }

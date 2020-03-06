@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <string>
 #include <functional>
+#include <concepts>
 
 #ifdef _WIN32
 namespace std {
@@ -64,7 +65,7 @@ namespace xdev {
         template <typename FirstT, typename...RestT>
         static constexpr bool test()
         {
-            if constexpr (std::is_same_v<T, FirstT>) {
+            if constexpr (std::same_as<T, FirstT>) {
                 return true;
             } else if constexpr (sizeof...(RestT) > 0) {
                 return test<RestT...>();
@@ -76,6 +77,9 @@ namespace xdev {
     };
     template <typename T, typename...TypesT>
     constexpr bool is_one_of_v = is_one_of<T, TypesT...>::value;
+
+    template <typename T, typename...TypesT>
+    concept one_of = is_one_of_v<T, TypesT...>;
 
     template<typename T>
     using std_to_string_expression = decltype(std::to_string(std::declval<T>()));
