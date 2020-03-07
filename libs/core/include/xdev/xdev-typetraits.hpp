@@ -195,4 +195,18 @@ namespace xdev {
         : function_detail::types<Ret, std::nullptr_t, std::true_type, std::false_type, Args...>
     {};
 
+    // c-style function
+    template<class Ret, class... Args>
+    struct function_traits<Ret(*)(Args...)>
+        : function_detail::types<Ret, std::nullptr_t, std::true_type, std::false_type, Args...>
+    {};
+
+    // template specialization detection
+
+    template <class T, template <class...> class Template>
+    struct is_specialization : std::false_type {};
+
+    template <template <class...> class Template, class... Args>
+    struct is_specialization<Template<Args...>, Template> : std::true_type {};
+
 } // xdev

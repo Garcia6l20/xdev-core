@@ -1,89 +1,89 @@
 #include <xdev/xdev.hpp>
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 #include <iostream>
 
 using namespace xdev;
 using namespace std;
 
-TEST(VariantTest, BoolValue) {
+TEST_CASE("VariantTest.BoolValue") {
     XVariant val = true;
-    ASSERT_EQ(val.typeName(), "bool");
-    ASSERT_TRUE(val.is<bool>());
-    ASSERT_TRUE(val == true);
-    ASSERT_FALSE(val == false);
-    ASSERT_FALSE(val != true);
-    ASSERT_EQ(val.toString(), "true");
+    REQUIRE(val.typeName() == "bool");
+    REQUIRE(val.is<bool>());
+    REQUIRE(val == true);
+    REQUIRE(val == false);
+    REQUIRE(val != true);
+    REQUIRE(val.toString() == "true");
 }
 
-TEST(VariantTest, IntValue) {
+TEST_CASE("VariantTest.IntValue") {
     XVariant val = 42;
-    ASSERT_EQ(val.typeName(), "int");
-    ASSERT_TRUE(val.is<int>());
-    ASSERT_TRUE(val == 42);
-    ASSERT_FALSE(val != 42);
-    ASSERT_TRUE(val != 43);
-    ASSERT_FALSE(val == 43);
-    ASSERT_EQ(val.toString(), "42");
+    REQUIRE(val.typeName() == "int");
+    REQUIRE(val.is<int>());
+    REQUIRE(val == 42);
+    REQUIRE_FALSE(val != 42);
+    REQUIRE(val != 43);
+    REQUIRE_FALSE(val == 43);
+    REQUIRE(val.toString() == "42");
 }
 
-TEST(VariantTest, DoubleValue) {
+TEST_CASE("VariantTest.DoubleValue") {
     XVariant val = 42.0;
-    ASSERT_EQ(val.typeName(), "double");
-    ASSERT_TRUE(val.is<double>());
-    ASSERT_FALSE(val.is<int>());
-    ASSERT_FALSE(val == 42);
-    ASSERT_EQ(val, 42.);
-    ASSERT_TRUE(val != 42);
-    ASSERT_FALSE(val != 42.);
-    ASSERT_TRUE(val != 43);
-    ASSERT_TRUE(val != 43.);
-    ASSERT_FALSE(val == 43.);
+    REQUIRE(val.typeName() == "double");
+    REQUIRE(val.is<double>());
+    REQUIRE_FALSE(val.is<int>());
+    REQUIRE_FALSE(val == 42);
+    REQUIRE(val == 42.);
+    REQUIRE(val != 42);
+    REQUIRE_FALSE(val != 42.);
+    REQUIRE(val != 43);
+    REQUIRE(val != 43.);
+    REQUIRE(val == 43.);
 }
 
-TEST(VariantTest, Array) {
-    XVariant dumb = XArray{4, "2"};
-    ASSERT_EQ(dumb.typeName(), "XArray");
-    ASSERT_EQ(dumb.get<XArray>().size(), 2);
+TEST_CASE("VariantTest.Array") {
+    XVariant dumb = XList{4, "2"};
+    REQUIRE(dumb.typeName() == "XList");
+    REQUIRE(dumb.get<XList>().size() == 2);
     XVariant var = std::move(dumb);
-    ASSERT_TRUE(dumb.is<XNone>());
-    ASSERT_EQ(dumb.typeName(), "xdev::variant::None");
-    XArray &array = var.get<XArray>();
-    ASSERT_EQ(array.size(), 2);
-    ASSERT_EQ(array[0], 4);
-    ASSERT_EQ(array[1], "2");
+    REQUIRE(dumb.is<XNone>());
+    REQUIRE(dumb.typeName() == "xdev::variant::None");
+    XList &array = var.get<XList>();
+    REQUIRE(array.size() == 2);
+    REQUIRE(array[0] == 4);
+    REQUIRE(array[1] == "2");
     array.push("this", "is", "the", "response");
-    ASSERT_EQ(array[3], "is");
+    REQUIRE(array[3] == "is");
     array.pop(2);
-    array.push<XArray::Front>("42", ",");
-    array.push<XArray::Front>("What", "is", "the", "answer ?");
+    array.push<XList::Front>("42", ",");
+    array.push<XList::Front>("What", "is", "the", "answer ?");
     for(auto&&item: array) {
-        ASSERT_TRUE(item.is<string>());
+        REQUIRE(item.is<string>());
     }
-    ASSERT_EQ(array[4], "42");
+    REQUIRE(array[4] == "42");
 }
 
-TEST(VariantTest, Dict) {
+TEST_CASE("VariantTest.Dict") {
     XDict dict {{"4", 4}, {"2", 2.0}};
     dict["2"] = "two";
     string key = "2";
     XVariant tmp = 55;
     dict[key] = tmp;
     tmp = dict[key];
-    ASSERT_EQ(tmp, dict[key]);
+    REQUIRE(tmp == dict[key]);
     dict["what ?"] = "test";
-    ASSERT_EQ(dict["what ?"], "test");
+    REQUIRE(dict["what ?"] == "test");
 }
 
-TEST(VariantTest, IterationAssignment) {
-    XVariant iterable = XArray{1.0, 2.0, 3.0};
+TEST_CASE("VariantTest.IterationAssignment") {
+    XVariant iterable = XList{1.0, 2.0, 3.0};
     XDict context = XDict{{"test", 0}};
     XDict for_context = context;
     string k = "key";
-    for (auto&&item: iterable.get<XArray>()) {
+    for (auto&&item: iterable.get<XList>()) {
         for_context[k] = item;
-        ASSERT_EQ(for_context[k], item);
-        ASSERT_NE(context[k], item);
+        REQUIRE(for_context[k] == item);
+        REQUIRE(context[k] == item);
     }
-    ASSERT_EQ(for_context[k], iterable.get<XArray>().back());
-    ASSERT_NE(context[k], iterable.get<XArray>().back());
+    REQUIRE(for_context[k] == iterable.get<XList>().back());
+    REQUIRE_FALSE(context[k] == iterable.get<XList>().back());
 }

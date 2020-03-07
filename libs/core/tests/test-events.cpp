@@ -1,5 +1,5 @@
 #include <xdev/xdev-object.hpp>
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include <any>
 #include <queue>
@@ -99,53 +99,53 @@ struct TestData {
 
 };
 
-TEST(Channels, Nominal) {
+TEST_CASE("Channels, Nominal") {
     bool received = false;
     auto sub = channels::subscribe<TestData>("test", [&received](const auto&/*data*/) {
         received = true;
     });
     channels::post<TestData>("test", {});
-    ASSERT_TRUE(received);
+    REQUIRE(received);
 }
 
-TEST(Channels, Unsubscibe) {
+TEST_CASE("Channels.Unsubscibe") {
     int received_counter = 0;
     auto test_handler = [&received_counter](const auto& /*data*/) {
         ++received_counter;
     };
     auto sub = channels::subscribe<TestData>("test", test_handler);
     channels::post<TestData>("test", {});
-    ASSERT_EQ(received_counter, 1);
+    REQUIRE(received_counter == 1);
 
     {
         auto sub2 = channels::subscribe<TestData>("test", test_handler);
         channels::post<TestData>("test", {});
-        ASSERT_EQ(received_counter, 3);
+        REQUIRE(received_counter == 3);
 
         channels::unsubscribe(sub);
         channels::post<TestData>("test", {});
-        ASSERT_EQ(received_counter, 4);
+        REQUIRE(received_counter == 4);
     } // sub2 has unsubscribed !
     channels::post<TestData>("test", {});
-    ASSERT_EQ(received_counter, 4);
+    REQUIRE(received_counter == 4);
 }
 
 using namespace xdev;
 
-TEST(Events, FunctionWrap) {
+TEST_CASE("Events.FunctionWrap") {
     int val = 42;
     bool called = false;
     // note: lambdas must be typed as function
     function lambda = [&](int value) {
-        ASSERT_EQ(val, value);
+        REQUIRE(val == value);
         called = true;
     };
     XFunction test = lambda;
     test(val);
-    ASSERT_TRUE(called);
+    REQUIRE(called);
 }
 
-//TEST(Events, FunctionArrayArg) {
+//TEST_CASE("Events.FunctionArrayArg") {
 //    XArray val = {42};
 //    bool called = false;
 //    // note: lambdas must be typed as function
@@ -156,49 +156,49 @@ TEST(Events, FunctionWrap) {
 //        called = true;
 //    });
 //    test(val);
-//    ASSERT_TRUE(called);
+//    REQUIRE(called);
 //}
 
-TEST(Properties, BadConnect) {
+TEST_CASE("Properties.BadConnect") {
     event<int> intEvt;
     int val = 42;
     bool called = false;
     // note: lambdas must be typed as function
     function lambda = [&](int value) {
-        ASSERT_EQ(val, value);
+        REQUIRE(val == value);
         called = true;
     };
     intEvt.connect(lambda); // connection not hold so not called
     intEvt(42);
-    ASSERT_FALSE(called);
+    REQUIRE_FALSE(called);
 }
 
-TEST(Properties, GoodConnect) {
+TEST_CASE("Properties.GoodConnect") {
     event<int> intEvt;
     int val = 42;
     bool called = false;
     // note: lambdas must be typed as function
     auto conn = intEvt.connect(function([&](int value) {
-        ASSERT_EQ(val, value);
+        REQUIRE(val == value);
         called = true;
     }));
-    ASSERT_FALSE(called);
+    REQUIRE_FALSE(called);
     intEvt(42);
-    ASSERT_TRUE(called);
+    REQUIRE(called);
 }
 
-TEST(Properties, ScopeConnect) {
+TEST_CASE("Properties.ScopeConnect") {
     event<int> intEvt;
     int val = 42;
     int call_cnt = 0;
     {
         // note: lambdas must be typed as function
         auto conn = intEvt.connect(function([&](int value) {
-            ASSERT_EQ(val, value);
+            REQUIRE(val == value);
             ++call_cnt;
         }));
         intEvt(42);
     }
     intEvt(42);
-    ASSERT_EQ(call_cnt, 1);
+    REQUIRE(call_cnt == 1);
 }

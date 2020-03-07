@@ -1,63 +1,53 @@
+#include <catch2/catch.hpp>
+
 #include <xdev/xdev.hpp>
 #include <xdev/xdev-yaml.hpp>
-#include <gtest/gtest.h>
-#include <iostream>
-#include <cmath>
 
-using namespace xdev;
-using namespace std;
-
-TEST(VariantYamlSpecTest, CoreTagResolution) {
-    auto data = yaml::parse(R"(
+SCENARIO("Core tag resolution should be handled", "[YamlSpecs.CoreTagResolution]") {
+    auto data = R"(
 A null: null
 Booleans: [ true, True, false, FALSE ]
 Integers: [ 0, 0o7, 0x3A, -19 ]
 Floats: [ 0., -0.0, .5, +12e03, -2E+05 ]
 Also floats: [ .inf, -.Inf, +.INF, .NAN ]
-)");
-    cout << data << endl;
-    ASSERT_TRUE(data.is<XDict>());
-    auto d = data.get<XDict>();
-    ASSERT_TRUE(d["A null"].is<XNone>());
+)"_xyaml;
+    REQUIRE(data.is<xdict>());
+    REQUIRE(data["A null"].is<xnone>());
 
-    auto booleans = d["Booleans"].get<XArray>();
+    auto booleans = data["Booleans"].get<xlist>();
     for (auto&&value: booleans) {
-        ASSERT_TRUE(value.is<bool>());
-        cout << value << endl;
+        REQUIRE(value.is<bool>());
     }
-    ASSERT_EQ(booleans[0], true);
-    ASSERT_EQ(booleans[1], true);
-    ASSERT_EQ(booleans[2], false);
-    ASSERT_EQ(booleans[3], false);
+    REQUIRE(booleans[0] == true);
+    REQUIRE(booleans[1] == true);
+    REQUIRE(booleans[2] == false);
+    REQUIRE(booleans[3] == false);
 
-    auto integers = d["Integers"].get<XArray>();
+    auto integers = data["Integers"].get<xlist>();
     for (auto&&value: integers) {
-        ASSERT_TRUE(value.is<int>());
-        cout << value << endl;
+        REQUIRE(value.is<int>());
     }
-    ASSERT_EQ(integers[0], 0);
-    ASSERT_EQ(integers[1], 7);
-    ASSERT_EQ(integers[2], 0x3A);
-    ASSERT_EQ(integers[3], -19);
+    REQUIRE(integers[0] == 0);
+    REQUIRE(integers[1] == 7);
+    REQUIRE(integers[2] == 0x3A);
+    REQUIRE(integers[3] == -19);
 
-    auto floats = d["Floats"].get<XArray>();
+    auto floats = data["Floats"].get<xlist>();
     for (auto&&value: floats) {
-        ASSERT_TRUE(value.is<double>());
-        cout << value << endl;
+        REQUIRE(value.is<double>());
     }
-    ASSERT_EQ(floats[0], 0.);
-    ASSERT_EQ(floats[1], -0.);
-    ASSERT_EQ(floats[2], .5);
-    ASSERT_EQ(floats[3], +12e03);
-    ASSERT_EQ(floats[4], -2E+05);
+    REQUIRE(floats[0] == 0.);
+    REQUIRE(floats[1] == -0.);
+    REQUIRE(floats[2] == .5);
+    REQUIRE(floats[3] == +12e03);
+    REQUIRE(floats[4] == -2E+05);
 
-    auto also_floats = d["Also floats"].get<XArray>();
+    auto also_floats = data["Also floats"].get<xlist>();
     for (auto&&value: also_floats) {
-        ASSERT_TRUE(value.is<double>());
-        cout << value << endl;
+        REQUIRE(value.is<double>());
     }
-    ASSERT_EQ(also_floats[0], numeric_limits<double>::infinity());
-    ASSERT_EQ(also_floats[1], numeric_limits<double>::infinity());
-    ASSERT_EQ(also_floats[2], numeric_limits<double>::infinity());
-    ASSERT_TRUE(std::isnan(also_floats[3].get<double>()));
+    REQUIRE(also_floats[0] == std::numeric_limits<double>::infinity());
+    REQUIRE(also_floats[1] == std::numeric_limits<double>::infinity());
+    REQUIRE(also_floats[2] == std::numeric_limits<double>::infinity());
+    REQUIRE(std::isnan(also_floats[3].get<double>()));
 }

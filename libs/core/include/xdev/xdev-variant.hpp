@@ -22,7 +22,7 @@
 #include <any>
 
 #include <xdev/xdev-variant-value.hpp>
-#include <xdev/xdev-variant-array.hpp>
+#include <xdev/xdev-variant-list.hpp>
 #include <xdev/xdev-variant-dict.hpp>
 #include <xdev/xdev-variant-function.hpp>
 
@@ -32,7 +32,7 @@ class XObjectBase;
 
 namespace variant {
 
-//using ObjectPtr = std::shared_ptr<XObjectBase>;
+using SharedObject = std::shared_ptr<XObjectBase>;
 
 class Variant {
 public:
@@ -101,6 +101,18 @@ public:
      */
 
     inline Variant(List&&dct);
+    inline Variant(const List&dct);
+
+    /** @} */
+
+    /**
+     * @defgroup variant_dict_api XVariant dict API
+     * @{
+     */
+
+    inline Variant(const Dict&dct);
+    inline Variant(Dict&&dct);
+    inline Variant& update(Dict&&dct);
 
     /** @} */
 
@@ -111,25 +123,16 @@ public:
 
     inline Variant(Function&&fcn);
 
-    auto operator()();
+    inline auto operator()();
 
     template <typename FirstT, typename...RestT>
     auto operator()(FirstT&&, RestT&&...);
 
-    auto apply(List&& args);
-    auto apply(const List& args);
+    inline auto apply(List&& args);
+    inline auto apply(const List& args);
 
     /** @} */
 
-    /**
-     * @defgroup variant_dict_api XVariant dict API
-     * @{
-     */
-
-    inline Variant(Dict&&dct);
-    inline Variant& update(Dict&&dct);
-
-    /** @} */
 
     /**
      * @ingroup variant_dict_api variant_list_api
@@ -137,7 +140,7 @@ public:
      **/
 
     inline Variant& operator[](const Value& index);
-    inline const Variant& operator[](const Value& index) const;
+    inline const Variant& operator[](const Value& index) const;    
 
     /** @} */
 
@@ -176,7 +179,7 @@ public:
         return "XVariant";
     }
 private:
-    using value_t = std::variant<Value, List, Dict, Function>;//, ObjectPtr>;
+    using value_t = std::variant<Value, List, Dict, Function, SharedObject>;
     value_t _value;
 };
 
@@ -191,6 +194,13 @@ using XVariant  = variant::Variant;
 
 } // xdev
 
-#define xvar xdev::XVariant
+#ifndef XDEV_NO_OUTERSCOPE_DEFINES
+using xvar = xdev::XVariant;
+using xval = xdev::XValue;
+using xnone = xdev::XNone;
+using xlist = xdev::XList;
+using xdict = xdev::XDict;
+using xfn = xdev::XFunction;
+#endif
 
 #include <xdev/xdev-variant.inl>

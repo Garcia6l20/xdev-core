@@ -35,4 +35,8 @@ XVariant parse(const std::string& data)
 
 } // xdev::json
 
+inline xdev::XVariant operator "" _xjson(const char* data, size_t size) {
+    return xdev::json::parse(std::string{data, size});
+}
+
 #include <xdev/xdev-json.inl>

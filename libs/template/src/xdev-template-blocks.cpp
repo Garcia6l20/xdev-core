@@ -450,7 +450,7 @@ string ForBlock::process(const XDict& context)
             result += m_children.process(for_context);
         }
     }
-    else if (iterable.is<XArray>())
+    else if (iterable.is<XList>())
     {
         if (m_keys.size() != 1)
         {
@@ -459,7 +459,7 @@ string ForBlock::process(const XDict& context)
         string value = m_keys[0];
         tools::trim(value);
         int index = 0;
-        auto& array = iterable.get<XArray>();
+        auto& array = iterable.get<XList>();
         for_context["loop"] = XDict{
             {"size", static_cast<int>(array.size())}
         };
@@ -525,7 +525,7 @@ string BlockBlock::process(const XDict & context)
     XDict child_ctx = context;
     temp::TemplateExpression::RenderFunctionMap& function_map = temp::TemplateExpression::RenderFunctions;
     string super_key = fmt::format("super#{}", static_cast<void*>(this));
-    function_map[super_key] = [this, child_ctx](const XArray& /*args*/, const XDict& /*context*/, const XResources::ptr& /*res*/) {
+    function_map[super_key] = [this, child_ctx](const XList& /*args*/, const XDict& /*context*/, const XResources::ptr& /*res*/) {
         //BlockBlock::ptr super = m_super.lock();
         BlockBlock::ptr super = m_super;
         string res;

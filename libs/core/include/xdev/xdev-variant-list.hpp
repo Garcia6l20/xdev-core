@@ -25,7 +25,7 @@ public:
     inline List& operator=(const List&other);
 
     template <typename...Ts>
-    requires (not one_of<std::decay_t<Ts>, Value, Variant, List> && ...)
+        requires (not one_of<std::decay_t<Ts>, Value, Variant, List> && ...)
     inline List(Ts&&...args);
 
     inline List(const ListInitList& value);

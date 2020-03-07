@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include <xdev/xdev-variant-value.inl>
-#include <xdev/xdev-variant-array.inl>
+#include <xdev/xdev-variant-list.inl>
 #include <xdev/xdev-variant-dict.inl>
 #include <xdev/xdev-variant-function.inl>
 
@@ -76,12 +76,25 @@ std::weak_ordering Variant::operator<=>(const Variant& b) const {
             }
             return std::weak_ordering::less;
         },
-        []<typename T>(const List&, const T&) requires (not one_of<T, Dict, Function>) {
+        []<typename T>(const List&, const T&) requires (not one_of<T, Dict, Function, SharedObject>) {
             return std::weak_ordering::less;
         },
-        []<typename T>(const T&, const List&) requires (not one_of<T, Dict, Function>) {
+        []<typename T>(const T&, const List&) requires (not one_of<T, Dict, Function, SharedObject>) {
             return std::weak_ordering::greater;
         },
+         // SharedObject stuff
+         [](const SharedObject&lhs, const SharedObject&rhs){
+             if (lhs == rhs) {
+                 return std::weak_ordering::equivalent;
+             }
+             return std::weak_ordering::less;
+         },
+         []<typename T>(const SharedObject&, const T&) requires (not one_of<T, Function, Dict>) {
+             return std::weak_ordering::less;
+         },
+         []<typename T>(const T&, const SharedObject&) requires (not one_of<T, Function, Dict>) {
+             return std::weak_ordering::greater;
+         },
         // Function stuff
         [](const Function&lhs, const Function&rhs){
             if (lhs == rhs) {
@@ -148,14 +161,14 @@ std::weak_ordering Variant::operator<=>(const char* b) const {
 
 template<typename T>
 T& Variant::get() {
-    if constexpr (is_one_of_v<T, Value, List, Dict, Function>)//, ObjectPtr>)
+    if constexpr (is_one_of_v<T, Value, List, Dict, Function, SharedObject>)
         return std::get<T>(_value);
     else return std::get<Value>(_value).get<T>();
 }
 
 template<typename T>
 const T& Variant::get() const {
-    if constexpr (is_one_of_v<T, Value, List, Dict, Function>)//, ObjectPtr>)
+    if constexpr (is_one_of_v<T, Value, List, Dict, Function, SharedObject>)
         return std::get<T>(_value);
     else return std::get<Value>(_value).get<T>();
 }
@@ -213,7 +226,7 @@ decltype(auto) Variant::visit(Visitor&&visitor) {
 
 template <bool inner, typename Visitor>
 decltype(auto) Variant::visit(Visitor&&visitor) const {
-    if (is<Value>() && inner)
+    if (inner && is<Value>())
         return get<Value>().visit(std::forward<Visitor>(visitor));
     else return std::visit(std::forward<Visitor>(visitor), _value);
 }
@@ -306,6 +319,7 @@ auto Variant::apply(const List& args) {
 //
 
 Variant::Variant(Dict&&value): _value{std::move(value)} {}
+Variant::Variant(const Dict&value): _value{value} {}
 
 Variant& Variant::update(Dict&&dct) { get<Dict>().update(std::forward<Dict>(dct)); return *this; }
 
@@ -314,24 +328,30 @@ Variant& Variant::update(Dict&&dct) { get<Dict>().update(std::forward<Dict>(dct)
 //
 
 Variant::Variant(List&&value): _value{std::move(value)} {}
-
+Variant::Variant(const List&value): _value{value} {}
 
 // -----------------------------------------
 // Dict/List API
 //
 
 Variant& Variant::operator[](const Value& index) {
-    return std::visit(tools::overloaded{
+    return visit(tools::overloaded{
         [&index](List& lst) -> Variant& {
             return lst[index.get<int>()];
         },
         [&index](Dict& dct) -> Variant& {
             return dct[index];
         },
-        [](auto&) -> Variant& {
+        [&index, this](None&) -> Variant& {
+            // none promoted to dict
+            _value = Dict{};
+            return get<Dict>()[index];
+        },
+        [this](auto&) -> Variant& {
+            spdlog::info("{:f}", *this);
             throw std::bad_cast();
         }
-    }, _value);
+    });
 }
 
 const Variant& Variant::operator[](const Value& index) const {

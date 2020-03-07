@@ -12,7 +12,11 @@
 #include <variant>
 #include <string>
 
-namespace xdev::variant {
+namespace xdev {
+
+class XObjectBase;
+
+namespace variant {
 
 struct None: std::monostate {
     auto operator==(const None&) const {return false;};
@@ -22,6 +26,8 @@ class Variant;
 class List;
 class Dict;
 class Function;
+
+using SharedObject = std::shared_ptr<XObjectBase>;
 
 class Value {
 public:
@@ -39,19 +45,19 @@ public:
     inline Value& operator=(Value&&other) noexcept;
 
     template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
     inline Value(const T&value);
 
     template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
     inline Value& operator=(const T&value);
 
     template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
     inline Value(T&&value);
 
     template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
+        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
     inline Value& operator=(T&&value);
 
 
@@ -117,4 +123,5 @@ private:
     value_t _value;
 };
 
-}
+} // namspace variant
+} // namspace xdev

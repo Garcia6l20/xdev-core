@@ -1,5 +1,6 @@
 #include <xdev/xdev-concurrent.hpp>
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
+#include <spdlog/spdlog.h>
 
 #include <future>
 
@@ -8,13 +9,13 @@ using namespace std;
 
 using concurrent::channel;
 
-TEST(Concurrent, BasicChannel) {
+TEST_CASE("Concurrent.BasicChannel") {
     channel<int> to_thread;
     auto fut = async([&rx = to_thread] {
         int value;
         do {
             value = rx.pop();
-            cout << "Value: " << to_string(value) << endl;
+            spdlog::info("Value: {}", value);
         } while (value != -1);
     });
     to_thread.push(1);
@@ -25,7 +26,7 @@ TEST(Concurrent, BasicChannel) {
     fut.get();
 }
 
-TEST(Concurrent, ProducerCusommer) {
+TEST_CASE("Concurrent.ProducerCusommer") {
     channel<int> to_thread;
     channel<int> from_thread;
     auto echo_fut = async([&rx = to_thread,
@@ -40,17 +41,17 @@ TEST(Concurrent, ProducerCusommer) {
     to_thread.push(1);
     auto val = from_thread.pop();
     if(val == 0) {
-        cout << "Thread started first" << endl;
+        spdlog::info("Thread started first");
     } else if (val == 1) {
-        cout << "Thread not started first" << endl;
+        spdlog::info("Thread not started first");
     } else {
-        FAIL() << "Hummm... realy strange !!";
+        FAIL("Hummm... realy strange !!");
     }
     auto consumer_fut = async([&rx = from_thread] {
         int value;
         do {
             value = rx.pop();
-            cout << "Value: " << to_string(value) << endl;
+            spdlog::info("Value: {}", value);
         } while (value != -1);
     });
     to_thread.push(2);
@@ -61,21 +62,21 @@ TEST(Concurrent, ProducerCusommer) {
 
 using concurrent::sync_channel;
 
-TEST(Concurrent, SyncChannel) {
+TEST_CASE("Concurrent.SyncChannel") {
     sync_channel<int> to_thread;
     auto consumer_fut = async([&rx = to_thread] {
         int value;
         do {
             value = rx.pop();
-            cout << "Value: " << to_string(value) << endl;
+            spdlog::info("Value: {}", value);
         } while (value != -1);
     });
-    ASSERT_EQ(to_thread.push(42).get(), 0);
-    ASSERT_EQ(to_thread.push(-1).get(), 0);
+    REQUIRE(to_thread.push(42).get() == 0);
+    REQUIRE(to_thread.push(-1).get() == 0);
     consumer_fut.get();
 }
 
-TEST(Concurrent, SyncChannelDefaultReturn) {
+TEST_CASE("Concurrent.SyncChannelDefaultReturn") {
     sync_channel<int, int, 55> to_thread;
     auto consumer_fut = async([&rx = to_thread] {
         int value;
@@ -83,12 +84,12 @@ TEST(Concurrent, SyncChannelDefaultReturn) {
             value = rx.pop();
         } while (value != -1);
     });
-    ASSERT_EQ(to_thread.push(42).get(), 55);
-    ASSERT_EQ(to_thread.push(-1).get(), 55);
+    REQUIRE(to_thread.push(42).get() == 55);
+    REQUIRE(to_thread.push(-1).get() == 55);
     consumer_fut.get();
 }
 
-TEST(Concurrent, SyncChannelBoolReturn) {
+TEST_CASE("Concurrent.SyncChannelBoolReturn") {
     sync_channel<int, bool> to_thread;
     auto consumer_fut = async([&rx = to_thread] {
         int value;
@@ -98,15 +99,15 @@ TEST(Concurrent, SyncChannelBoolReturn) {
             ret.set_value(value != -1 ? true : false);
         } while (value != -1);
     });
-    ASSERT_EQ(to_thread.push(42).get(), true);
-    ASSERT_EQ(to_thread.push(-1).get(), false);
+    REQUIRE(to_thread.push(42).get() == true);
+    REQUIRE(to_thread.push(-1).get() == false);
     consumer_fut.get();
 }
 
 using concurrent::subscription_channel;
 using concurrent::scoped_subscription;
 
-TEST(Concurrent, Publisher) {
+TEST_CASE("Concurrent.Publisher") {
     subscription_channel<int> to_thread;
     auto sub1 = async([&rx = to_thread] {
         scoped_subscription sub(rx);

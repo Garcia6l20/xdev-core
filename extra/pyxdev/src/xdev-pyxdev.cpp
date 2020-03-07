@@ -43,8 +43,8 @@ struct xvariant_to_python {
     py::handle operator()(XDict& item) {
         return type_caster_base<XDict>::cast(item, _policy, _parent);
     }
-    py::handle operator()(XArray&item) {
-        return type_caster_base<XArray>::cast(item, _policy, _parent);
+    py::handle operator()(XList&item) {
+        return type_caster_base<XList>::cast(item, _policy, _parent);
     }
     py::handle operator()(XObjectBase::ptr& item) {
         return type_caster_base<XObjectBase>::cast(*item, _policy, _parent);
@@ -89,7 +89,7 @@ public:
         } else if(py::isinstance<py::dict>(src)) {
             XDict d;
             for(const auto& [k, v]: py::cast<py::dict>(src)) {
-                d[py::cast<XVariant>(k)] = py::cast<XVariant>(v);
+                d[py::cast<XVariant>(k).get<xval>()] = py::cast<XVariant>(v);
             }
             value = new XVariant(d);
         } else {
@@ -129,15 +129,15 @@ PYBIND11_MODULE(pyxdev, m) {
     .def(py::init([](const py::dict& in) {
         auto* self = new XDict();
         for (const auto& [k, v]: in) {
-            (*self)[py::cast<XVariant>(k)] = py::cast<XVariant>(v);
+            (*self)[py::cast<XVariant>(k).get<xval>()] = py::cast<XVariant>(v);
         }
         return self;
     }))
     .def("__setitem__", [](XDict& self, py::handle k, py::handle v) {
-        self[py::cast<XVariant>(k)] = py::cast<XVariant>(v);
+        self[py::cast<XVariant>(k).get<xval>()] = py::cast<XVariant>(v);
     })
     .def("__getitem__", [](XDict& self, py::handle k) {
-        return self[std::forward<XVariant>(py::cast<XVariant&>(k))];
+        return self[std::forward<XVariant>(py::cast<XVariant&>(k)).get<xval>()];
     })
     .def_static("fromJson", [](const std::string& str){
         return XVariant::FromJSON(str).get<XDict>();
@@ -147,36 +147,36 @@ PYBIND11_MODULE(pyxdev, m) {
     })
     .def("__str__", &XDict::toString);
 
-    py::class_<XArray>(m, "Array")
+    py::class_<XList>(m, "Array")
     .def(py::init<>())
     .def(py::init([](const py::tuple& in) {
-        auto* self = new XArray();
+        auto* self = new XList();
         for (const auto& v: in) {
             (*self).push(py::cast<XVariant>(v));
         }
         return self;
     }))
     .def(py::init([](const py::args& in) {
-        auto* self = new XArray();
+        auto* self = new XList();
         for (const auto& v: in) {
             (*self).push(py::cast<XVariant>(v));
         }
         return self;
     }))
-    .def("__setitem__", [](XArray& self, py::int_ index, py::handle v) {
+    .def("__setitem__", [](XList& self, py::int_ index, py::handle v) {
         self[py::cast<size_t>(index)] = py::cast<XVariant>(v);
     })
-    .def("__getitem__", [](XArray& self, py::int_ index) {
+    .def("__getitem__", [](XList& self, py::int_ index) {
         return self[py::cast<size_t>(index)];
     })
-    .def("__str__", &XArray::toString);
+    .def("__str__", &XList::toString);
 
     py::class_<XFunction>(m, "Function")
     .def("__call__", [](XFunction& self) {
         return self();
     })
     .def("__call__", [](XFunction& self, const py::args& args) {
-        XArray a;
+        XList a;
         for (const auto& v: args) {
             a.push(py::cast<XVariant>(v));
         }
@@ -184,10 +184,10 @@ PYBIND11_MODULE(pyxdev, m) {
     });
 
     py::implicitly_convertible<py::dict, XDict>();
-    py::implicitly_convertible<py::args, XArray>();
-    py::implicitly_convertible<py::tuple, XArray>();
-    py::implicitly_convertible<py::list, XArray>();
-    py::implicitly_convertible<XArray, XVariant>();
+    py::implicitly_convertible<py::args, XList>();
+    py::implicitly_convertible<py::tuple, XList>();
+    py::implicitly_convertible<py::list, XList>();
+    py::implicitly_convertible<XList, XVariant>();
     py::implicitly_convertible<XDict, XVariant>();
     py::implicitly_convertible<XFunction, XVariant>();
     py::implicitly_convertible<XObjectBase::ptr, XVariant>();
@@ -211,7 +211,7 @@ PYBIND11_MODULE(pyxdev, m) {
     .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XDict& var){
         return self->prop(attr) = var;
     })
-    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XArray& var){
+    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XList& var){
         return self->prop(attr) = var;
     })
     .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XVariant& var){

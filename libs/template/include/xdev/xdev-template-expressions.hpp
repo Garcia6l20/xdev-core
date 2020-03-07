@@ -12,13 +12,13 @@
 #include <xdev/xdev-tools.hpp>
 #include <xdev/xdev-exception.hpp>
 
-#include <cmath>
-#include <limits>
-#include <iterator>
-
 #include <boost/math/constants/constants.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/spirit/include/qi.hpp>
+
+#include <cmath>
+#include <limits>
+#include <iterator>
 
 namespace xdev::temp {
 
@@ -47,9 +47,9 @@ class XDEV_TEMPLATE_EXPORT TemplateExpression : public Expression, protected too
 {
 public:
     virtual XVariant eval(const XDict& context, const XResources::ptr& res = XResources::Make()) override;
-    using RenderFunction = function<XVariant(const XArray&, const XDict& context, const XResources::ptr& res)>;
+    using RenderFunction = function<XVariant(const XList&, const XDict& context, const XResources::ptr& res)>;
     static void AddFunction(const string& name, const RenderFunction& function);
-    static XVariant CallFunction(const string & key, const XArray& nodes, const XDict& context, const XResources::ptr& res);
+    static XVariant CallFunction(const string & key, const XList& nodes, const XDict& context, const XResources::ptr& res);
 private:
     TemplateExpression(const string& content);
     virtual ~TemplateExpression() override;
@@ -106,7 +106,7 @@ struct VariantLoaderVisitor {
     {
         return static_cast<double>(obj.get() != nullptr);
     }
-    inline double operator()(const XArray&) const
+    inline double operator()(const XList&) const
     {
         return 1.;
     }

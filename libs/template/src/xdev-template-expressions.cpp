@@ -79,7 +79,7 @@ XVariant TemplateExpression::eval(const XDict& context, const XResources::ptr& r
     }
     for(auto&[func, arg_list]: m_functionCalls)
     {
-        XArray args;
+        XList args;
         if (!result.empty())
         {
             args.push(result);
@@ -119,7 +119,7 @@ XVariant TemplateExpression::eval(const XDict& context, const XResources::ptr& r
 TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
 {
     TemplateExpression::RenderFunctionMap map;
-    map["date"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["date"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         string fmt = "%c %Z";
         if (args.size() > 0)
             fmt = args[0].get<string>();
@@ -131,19 +131,19 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
 
     };
 
-    map["upper"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["upper"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         string input = args[0].get<string>();
         tools::to_upper(input);
         return input;
     };
 
-    map["lower"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["lower"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         string input = args[0].get<string>();
         tools::to_lower(input);
         return input;
     };
 
-    map["replace"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["replace"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         string str = args[0].get<string>();
         string from = args[1].get<string>();
         string to = args[2].get<string>();
@@ -151,14 +151,14 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
         return str;
     };
 
-    map["length"] = [](const XArray& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["length"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
         if (args[0].is<XDict>())
         {
             return int(args[0].get<XDict>().size());
         }
-        else if (args[0].is<XArray>())
+        else if (args[0].is<XList>())
         {
-            return int(args[0].get<XArray>().size());
+            return int(args[0].get<XList>().size());
         }
         else if (args[0].is<string>())
         {
@@ -167,7 +167,7 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
         throw Expression::Error("Cannot apply 'length' to "s/* + args[0].typeName()*/);
     };
 
-    map["render"] = [](const XArray& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["render"] = [](const XList& args, const XDict& context, const XResources::ptr& res) -> XVariant {
         string key = args[0].get<string>();
         if (res->has(key))
         {
@@ -176,7 +176,7 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
         throw Error("TODO");
     };
 
-    map["super"] = [](const XArray& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["super"] = [](const XList& args, const XDict& context, const XResources::ptr& res) -> XVariant {
         try
         {
             return TemplateExpression::CallFunction(context.at("$super_key").get<string>(),
@@ -197,7 +197,7 @@ void TemplateExpression::AddFunction(const string & key, const TemplateExpressio
     RenderFunctions[key] = function;
 }
 
-XVariant TemplateExpression::CallFunction(const string & key, const XArray& nodes, const XDict& context, const XResources::ptr& res)
+XVariant TemplateExpression::CallFunction(const string & key, const XList& nodes, const XDict& context, const XResources::ptr& res)
 {
     try {
         return RenderFunctions.at(key)(nodes, context, res);
@@ -266,9 +266,9 @@ struct OperatorVisitor
 //    {
 //        return false; //m_left.get<XObject::ptr>() == right;
 //    }
-    bool operator()(const XArray& /*right*/)
+    bool operator()(const XList& /*right*/)
     {
-        return false; //m_left.get<XArray>() == right;
+        return false; //m_left.get<XList>() == right;
     }
     bool operator()(const XDict& /*right*/)
     {

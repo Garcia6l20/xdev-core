@@ -1,10 +1,10 @@
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 #include <xdev/xdev.hpp>
 #include <iomanip>
 
 using namespace xdev;
 
-TEST(Hexlify, Dump) {
+TEST_CASE("Hexlify.Dump") {
     uint8_t originals [255];
     char dumped [sizeof(originals) * 2];
     for (size_t ii = 0; ii < sizeof(originals) - 1; ++ii) {

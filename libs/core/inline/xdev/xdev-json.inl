@@ -35,7 +35,7 @@ XVariant Parser::parse_object(IterT& begin, const IterT& end)
 template <typename IterT>
 XVariant Parser::parse_array(IterT& begin, const IterT& end)
 {
-    XArray result;
+    XList result;
     for (; *begin != ']' && begin != end; ++begin) {
         if (!isgraph(*begin))
             continue;

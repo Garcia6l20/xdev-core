@@ -44,19 +44,19 @@ Value::Value(Value&&other) noexcept: _value(std::move(other._value)) { other._va
 Value& Value::operator=(Value&&other) noexcept { _value = std::move(other._value); other._value = None{}; return *this; }
 
 template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
 Value::Value(const T&value): _value(value) {}
 
 template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
 Value& Value::operator=(const T&value) { _value = value; return *this; }
 
 template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
 Value::Value(T&&value): _value(std::forward<T>(value)) { }
 
 template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function>)
+    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
 Value& Value::operator=(T&&value) { _value = std::forward<T>(value); return *this; }
 
 Value::Value(const char* value) noexcept: _value(std::string(value)) {}
@@ -245,7 +245,7 @@ const T& Value::get() const {
 template<typename T>
 bool Value::is() const {
     return std::visit([]<typename ValueT>(ValueT&&){
-        return std::same_as<T, ValueT>;
+        return std::same_as<T, std::decay_t<ValueT>>;
     }, _value);
 }
 

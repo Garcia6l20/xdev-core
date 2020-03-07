@@ -195,7 +195,7 @@ struct JsonMappingNode: Node {
 
 struct SequenceNode: Node {
     virtual void process(iterator &begin, const iterator &end) {
-        value = XArray();
+        value = XList();
         auto root_indent = getindent(begin, end);
         auto lstart = begin;
         auto lend = std::find(lstart, end, '\n');
@@ -212,8 +212,8 @@ struct SequenceNode: Node {
             auto sep = std::find(lstart, lend, '-');
             begin = sep + 1;
             auto node = Node::Parse(begin, end);
-            value.get<XArray>().push(node.value);
-            //std::cout << value.get<XArray>().back() << std::endl;
+            value.get<XList>().push(node.value);
+            //std::cout << value.get<XList>().back() << std::endl;
         }
     }
 };
@@ -223,15 +223,15 @@ struct JsonSequenceNode: Node {
     virtual void process(iterator &begin, const iterator &end) {
         begin = std::find(begin, end, '[') + 1;
         auto this_end = get_closing_token(begin, end, '[', ']');
-        value = XArray();
+        value = XList();
         while(begin != end) {
             if (*begin == ']') {
                 ++begin;
                 return;
             }
             auto node = Node::Parse(begin, this_end);
-            value.get<XArray>().push(node.value);
-            std::cout << value.get<XArray>().back() << std::endl;
+            value.get<XList>().push(node.value);
+            // std::cout << value.get<XList>().back() << std::endl;
             static const char tokens[] = {',', ']'};
             auto next = find_first_of(begin, end, tokens, tokens + sizeof(tokens));
             begin = next + 1;

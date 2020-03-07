@@ -21,7 +21,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(xdev)
 
 conan_requires(
-    "boost/1.71.0"
+    "boost/1.72.0"
     "fmt/6.1.0"
     "lyra/1.3.0"
     "spdlog/1.5.0"

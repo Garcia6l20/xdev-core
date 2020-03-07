@@ -1,4 +1,5 @@
 #include <xdev/xdev-variant.hpp>
+#include <spdlog/spdlog.h>
 
 #include <iostream>
 
@@ -53,8 +54,32 @@ std::string Dict::toString() const {
 
 Variant& Dict::operator[](const Value& key) {
     auto item = _value.find(key);
-    if (item == end())
-        return _value.insert_or_assign(key, Variant()).first->second;
+    if (item == end()) {
+        if (key.is<std::string>()) {
+            auto skey = tools::split(key.get<std::string>(), '.');
+            Dict* d = this;
+            auto it = skey.begin();
+            auto end = skey.end();
+            --end;
+            Value k;
+            for(; it != end; ++it) {
+                k = std::move(*it);
+                auto& tmp = d->operator[](k);
+                if (tmp.empty()) {
+                    tmp = Dict{};
+                }
+                d = &tmp.get<Dict>();
+            }
+            k = std::move(*it);
+            if(!d->contains(k)) {
+                return d->_value.insert_or_assign(k, Variant{}).first->second;
+            } else {
+                return d->_value.at(k);
+            }
+        } else {
+            return _value.insert_or_assign(key, Variant{}).first->second;
+        }
+    }
     else return item->second;
 }
 
