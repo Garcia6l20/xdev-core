@@ -73,6 +73,20 @@ SCENARIO("list types are accessible as normal lists", "[core.api.variant.v1.0]")
     }
 }
 
+SCENARIO("function types are accessible as normal functions", "[core.api.variant.v1.0]") {
+    GIVEN("A simple function") {
+        xvar var = XFunction{[](int value) {
+            return "the response is " + std::to_string(value);
+        }};
+        WHEN("the function is called") {
+            auto result = var(42);
+            THEN("the resluts should be consistant") {
+                REQUIRE(result == "the response is 42");
+            }
+        }
+    }
+}
+
 SCENARIO("basic types are accessible as normal types", "[core.api.variant.v1.0]") {
     GIVEN("An basic string value") {
         xvar val = "42";

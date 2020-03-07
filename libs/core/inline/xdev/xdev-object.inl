@@ -44,8 +44,8 @@ Connection::~Connection() {
     delete _function;
 }
 
-void Connection::operator()(XArray&&array) {
-    (*_function)(xfwd(array));
+void Connection::operator()(XList&&lst) {
+    (*_function)(xfwd(lst));
 }
 
 template <typename...ArgsT>
@@ -60,7 +60,7 @@ Event::~Event() {
     }
 }
 
-void Event::operator()(const XArray&arg_list) const {
+void Event::operator()(const XList&arg_list) const {
     lock_guard lock(_mut);
     for (auto conn: _connections) {
         if (auto c = conn.lock(); c != nullptr)
@@ -367,15 +367,15 @@ XVariant XObjectBase::call(string&& method) {
     return _metaData.functions.at(forward<string>(method))({});
 }
 
-XVariant XObjectBase::call(string&& method, XArray&&args) {
-    return _metaData.functions.at(forward<string>(method))(forward<XArray>(args));
+XVariant XObjectBase::call(string&& method, XList&&args) {
+    return _metaData.functions.at(forward<string>(method))(forward<XList>(args));
 }
 
-XVariant XObjectBase::call(const string& method, const XArray&args) {
+XVariant XObjectBase::call(const string& method, const XList&args) {
     return _metaData.functions.at(method)(args);
 }
 
-XVariant XObjectBase::apply(const string& method, const XArray&args) {
+XVariant XObjectBase::apply(const string& method, const XList&args) {
     return _metaData.functions.at(method).apply(args);
 }
 

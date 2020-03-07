@@ -244,8 +244,8 @@ const T& Value::get() const {
 
 template<typename T>
 bool Value::is() const {
-    return std::visit([](auto&&value){
-        return std::is_same<T, std::decay_t<decltype(value)>>::value;
+    return std::visit([]<typename ValueT>(ValueT&&){
+        return std::same_as<T, ValueT>;
     }, _value);
 }
 

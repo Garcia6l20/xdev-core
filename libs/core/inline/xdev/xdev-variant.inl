@@ -12,7 +12,7 @@
 #include <xdev/xdev-variant-value.inl>
 #include <xdev/xdev-variant-array.inl>
 #include <xdev/xdev-variant-dict.inl>
-//#include <xdev/xdev-variant-function.inl>
+#include <xdev/xdev-variant-function.inl>
 
 namespace std {
 
@@ -76,10 +76,23 @@ std::weak_ordering Variant::operator<=>(const Variant& b) const {
             }
             return std::weak_ordering::less;
         },
-        []<typename T>(const List&, const T&) requires (not std::same_as<T, Dict>) {
+        []<typename T>(const List&, const T&) requires (not one_of<T, Dict, Function>) {
             return std::weak_ordering::less;
         },
-        []<typename T>(const T&, const List&) requires (not std::same_as<T, Dict>) {
+        []<typename T>(const T&, const List&) requires (not one_of<T, Dict, Function>) {
+            return std::weak_ordering::greater;
+        },
+        // Function stuff
+        [](const Function&lhs, const Function&rhs){
+            if (lhs == rhs) {
+                return std::weak_ordering::equivalent;
+            }
+            return std::weak_ordering::less;
+        },
+        []<typename T>(const Function&, const T&) requires (not one_of<T, Dict>) {
+            return std::weak_ordering::less;
+        },
+        []<typename T>(const T&, const Function&) requires (not one_of<T, Dict>) {
             return std::weak_ordering::greater;
         },
         // Dict stuff
@@ -89,10 +102,10 @@ std::weak_ordering Variant::operator<=>(const Variant& b) const {
             }
             return std::weak_ordering::less;
         },
-        []<typename T>(const Dict&, const T&){
+        []<typename T>(const Dict&, const T&) {
             return std::weak_ordering::less;
         },
-        []<typename T>(const T&, const Dict&){
+        []<typename T>(const T&, const Dict&) {
             return std::weak_ordering::greater;
         },
         // Value stuff
@@ -135,14 +148,14 @@ std::weak_ordering Variant::operator<=>(const char* b) const {
 
 template<typename T>
 T& Variant::get() {
-    if constexpr (is_one_of_v<T, Value, List, Dict>)//, Function, ObjectPtr>)
+    if constexpr (is_one_of_v<T, Value, List, Dict, Function>)//, ObjectPtr>)
         return std::get<T>(_value);
     else return std::get<Value>(_value).get<T>();
 }
 
 template<typename T>
 const T& Variant::get() const {
-    if constexpr (is_one_of_v<T, Value, List, Dict>)//, Function, ObjectPtr>)
+    if constexpr (is_one_of_v<T, Value, List, Dict, Function>)//, ObjectPtr>)
         return std::get<T>(_value);
     else return std::get<Value>(_value).get<T>();
 }
@@ -264,6 +277,28 @@ Value& Variant::operator--() {
 
 Value Variant::operator--(int) {
     return get<Value>().operator--(0);
+}
+
+// -----------------------------------------
+// Function API
+//
+
+Variant::Variant(Function&&value): _value{std::move(value)} {}
+
+auto Variant::operator()() {
+    return get<Function>()();
+}
+
+template <typename FirstT, typename...RestT>
+auto Variant::operator()(FirstT&&first, RestT&&...rest) {
+    return get<Function>()(xfwd(first), xfwd(rest)...);
+}
+
+auto Variant::apply(List&& args) {
+    return get<Function>()(xfwd(args));
+}
+auto Variant::apply(const List& args) {
+    return get<Function>()(args);
 }
 
 // -----------------------------------------

@@ -105,6 +105,23 @@ public:
     /** @} */
 
     /**
+     * @defgroup variant_function_api XVariant function API
+     * @{
+     */
+
+    inline Variant(Function&&fcn);
+
+    auto operator()();
+
+    template <typename FirstT, typename...RestT>
+    auto operator()(FirstT&&, RestT&&...);
+
+    auto apply(List&& args);
+    auto apply(const List& args);
+
+    /** @} */
+
+    /**
      * @defgroup variant_dict_api XVariant dict API
      * @{
      */
@@ -159,7 +176,7 @@ public:
         return "XVariant";
     }
 private:
-    using value_t = std::variant<Value, List, Dict>;//, Function, ObjectPtr>;
+    using value_t = std::variant<Value, List, Dict, Function>;//, ObjectPtr>;
     value_t _value;
 };
 
@@ -169,7 +186,7 @@ using XNone     = variant::None;
 using XValue    = variant::Value;
 using XList    = variant::List;
 using XDict     = variant::Dict;
-//using XFunction = variant::Function;
+using XFunction = variant::Function;
 using XVariant  = variant::Variant;
 
 } // xdev

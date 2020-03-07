@@ -53,13 +53,13 @@ using namespace std;
 namespace variant {
     class Variant;
     class Dict;
-    class Array;
+    class List;
     struct Function;
 } // namespace variant
 
     using XVariant = variant::Variant;
     using XDict = variant::Dict;
-    using XArray = variant::Array;
+    using XList = variant::List;
     using XFunction = variant::Function;
 
 
@@ -105,7 +105,7 @@ namespace variant {
         using wptr = weak_ptr<Connection>;
         inline Connection(XFunction, Event*);
         inline ~Connection();
-        inline void operator()(XArray&&array);
+        inline void operator()(XList&&lst);
         template <typename...ArgsT>
         inline void operator()(ArgsT&&...args);
     protected:
@@ -118,7 +118,7 @@ namespace variant {
     struct Event {
         Event() = default;
         inline ~Event();
-        inline void operator()(const XArray&) const;
+        inline void operator()(const XList&) const;
         template <typename...ArgsT>
         inline void operator()(ArgsT&&...) const;
         inline Connection::ptr connect(XFunction);
@@ -332,9 +332,9 @@ namespace variant {
         ResultT call(const string& method, ArgsT&&...args);
 
         inline XVariant call(string&& method);
-        inline XVariant call(string&& method, XArray&&args);
-        inline XVariant call(const string& method, const XArray&args);
-        inline XVariant apply(const string& method, const XArray&args);
+        inline XVariant call(string&& method, XList&&args);
+        inline XVariant call(const string& method, const XList&args);
+        inline XVariant apply(const string& method, const XList&args);
 
         inline XFunction method(const std::string& name) const;
 
