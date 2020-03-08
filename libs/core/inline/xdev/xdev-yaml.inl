@@ -33,8 +33,8 @@ struct Node {
     virtual ~Node() noexcept = default;
     using iterator = std::string::const_iterator;
     virtual void process(iterator &, const iterator &) {};
-    static Node Parse(iterator &begin, const iterator &end);
-    XVariant value;
+    static inline Node Parse(iterator &begin, const iterator &end);
+    xvar value;
 };
 
 struct ScalarNode: Node {
@@ -46,7 +46,7 @@ struct ScalarNode: Node {
         smatch match;
         // null
         if (regex_match(valstart, valend, match, regex(R"(null|Null|NULL|~)"))) {
-            value = XNone{};
+            value = xnone{};
             begin = valstart + match.length();
             return;
         }
@@ -138,7 +138,7 @@ Iterator get_closing_token(const Iterator& begin, const Iterator& end, char open
 
 struct MappingNode: Node {
     virtual void process(iterator &begin, const iterator &end) {
-        value = XDict();
+        value = xdict();
         auto root_indent = getindent(begin, end);
         auto lstart = begin;
         auto lend = std::find(lstart, end, '\n');
@@ -159,7 +159,7 @@ struct MappingNode: Node {
             tools::trim(key);
             begin = sep + 1;
             auto node = Node::Parse(begin, end);
-            value.get<XDict>()[key] = node.value;
+            value.get<xdict>()[key] = node.value;
             lend = begin;
             //std::cout << value.get<XDict>()[key] << std::endl;
         }
@@ -170,7 +170,7 @@ struct JsonMappingNode: Node {
     virtual void process(iterator &begin, const iterator &end) {
         begin = std::find(begin, end, '{') + 1;
         auto this_end = get_closing_token(begin, end, '{', '}');
-        value = XDict();
+        value = xdict();
         while(begin != end) {
             if (*begin == '}') {
                 ++begin;
@@ -181,7 +181,7 @@ struct JsonMappingNode: Node {
             tools::trim(key);
             begin = sep + 1;
             auto node = Node::Parse(begin, this_end);
-            value.get<XDict>()[key] = node.value;
+            value.get<xdict>()[key] = node.value;
             //std::cout << value.get<XDict>()[key] << std::endl;
             static const char tokens[] = {',', '}'};
             auto next = find_first_of(begin, end, tokens, tokens + sizeof(tokens));
@@ -195,7 +195,7 @@ struct JsonMappingNode: Node {
 
 struct SequenceNode: Node {
     virtual void process(iterator &begin, const iterator &end) {
-        value = XList();
+        value = xlist();
         auto root_indent = getindent(begin, end);
         auto lstart = begin;
         auto lend = std::find(lstart, end, '\n');
@@ -212,7 +212,7 @@ struct SequenceNode: Node {
             auto sep = std::find(lstart, lend, '-');
             begin = sep + 1;
             auto node = Node::Parse(begin, end);
-            value.get<XList>().push(node.value);
+            value.get<xlist>().push(node.value);
             //std::cout << value.get<XList>().back() << std::endl;
         }
     }
@@ -223,14 +223,14 @@ struct JsonSequenceNode: Node {
     virtual void process(iterator &begin, const iterator &end) {
         begin = std::find(begin, end, '[') + 1;
         auto this_end = get_closing_token(begin, end, '[', ']');
-        value = XList();
+        value = xlist();
         while(begin != end) {
             if (*begin == ']') {
                 ++begin;
                 return;
             }
             auto node = Node::Parse(begin, this_end);
-            value.get<XList>().push(node.value);
+            value.get<xlist>().push(node.value);
             // std::cout << value.get<XList>().back() << std::endl;
             static const char tokens[] = {',', ']'};
             auto next = find_first_of(begin, end, tokens, tokens + sizeof(tokens));
@@ -276,7 +276,7 @@ Parser::Parser(const std::string& data):
 {
 }
 
-XVariant Parser::operator()()
+xvar Parser::operator()()
 {
     auto begin = _data.begin();
     auto root = Node::Parse(begin, _data.end());

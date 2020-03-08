@@ -50,11 +50,11 @@ namespace xdev {
             const std::any& data = m_resources.at(key);
             return std::any_cast<string>(data);
 		}
-        XVariant getJson(const string& key) const {
-            return XVariant::FromJSON(getString(key));
+        xvar getJson(const string& key) const {
+            return xvar::FromJSON(getString(key));
         }
-        XVariant getYaml(const string& key) const {
-            return XVariant::FromYAML(getString(key));
+        xvar getYaml(const string& key) const {
+            return xvar::FromYAML(getString(key));
         }
         const any& get(const string& key) const
         {

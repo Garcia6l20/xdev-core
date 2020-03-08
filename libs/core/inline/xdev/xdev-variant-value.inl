@@ -43,21 +43,8 @@ Value& Value::operator=(const Value&other) noexcept { _value = other._value; ret
 Value::Value(Value&&other) noexcept: _value(std::move(other._value)) { other._value = None{}; }
 Value& Value::operator=(Value&&other) noexcept { _value = std::move(other._value); other._value = None{}; return *this; }
 
-template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
-Value::Value(const T&value): _value(value) {}
-
-template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
-Value& Value::operator=(const T&value) { _value = value; return *this; }
-
-template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
-Value::Value(T&&value): _value(std::forward<T>(value)) { }
-
-template<typename T>
-    requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
-Value& Value::operator=(T&&value) { _value = std::forward<T>(value); return *this; }
+Value::Value(const XValueConvertible auto&value): _value(value) {}
+Value::Value(XValueConvertible auto&&value): _value(xfwd(value)) { }
 
 Value::Value(const char* value) noexcept: _value(std::string(value)) {}
 
@@ -140,10 +127,10 @@ std::weak_ordering Value::operator<=>(const char* b) const {
        },
         // gcc bug ? 0-compared values interpreted as char*
       [b](const bool& val){
-         return val <=> static_cast<const bool>(b);
+         return static_cast<size_t>(val) <=> reinterpret_cast<size_t>(b);
       },
       [b](const int& val){
-         return val <=> reinterpret_cast<size_t>(b);
+         return static_cast<size_t>(val) <=> reinterpret_cast<size_t>(b);
       },
        [b](const std::string& lhs){
           return std::strcmp(lhs.c_str(), b) <=> 0;

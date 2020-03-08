@@ -3,11 +3,7 @@
  */
 #pragma once
 
-#ifdef __cpp_lib_concepts
-#include <concepts>
-#else
-#include <xdev/std-concepts.hpp>
-#endif
+#include <xdev/xdev-concepts.hpp>
 
 #include <variant>
 #include <string>
@@ -44,49 +40,15 @@ public:
     inline Value(Value&&other) noexcept;
     inline Value& operator=(Value&&other) noexcept;
 
-    template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
-    inline Value(const T&value);
-
-    template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
-    inline Value& operator=(const T&value);
-
-    template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
-    inline Value(T&&value);
-
-    template<typename T>
-        requires (not one_of<std::decay_t<T>, Value, Variant, List, Dict, Function, SharedObject>)
-    inline Value& operator=(T&&value);
-
-
+    inline Value(const XValueConvertible auto&value);
+    inline Value(XValueConvertible auto&&value);
 
     inline Value& operator!();
-
-//     std::weak_ordering operator<=>(const Value&) const;
 
     inline bool operator==(const Value& rhs) const;
     inline std::weak_ordering operator<=>(const Value& rhs) const;
     inline bool operator==(char const* rhs) const;
     inline std::weak_ordering operator<=>(const char* rhs) const;
-
-//    template <typename T>
-//    inline bool operator==(const T& value) const;
-
-//    inline bool operator==(const Value& value) const;
-//    inline bool operator==(const char* value) const;
-
-//    template <typename T>
-//    inline bool operator!=(const T& value) const;
-
-//    inline bool operator!=(const Value& value) const;
-//    inline bool operator!=(const char* value) const;
-
-//    inline bool operator<(const Value& other) const;
-//    inline bool operator>(const Value& other) const;
-//    inline bool operator<=(const Value& other) const;
-//    inline bool operator>=(const Value& other) const;
 
     inline Value& operator++();
     inline Value operator++(int);
@@ -113,9 +75,8 @@ public:
 
     inline std::string toString() const;
 
-    static constexpr const char* ctti_nameof()
-    {
-        return "XValue";
+    static constexpr const char* ctti_nameof() {
+        return "xval";
     }
 
 private:

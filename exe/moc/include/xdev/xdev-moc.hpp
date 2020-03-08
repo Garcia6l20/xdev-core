@@ -45,7 +45,7 @@ private:
     XTemplate::ptr m_poolsHeaderTemplate;
     XTemplate::ptr m_poolsSourceTemplate;
 
-    XVariant m_pools;
-    XVariant m_poolsIncludes;
+    xvar m_pools;
+    xvar m_poolsIncludes;
 };
 }

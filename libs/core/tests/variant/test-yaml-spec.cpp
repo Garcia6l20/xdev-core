@@ -1,7 +1,8 @@
 #include <catch2/catch.hpp>
 
 #include <xdev/xdev.hpp>
-#include <xdev/xdev-yaml.hpp>
+
+using namespace xdev;
 
 SCENARIO("Core tag resolution should be handled", "[YamlSpecs.CoreTagResolution]") {
     auto data = R"(

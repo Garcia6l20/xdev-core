@@ -57,14 +57,14 @@ namespace variant {
     struct Function;
 } // namespace variant
 
-    using XVariant = variant::Variant;
-    using XDict = variant::Dict;
-    using XList = variant::List;
-    using XFunction = variant::Function;
+    using xvar = variant::Variant;
+    using xdict = variant::Dict;
+    using xlist = variant::List;
+    using xfn = variant::Function;
 
 
     template <typename T>
-    static inline constexpr bool is_xvariant = is_same<T, XVariant>::value;
+    static inline constexpr bool is_xvariant = is_same<T, xvar>::value;
 
     template <typename T>
     static inline constexpr bool is_xobject = is_base_of<XObjectBase, T>::value;
@@ -103,14 +103,14 @@ namespace variant {
     struct Connection {
         using ptr = shared_ptr<Connection>;
         using wptr = weak_ptr<Connection>;
-        inline Connection(XFunction, Event*);
+        inline Connection(xfn, Event*);
         inline ~Connection();
-        inline void operator()(XList&&lst);
+        inline void operator()(xlist&&lst);
         template <typename...ArgsT>
         inline void operator()(ArgsT&&...args);
     protected:
         Event * _event;
-        XFunction* _function;
+        xfn* _function;
         bool _valid = true;
         friend struct Event;
     };
@@ -118,10 +118,10 @@ namespace variant {
     struct Event {
         Event() = default;
         inline ~Event();
-        inline void operator()(const XList&) const;
+        inline void operator()(const xlist&) const;
         template <typename...ArgsT>
         inline void operator()(ArgsT&&...) const;
-        inline Connection::ptr connect(XFunction);
+        inline Connection::ptr connect(xfn);
         inline void disconnect(const Connection::ptr&);
     private:
         inline void disconnect(Connection*);
@@ -141,7 +141,7 @@ namespace variant {
 
     struct ObjectMetadata {
         string objectName;
-        map<string, XFunction> functions = {};
+        map<string, xfn> functions = {};
         map<string, reference_wrapper<Event>> events = {};
         map<string, reference_wrapper<XPropertyBase>> properties = {};
         vector<PropertyListenerBase::ptr> bounded_props = {};
@@ -171,7 +171,7 @@ namespace variant {
         const string& name() const { return _name; }
 
 
-        const XDict& metadata() const
+        const xdict& metadata() const
         {
             return _metadata;
         }
@@ -204,7 +204,7 @@ namespace variant {
 
         vector<MetaFunctionBase> _functions;
         vector<MetaFunctionBase> _events;
-        XDict  _metadata;
+        xdict  _metadata;
         size_t _instanceCount;
         friend class XObjectBase;
 
@@ -325,18 +325,18 @@ namespace variant {
         template <typename...ArgsT>
         auto apply(string&& method, tuple<ArgsT...>&& args);
 
-        template <typename ResultT = XVariant, typename...ArgsT>
+        template <typename ResultT = xvar, typename...ArgsT>
         ResultT call(string&& method, ArgsT&&...args);
 
-        template <typename ResultT = XVariant, typename...ArgsT>
+        template <typename ResultT = xvar, typename...ArgsT>
         ResultT call(const string& method, ArgsT&&...args);
 
-        inline XVariant call(string&& method);
-        inline XVariant call(string&& method, XList&&args);
-        inline XVariant call(const string& method, const XList&args);
-        inline XVariant apply(const string& method, const XList&args);
+        inline xvar call(string&& method);
+        inline xvar call(string&& method, xlist&&args);
+        inline xvar call(const string& method, const xlist&args);
+        inline xvar apply(const string& method, const xlist&args);
 
-        inline XFunction method(const std::string& name) const;
+        inline xfn method(const std::string& name) const;
 
         inline void connect(string&& event_name, const XObjectBase::ptr& target, string&& function_name);
 

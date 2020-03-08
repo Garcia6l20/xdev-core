@@ -18,9 +18,9 @@ inline IterT it_find(const IterT& begin, const IterT& end, char c)
 }
 
 template <typename IterT>
-XVariant Parser::parse_object(IterT& begin, const IterT& end)
+xvar Parser::parse_object(IterT& begin, const IterT& end)
 {
-    XDict result;
+    xdict result;
     for (; begin != end && *begin != '}'; ++begin) {
         if (!isgraph(*begin))
             continue;
@@ -33,9 +33,9 @@ XVariant Parser::parse_object(IterT& begin, const IterT& end)
 }
 
 template <typename IterT>
-XVariant Parser::parse_array(IterT& begin, const IterT& end)
+xvar Parser::parse_array(IterT& begin, const IterT& end)
 {
-    XList result;
+    xlist result;
     for (; *begin != ']' && begin != end; ++begin) {
         if (!isgraph(*begin))
             continue;
@@ -87,7 +87,7 @@ std::string Parser::parse_string(IterT& begin, const IterT& end)
 }
 
 template <typename IterT>
-XVariant Parser::parse_number(IterT& begin, const IterT& end)
+xvar Parser::parse_number(IterT& begin, const IterT& end)
 {
     double result = 0.;
     ssize_t sz = 0;
@@ -99,7 +99,7 @@ XVariant Parser::parse_number(IterT& begin, const IterT& end)
 }
 
 template <typename IterT>
-XVariant Parser::parse_value(IterT& begin, const IterT& end)
+xvar Parser::parse_value(IterT& begin, const IterT& end)
 {
     for (; begin != end; ++begin) {
         switch (*begin) {
@@ -115,7 +115,7 @@ XVariant Parser::parse_value(IterT& begin, const IterT& end)
             return false;
         case 'n': // assuming null
             begin += 3;
-            return XVariant();
+            return xvar();
         case '{':
             return parse_object(++begin, end);
         case '[':
@@ -129,7 +129,7 @@ XVariant Parser::parse_value(IterT& begin, const IterT& end)
     throw std::runtime_error("Error occured while parsing value");
 }
 
-XVariant Parser::operator()(const std::string& data)
+xvar Parser::operator()(const std::string& data)
 {
     auto begin = data.begin();
     return parse_value(begin, data.end());

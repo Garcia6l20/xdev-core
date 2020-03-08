@@ -1,6 +1,6 @@
 #include <xdev/xdev-variant.hpp>
 #include <xdev/xdev-tools.hpp>
-//#include <xdev/xdev-object.hpp>
+#include <xdev/xdev-object.hpp>
 #include <xdev/xdev-typetraits.hpp>
 
 #include <boost/type_index.hpp>
@@ -173,15 +173,15 @@ const T& Variant::get() const {
     else return std::get<Value>(_value).get<T>();
 }
 
-//template<XObjectDerived ObjectT>
-//typename ObjectT::ptr Variant::get() {
-//    return std::get<XObjectBase::ptr>(_value)->cast<ObjectT>();
-//}
+template<XObjectDerived ObjectT>
+typename ObjectT::ptr Variant::get() {
+    return std::get<XObjectBase::ptr>(_value)->cast<ObjectT>();
+}
 
-//template<XObjectDerived ObjectT>
-//typename ObjectT::ptr Variant::get() const {
-//    return std::get<XObjectBase::ptr>(_value)->cast<ObjectT>();
-//}
+template<XObjectDerived ObjectT>
+typename ObjectT::ptr Variant::get() const {
+    return std::get<XObjectBase::ptr>(_value)->cast<ObjectT>();
+}
 
 template<typename T>
 bool Variant::is() const {
@@ -246,9 +246,12 @@ bool Variant::empty() const {
     return is<None>();
 }
 
-//size_t Variant::hash() const {
-//    return std::hash<value_t>{}(_value);
-//}
+// ---------------------------------
+// Object API
+//
+
+Variant::Variant(const XObjectPointer auto& obj): _value{std::dynamic_pointer_cast<XObjectBase>(obj)} {}
+Variant::Variant(XObjectPointer auto&& obj): _value{std::dynamic_pointer_cast<XObjectBase>(xfwd(obj))} {}
 
 // ---------------------------------
 // Value API
@@ -256,18 +259,11 @@ bool Variant::empty() const {
 
 Variant::Variant(const char* data): _value{Value{data}} {}
 
-Variant::Variant(Value&&value): _value(std::move(value)) {}
+Variant::Variant(const Value&value): _value(value) {}
+Variant::Variant(Value&&value): _value(xfwd(value)) {}
 
-template <typename T>
-requires std::convertible_to<T, Value>
-Variant::Variant(T&&value): _value{Value{std::forward<T>(value)}} {
-}
-
-//Variant& Variant::operator=(Value&& value) {
-//    _value = std::forward<Value>(value);
-//    return *this;
-//}
-
+Variant::Variant(const XValueConvertible auto&value): _value{Value{value}} {}
+Variant::Variant(XValueConvertible auto&&value): _value{Value{xfwd(value)}} {}
 
 Variant& Variant::operator!() {
     get<Value>() = !get<Value>();
@@ -297,6 +293,7 @@ Value Variant::operator--(int) {
 //
 
 Variant::Variant(Function&&value): _value{std::move(value)} {}
+Variant::Variant(const Function&value): _value{value} {}
 
 auto Variant::operator()() {
     return get<Function>()();
@@ -331,17 +328,21 @@ Variant::Variant(List&&value): _value{std::move(value)} {}
 Variant::Variant(const List&value): _value{value} {}
 
 // -----------------------------------------
-// Dict/List API
+// Dict/List/Object API
 //
 
 Variant& Variant::operator[](const Value& index) {
     return visit(tools::overloaded{
         [&index](List& lst) -> Variant& {
-            return lst[index.get<int>()];
+            return lst[static_cast<size_t>(index.get<int>())];
         },
         [&index](Dict& dct) -> Variant& {
             return dct[index];
         },
+//        [&index](SharedObject& obj) -> Variant& {
+//            auto name = index.get<std::string>();
+//            return obj->prop(name);
+//        },
         [&index, this](None&) -> Variant& {
             // none promoted to dict
             _value = Dict{};
@@ -357,7 +358,7 @@ Variant& Variant::operator[](const Value& index) {
 const Variant& Variant::operator[](const Value& index) const {
     return std::visit(tools::overloaded{
         [&index](const List& lst) -> const Variant& {
-            return lst[index.get<int>()];
+            return lst[static_cast<size_t>(index.get<int>())];
         },
         [&index](const Dict& dct) -> const Variant& {
             return dct.at(index);

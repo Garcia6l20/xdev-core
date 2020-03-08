@@ -3,7 +3,7 @@
 
 using namespace xdev;
 
-static XDict g_context = XVariant::FromJSON(R"({
+static xdict g_context = xvar::FromJSON(R"({
     "who": "__world__",
     "dict": {
         "one": 1,
@@ -12,10 +12,10 @@ static XDict g_context = XVariant::FromJSON(R"({
     "d": {
         "ok": true
     }
-})").get<XDict>();
+})").get<xdict>();
 
 TEST(TemplateTestExpression, Evaluation) {
-    double test = temp::expressions::eval("i - 2", XDict{{"i", 1}});
+    double test = temp::expressions::eval("i - 2", xdict{{"i", 1}});
     ASSERT_EQ(test, -1.0);
 }
 

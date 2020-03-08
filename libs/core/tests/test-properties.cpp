@@ -26,7 +26,7 @@ SCENARIO("properties should have access rules") {
         property<int, PropertyAccess::ReadOnly> roProp = 2;
         // REQUIRES(*roProp == 3); // nope property should be const
         // REQUIRE_THROWS(roProp = 3, XPropertyBase::IllegalAccess); // does not compile (ro property)
-        auto bad_access = [&]() { roProp = XVariant{3}; };
+        auto bad_access = [&]() { roProp = xvar{3}; };
         REQUIRE_THROWS_AS(bad_access(), XPropertyBase::IllegalAccess); // Variant-based access checked at runtime
         // int& recRoProp = *roProp; // does not compile (ro property)
         const int& crefRoProp = *roProp.as_const(); // const acces OK

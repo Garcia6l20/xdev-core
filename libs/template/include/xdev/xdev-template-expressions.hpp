@@ -31,7 +31,7 @@ public:
     };
     using ptr = shared_ptr<Expression>;
     virtual ~Expression();
-    virtual XVariant eval(const XDict& context, const XResources::ptr& res = XResources::Make()) = 0;
+    virtual xvar eval(const xdict& context, const XResources::ptr& res = XResources::Make()) = 0;
     const std::string& content() const { return m_content; }
     static Expression::ptr Load(const string& content);
 protected:
@@ -46,10 +46,10 @@ private:
 class XDEV_TEMPLATE_EXPORT TemplateExpression : public Expression, protected tools::SharedMaker<TemplateExpression>
 {
 public:
-    virtual XVariant eval(const XDict& context, const XResources::ptr& res = XResources::Make()) override;
-    using RenderFunction = function<XVariant(const XList&, const XDict& context, const XResources::ptr& res)>;
+    virtual xvar eval(const xdict& context, const XResources::ptr& res = XResources::Make()) override;
+    using RenderFunction = function<xvar(const xlist&, const xdict& context, const XResources::ptr& res)>;
     static void AddFunction(const string& name, const RenderFunction& function);
-    static XVariant CallFunction(const string & key, const XList& nodes, const XDict& context, const XResources::ptr& res);
+    static xvar CallFunction(const string & key, const xlist& nodes, const xdict& context, const XResources::ptr& res);
 private:
     TemplateExpression(const string& content);
     virtual ~TemplateExpression() override;
@@ -67,11 +67,11 @@ private:
 class TestExpression : public Expression, protected tools::SharedMaker<TestExpression>
 {
 public:
-    virtual XVariant eval(const XDict& context, const XResources::ptr& res = XResources::Make()) override;
+    virtual xvar eval(const xdict& context, const XResources::ptr& res = XResources::Make()) override;
 private:
     TestExpression(const string& content);
     Expression::ptr m_left, m_right;
-    using Operator = std::function<bool(const XVariant&, const XVariant&)>;
+    using Operator = std::function<bool(const xvar&, const xvar&)>;
     Operator m_operator;
     using OperatorMap = map<string, Operator>;
     static OperatorMap InitOperators();
@@ -93,7 +93,7 @@ struct VariantLoaderVisitor {
     {
         return val ? 1. : 0.;
     }
-    inline double operator()(const XNone&) const
+    inline double operator()(const xnone&) const
     {
         return 0.;
     }
@@ -106,19 +106,19 @@ struct VariantLoaderVisitor {
     {
         return static_cast<double>(obj.get() != nullptr);
     }
-    inline double operator()(const XList&) const
+    inline double operator()(const xlist&) const
     {
         return 1.;
     }
-    inline double operator()(const XDict&) const
+    inline double operator()(const xdict&) const
     {
         return 1.;
     }
-    inline double operator()(const XValue&) const
+    inline double operator()(const xval&) const
     {
         return 0.; // might not append
     }
-    inline double operator()(const XFunction&) const
+    inline double operator()(const xfn&) const
     {
         return 0.; // might not append
     }
@@ -320,7 +320,7 @@ bool parse(const string& input,
 }
 
 template <typename T = double>
-T eval(const std::string & input, const XDict& context)
+T eval(const std::string & input, const xdict& context)
 {
     T result;
     grammar<T,std::string::const_iterator> eg;

@@ -72,3 +72,19 @@ SCENARIO("object properies should notify listeners", "[object.properties]") {
         }
     }
 }
+
+SCENARIO("object can be hold by xvar", "[object.variant_compat]") {
+    GIVEN("an xvar holding an object") {
+        xvar var = XClass::Create<TestObject>("TestObject");
+//        REQUIRE(var["intProp"].is<int>());
+//        REQUIRE(var["intProp"] == 42);
+    }
+    GIVEN("an xobj copied to an xvarian holding an object") {
+        auto obj = XClass::Create<TestObject>("TestObject");
+        static_assert(xdev::XObjectPointer<decltype(obj)>, "xdev::XObjectPointer is wrong");
+        static_assert(not xdev::XValueConvertible<decltype(obj)>, "xdev::XValueConvertible is wrong");
+        xvar var = obj;
+//        REQUIRE(var["intProp"].is<int>());
+//        REQUIRE(var["intProp"] == 42);
+    }
+}

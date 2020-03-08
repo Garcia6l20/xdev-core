@@ -1,6 +1,8 @@
 #include <catch2/catch.hpp>
 #include <xdev/xdev.hpp>
 
+using namespace xdev;
+
 SCENARIO("list types are accessible as normal lists", "[core.api.variant.v1.0]") {
     GIVEN("A simple list") {
         xvar val = xlist{1, 2, "3"};

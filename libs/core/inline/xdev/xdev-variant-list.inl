@@ -14,12 +14,6 @@ List& List::operator=(const List&other) { _value = other._value; return *this; }
 
 List::List(const ListInitList& value): _value(value) {}
 
-template <typename...Ts>
-    requires (not one_of<std::decay_t<Ts>, Value, Variant, List> && ...)
-inline List::List(Ts&&...args): List(Variant{std::forward<Ts>(args)}...) {
-
-}
-
 List::iterator List::begin() { return _value.begin(); }
 List::iterator List::end() { return _value.end(); }
 Variant& List::front() { return _value.front(); }

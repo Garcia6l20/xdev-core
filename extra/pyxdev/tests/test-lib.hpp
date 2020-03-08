@@ -28,8 +28,8 @@ public:
     property<int>                       object_num;
     static property<int>                InstanceCounter;
     property<XObjectBase::ptr>          sub_object;
-    property<XDict>                     dict;
-    property<XArray>                    array;
+    property<xdict>                     dict;
+    property<xlist>                     array = xlist{};
 
     XINVOKABLE
     void call_me();

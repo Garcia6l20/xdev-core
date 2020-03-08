@@ -54,9 +54,8 @@ public:
         return _value.contains(key);
     }
 
-    static constexpr const char* ctti_nameof()
-    {
-        return "XDict";
+    static constexpr const char* ctti_nameof() {
+        return "xdict";
     }
 
 private:

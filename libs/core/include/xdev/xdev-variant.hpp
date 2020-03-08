@@ -60,17 +60,17 @@ public:
     template<typename T>
     const T& get() const;
 
-//    /**
-//     * @brief Get value as @c XObjectBase subclass.
-//     */
-//    template<XObjectDerived ObjectT>
-//    typename ObjectT::ptr get();
+    /**
+     * @brief Get value as @c XObjectBase subclass.
+     */
+    template<XObjectDerived ObjectT>
+    typename ObjectT::ptr get();
 
-//    /**
-//     * @brief Get value as @c XObjectBase subclass (const).
-//     */
-//    template<XObjectDerived ObjectT>
-//    typename ObjectT::ptr get() const;
+    /**
+     * @brief Get value as @c XObjectBase subclass (const).
+     */
+    template<XObjectDerived ObjectT>
+    typename ObjectT::ptr get() const;
 
     struct ConvertError : public std::runtime_error { using std::runtime_error::runtime_error; };
 
@@ -110,8 +110,9 @@ public:
      * @{
      */
 
-    inline Variant(const Dict&dct);
     inline Variant(Dict&&dct);
+    inline Variant(const Dict&dct);
+
     inline Variant& update(Dict&&dct);
 
     /** @} */
@@ -122,6 +123,7 @@ public:
      */
 
     inline Variant(Function&&fcn);
+    inline Variant(const Function&fcn);
 
     inline auto operator()();
 
@@ -135,7 +137,17 @@ public:
 
 
     /**
-     * @ingroup variant_dict_api variant_list_api
+     * @defgroup variant_object_api XVariant object API
+     * @{
+     */
+
+    Variant(const XObjectPointer auto&);
+    Variant(XObjectPointer auto&&);
+
+    /** @} */
+
+    /**
+     * @ingroup variant_dict_api variant_list_api variant_object_api
      * @{
      **/
 
@@ -150,12 +162,12 @@ public:
      */
 
     inline Variant(const char*);
-    inline Variant(Value&&);
-    //inline Variant& operator=(Value&& value);
 
-    template <typename T>
-    requires std::convertible_to<T, Value>
-    Variant(T&&);
+    inline Variant(const Value&);
+    inline Variant(Value&&);
+
+    Variant(const XValueConvertible auto&);
+    Variant(XValueConvertible auto&&);
 
     inline Variant& operator!();
 
@@ -174,9 +186,8 @@ public:
     static XDEV_CORE_EXPORT Variant FromJSON(const std::string&);
     static XDEV_CORE_EXPORT Variant FromYAML(const std::string&);
 
-    static constexpr const char* ctti_nameof()
-    {
-        return "XVariant";
+    static constexpr const char* ctti_nameof() {
+        return "xvar";
     }
 private:
     using value_t = std::variant<Value, List, Dict, Function, SharedObject>;
@@ -185,22 +196,13 @@ private:
 
 } // variant
 
-using XNone     = variant::None;
-using XValue    = variant::Value;
-using XList    = variant::List;
-using XDict     = variant::Dict;
-using XFunction = variant::Function;
-using XVariant  = variant::Variant;
+using xnone = variant::None;
+using xval  = variant::Value;
+using xlist = variant::List;
+using xdict = variant::Dict;
+using xfn   = variant::Function;
+using xvar  = variant::Variant;
 
 } // xdev
-
-#ifndef XDEV_NO_OUTERSCOPE_DEFINES
-using xvar = xdev::XVariant;
-using xval = xdev::XValue;
-using xnone = xdev::XNone;
-using xlist = xdev::XList;
-using xdict = xdev::XDict;
-using xfn = xdev::XFunction;
-#endif
 
 #include <xdev/xdev-variant.inl>

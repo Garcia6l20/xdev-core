@@ -3,19 +3,6 @@
 
 #include <iostream>
 
-namespace std {
-
-//template <>
-//struct hash<xdev::variant::Dict>
-//{
-//    std::size_t operator()(const xdev::variant::Dict& var) const
-//    {
-//        return var.hash();
-//    }
-//};
-
-}
-
 namespace xdev {
 namespace variant {
 
@@ -32,12 +19,6 @@ Dict::iterator Dict::end() { return _value.end(); }
 Dict::const_iterator Dict::begin() const { return _value.cbegin(); }
 Dict::const_iterator Dict::end() const { return _value.cend(); }
 size_t Dict::size() const { return _value.size(); }
-
-//size_t Dict::hash() const {
-//    return std::accumulate(begin(), end(), _value.size(), [](size_t seed, std::pair<Variant, Variant> ii){
-//        return seed ^ ((ii.first.hash() ^ ii.second.hash()) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
-//    });
-//}
 
 std::string Dict::toString() const {
     std::string res = "{";

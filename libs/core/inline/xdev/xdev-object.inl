@@ -35,7 +35,7 @@ typename ObjT::ptr XStaticClass::Make() {
 // Event
 //
 
-Connection::Connection(XFunction func, Event* event): _event(event), _function(new XFunction(func)) {
+Connection::Connection(xfn func, Event* event): _event(event), _function(new xfn(func)) {
 }
 
 Connection::~Connection() {
@@ -44,7 +44,7 @@ Connection::~Connection() {
     delete _function;
 }
 
-void Connection::operator()(XList&&lst) {
+void Connection::operator()(xlist&&lst) {
     (*_function)(xfwd(lst));
 }
 
@@ -60,7 +60,7 @@ Event::~Event() {
     }
 }
 
-void Event::operator()(const XList&arg_list) const {
+void Event::operator()(const xlist&arg_list) const {
     lock_guard lock(_mut);
     for (auto conn: _connections) {
         if (auto c = conn.lock(); c != nullptr)
@@ -76,7 +76,7 @@ void Event::operator()(ArgsT&&...args) const {
     }
 }
 
-Connection::ptr Event::connect(XFunction target) {
+Connection::ptr Event::connect(xfn target) {
     lock_guard lock(_mut);
     auto conn = make_shared<Connection>(target, this);
     _connections.push_back(conn);
@@ -138,8 +138,8 @@ PropertyListener<T>::~PropertyListener() {
 }
 
 template <typename T>
-void PropertyListener<T>::notify(const XVariant& value) const {
-    if constexpr (is_same_v<XVariant, T>)
+void PropertyListener<T>::notify(const xvar& value) const {
+    if constexpr (is_same_v<xvar, T>)
         _watcher(value);
     else _watcher(value.get<T>()); // convert ???
 }
@@ -180,11 +180,11 @@ const PropertyListenerBase::ptr XPropertyBase::listen(typename PropertyListener<
     return listener;
 }
 
-void XPropertyBase::operator=(const XVariant&) {
+void XPropertyBase::operator=(const xvar&) {
     throw IllegalAccess("invalid usage of XPropertyBase");
 }
 
-XVariant XPropertyBase::value() const {
+xvar XPropertyBase::value() const {
     throw IllegalAccess("invalid usage of XPropertyBase");
 }
 
@@ -219,7 +219,7 @@ const T& XPropertyBase::get() const {
 }
 
 template <typename T, XPropertyBase::Access access>
-void property<T, access>::operator=(const XVariant& value) {
+void property<T, access>::operator=(const xvar& value) {
     if constexpr (access > Access::ReadWrite) {
         throw IllegalAccess("property is readonly");
     } else {
@@ -253,7 +253,7 @@ T& property<T, access>::operator=(const T& value) {
 }
 
 template <typename T, XPropertyBase::Access access>
-XVariant property<T, access>::value() const {
+xvar property<T, access>::value() const {
     return _value;
 }
 
@@ -363,19 +363,19 @@ ResultT XObjectBase::call(const string& method, ArgsT&&...args) {
     return _metaData.functions.at(method).operator()<ResultT>(forward<ArgsT>(args)...);
 }
 
-XVariant XObjectBase::call(string&& method) {
+xvar XObjectBase::call(string&& method) {
     return _metaData.functions.at(forward<string>(method))({});
 }
 
-XVariant XObjectBase::call(string&& method, XList&&args) {
-    return _metaData.functions.at(forward<string>(method))(forward<XList>(args));
+xvar XObjectBase::call(string&& method, xlist&&args) {
+    return _metaData.functions.at(forward<string>(method))(forward<xlist>(args));
 }
 
-XVariant XObjectBase::call(const string& method, const XList&args) {
+xvar XObjectBase::call(const string& method, const xlist&args) {
     return _metaData.functions.at(method)(args);
 }
 
-XVariant XObjectBase::apply(const string& method, const XList&args) {
+xvar XObjectBase::apply(const string& method, const xlist&args) {
     return _metaData.functions.at(method).apply(args);
 }
 
@@ -385,7 +385,7 @@ void XObjectBase::connect(string&& event_name, const XObjectBase::ptr& target, s
     target->_metaData.connections.push_back(src.connect(dst));
 }
 
-XFunction XObjectBase::method(const std::string& name) const {
+xfn XObjectBase::method(const std::string& name) const {
     return _metaData.functions.at(name);
 }
 
@@ -401,8 +401,8 @@ XFunction XObjectBase::method(const std::string& name) const {
 //
 
 template <>
-struct fmt::formatter<xdev::XPropertyBase>: fmt::formatter<xdev::XVariant> {
-    using base = fmt::formatter<xdev::XVariant>;
+struct fmt::formatter<xdev::XPropertyBase>: fmt::formatter<xdev::xvar> {
+    using base = fmt::formatter<xdev::xvar>;
 
     // Formats the point p using the parsed format specification (presentation)
     // stored in this formatter.

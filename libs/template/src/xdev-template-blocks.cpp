@@ -46,7 +46,7 @@ RenderBlock::RenderBlock(const string& content, const XResources::ptr& resources
 {
 }
 
-string RenderBlock::process(const XDict& context)
+string RenderBlock::process(const xdict& context)
 {
     try {
         // std::cout << XVariant(context).toJson() << std::endl << std::endl;
@@ -185,7 +185,7 @@ RootBlock::ptr RootBlock::CompileResource(const string& key, const XResources::p
 // TreeBlock
 //
 
-string TreeBlock::process(const XDict& context)
+string TreeBlock::process(const xdict& context)
 {
     return m_children.process(context);
 }
@@ -339,12 +339,12 @@ IfBlock::IfBlock(const string & /*block*/, const string & input, size_t & offset
     offset = bmatch.block_end.end;
 }
 
-string IfBlock::process(const XDict& context)
+string IfBlock::process(const xdict& context)
 {
     for (auto& item : m_ifChildren)
     {
         try {
-            XVariant check = item.first->eval(context, m_resources);
+            xvar check = item.first->eval(context, m_resources);
             if (check.is<bool>())
             {
                 if (check.get<bool>() == true)
@@ -411,18 +411,18 @@ ForBlock::ForBlock(const string & block, const string & input, size_t & offset, 
     }
 }
 
-string ForBlock::process(const XDict& context)
+string ForBlock::process(const xdict& context)
 {
     string result;
-    XDict for_context = context;
-    XVariant iterable;
+    xdict for_context = context;
+    xvar iterable;
     try {
         iterable = for_context.at(m_iterated);
     }
     catch (const out_of_range&) {
         throw XException("Undefined variable: " + m_iterated);
     }
-    if (iterable.is<XDict>())
+    if (iterable.is<xdict>())
     {
         if (m_keys.size() > 2)
         {
@@ -436,7 +436,7 @@ string ForBlock::process(const XDict& context)
             value = m_keys[1];
             tools::trim(value);
         }
-        for (const auto& item : iterable.get<XDict>())
+        for (const auto& item : iterable.get<xdict>())
         {
             if (value.size())
             {
@@ -450,7 +450,7 @@ string ForBlock::process(const XDict& context)
             result += m_children.process(for_context);
         }
     }
-    else if (iterable.is<XList>())
+    else if (iterable.is<xlist>())
     {
         if (m_keys.size() != 1)
         {
@@ -459,11 +459,11 @@ string ForBlock::process(const XDict& context)
         string value = m_keys[0];
         tools::trim(value);
         int index = 0;
-        auto& array = iterable.get<XList>();
-        for_context["loop"] = XDict{
+        auto& array = iterable.get<xlist>();
+        for_context["loop"] = xdict{
             {"size", static_cast<int>(array.size())}
         };
-        auto& loop = for_context["loop"].get<XDict>();
+        auto& loop = for_context["loop"].get<xdict>();
         for (auto& item : array)
         {
             loop["index"] = index;
@@ -519,13 +519,13 @@ BlockBlock::BlockBlock(const string& block, const string& input, size_t& offset,
     m_children = TreeBlock::Load(GetContent(input, block_bmatch, bmatch), resources);
 }
 
-string BlockBlock::process(const XDict & context)
+string BlockBlock::process(const xdict & context)
 {
     string result;
-    XDict child_ctx = context;
+    xdict child_ctx = context;
     temp::TemplateExpression::RenderFunctionMap& function_map = temp::TemplateExpression::RenderFunctions;
     string super_key = fmt::format("super#{}", static_cast<void*>(this));
-    function_map[super_key] = [this, child_ctx](const XList& /*args*/, const XDict& /*context*/, const XResources::ptr& /*res*/) {
+    function_map[super_key] = [this, child_ctx](const xlist& /*args*/, const xdict& /*context*/, const XResources::ptr& /*res*/) {
         //BlockBlock::ptr super = m_super.lock();
         BlockBlock::ptr super = m_super;
         string res;

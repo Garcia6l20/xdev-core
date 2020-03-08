@@ -20,9 +20,9 @@ static bool g_check_functions_initialized = false;
 auto register_renderer_functions = []() -> bool {
     if (g_check_functions_initialized)
         return true;
-    temp::TemplateExpression::AddFunction("is_xobject", [](const XArray& args, const XDict&, const XResources::ptr&) {
+    temp::TemplateExpression::AddFunction("is_xobject", [](const xlist& args, const xdict&, const XResources::ptr&) {
         static const regex x_object_regex(R"(^\w+::ptr$)");
-        string data_type_name = XVariant(args[0]).get<string>();
+        string data_type_name = xvar(args[0]).get<string>();
         return regex_match(data_type_name, x_object_regex);
     });
     return g_check_functions_initialized = true;
@@ -56,8 +56,8 @@ XMetaObjectCompiler::XMetaObjectCompiler(const std::string& project_name, const 
                                                      XdevMocLibResources)),
     m_poolsSourceTemplate(XTemplate::CompileResource("templates/pools.cpp.xtf",
                                                      XdevMocLibResources)),
-    m_pools(XDict()),
-    m_poolsIncludes(XArray())
+    m_pools(xdict()),
+    m_poolsIncludes(xlist())
 {
     g_check_functions_initialized = register_renderer_functions();
 }
@@ -112,9 +112,9 @@ string get_class_body(const std::string& filecontent, size_t startpos)
 	return string(p.first, p.second);
 }
 
-XDict xmacro_extract_args(const string& raw_args)
+xdict xmacro_extract_args(const string& raw_args)
 {
-    XDict args;
+    xdict args;
 	static const regex extract_expr(R"(\s*(\w+)\s*=\s*(\((.|\s)+\)|[\w\s\"\']+)\s*)");
 	tools::regex_foreach(raw_args, extract_expr, [&](const smatch& match)
 	{
@@ -149,22 +149,22 @@ void XMetaObjectCompiler::registerPools(const fs::path& path)
     static const regex xregisterpool_expr(R"(XPOOLREGISTER\(\s{0,}(\w+)\s{0,},\s{0,}Access\s{0,}=\s{0,}(\w+)\s{0,},\s{0,}Macro\s{0,}=\s{0,}(\w+)\))");
     tools::regex_foreach(file_content, xregisterpool_expr, [&](auto& match)
     {
-        XDict pool_def;
+        xdict pool_def;
         pool_def["name"] = string(match[1]);
         pool_def["access"] = string(match[2]);
         pool_def["macro"] = string(match[3]);
-        pool_def["items"] = XArray();
-        m_pools.get<XDict>()[pool_def["access"].get<string>()] = pool_def;
+        pool_def["items"] = xlist();
+        m_pools.get<xdict>()[pool_def["access"].get<string>()] = pool_def;
     });
-    m_poolsIncludes.get<XArray>().push(path.filename().string());
+    m_poolsIncludes.get<xlist>().push(path.filename().string());
 }
 
 void XMetaObjectCompiler::createPools()
 {
-    XDict context {
+    xdict context {
         { "basename", m_projectName + "-pools.xdev"s },
-        { "includes", m_poolsIncludes.get<XArray>() },
-        { "pools", m_pools.get<XDict>() },
+        { "includes", m_poolsIncludes.get<xlist>() },
+        { "pools", m_pools.get<xdict>() },
     };
     cout << "-- pools: " << m_pools.toString() << endl;
     ofstream(m_projectName + "-pools.xdev.hpp") << m_poolsHeaderTemplate->process(context);
@@ -177,9 +177,9 @@ void XMetaObjectCompiler::processPools(const fs::path& path)
 
     list<string> matching_macros{ "XCLASS" };
 
-    for (const auto& item : m_pools.get<XDict>())
+    for (const auto& item : m_pools.get<xdict>())
     {
-        matching_macros.push_back(item.second.get<XDict>().at("macro").get<string>());
+        matching_macros.push_back(item.second.get<xdict>().at("macro").get<string>());
     }
 
     regex xclass_expr("(" + tools::join(matching_macros, "|") + R"()\((.+)?\)[.\s]+class\s+(\w+)\s{0,}:((\s{0,}(public|protected|private)\s+([\w:<>]+)\s{0,},?)+))");
@@ -188,12 +188,12 @@ void XMetaObjectCompiler::processPools(const fs::path& path)
     {
         string macro = match[1];
         string class_name = match[3];
-        for (auto& item : m_pools.get<XDict>())
+        for (auto& item : m_pools.get<xdict>())
         {
-            XDict& pool_dict = item.second.get<XDict>();
+            xdict& pool_dict = item.second.get<xdict>();
             if (pool_dict["macro"].get<string>() == macro)
             {
-                pool_dict["items"].get<XArray>().push(XDict{
+                pool_dict["items"].get<xlist>().push(xdict{
                     { "class", class_name }
                     });
                 break;
@@ -212,19 +212,19 @@ void XMetaObjectCompiler::processFile(const fs::path& path) try
 
 	string file_content = read_file(path);
 
-    XDict context;
+    xdict context;
 	context["basename"] = basename;
-    if (m_pools.get<XDict>().size())
+    if (m_pools.get<xdict>().size())
     {
-        context["pools"] = m_pools.get<XDict>();
+        context["pools"] = m_pools.get<xdict>();
     }
-    XArray xclasses;
+    xlist xclasses;
 
     list<string> matching_macros { "XCLASS", "XAPPLICATION" };
 
-    for (const auto& item : m_pools.get<XDict>())
+    for (const auto& item : m_pools.get<xdict>())
     {
-        matching_macros.push_back(item.second.get<XDict>().at("macro").get<string>());
+        matching_macros.push_back(item.second.get<xdict>().at("macro").get<string>());
     }
 
     // X\(((?:[^()]++)*)\)\s*(\w+)\s*[{;]
@@ -232,15 +232,15 @@ void XMetaObjectCompiler::processFile(const fs::path& path) try
     regex x_regex(R"(X\(\s*([\w <>()(::)]+)\s*(,\s*((?:[^()]+)*))?\)\s*(\w+)(\s*=\s*(.*))?\s*;)");
     regex x_class_regex(R"(X\(\s*(class|struct)\s*(,\s*((?:[^()]+)*))?\)\s*(\w+)\s*:((\s*(public|protected|private)\s+((xdev::)?(\w+)<(\w+)>)\s*,?)+))");
 
-    XArray class_defs;
+    xlist class_defs;
 
     tools::regex_foreach(file_content, x_class_regex, [&](auto& match)
     {
-        XDict class_def = {
-            {"functions", XArray{}},
-            {"events", XArray{}},
-            {"properties", XArray{}},
-            {"invokables", XArray{}},
+        xdict class_def = {
+            {"functions", xlist{}},
+            {"events", xlist{}},
+            {"properties", xlist{}},
+            {"invokables", xlist{}},
             // this will probably be removed
             {"cpp_template", "templates/xclass.cpp.xtf"},
             {"hdr_template", "templates/xclass.h.xtf"}
@@ -258,43 +258,43 @@ void XMetaObjectCompiler::processFile(const fs::path& path) try
         auto body_end = find_scope_end(body_start, file_content.cend(), '{', '}');
         string body{body_start, body_end + 1}; // + 1 = keep ';'
         tools::regex_foreach(body, regex(R"(property\s*<([\w\s,<>:]*)>\s+(\w+).*(?=;))"), [&](auto& match) {
-            class_def["properties"].get<XArray>().push(XDict{
+            class_def["properties"].get<xlist>().push(xdict{
                 {"raw_args", match[1]},
                 {"name", match[2]},
             });
         });
         tools::regex_foreach(body, regex(R"(function\s*<([\w\s,<>():]*)>\s+([\w:]+)(\s*=\s*[\w\d]+)?;)"), [&](auto& match) {
-            class_def["functions"].get<XArray>().push(XDict{
+            class_def["functions"].get<xlist>().push(xdict{
                 {"raw_args", match[1]},
                 {"name", match[2]},
             });
         });
         tools::regex_foreach(body, regex(R"(event\s*<([\w\s,<>:]*)>\s+([\w:]+)(\s*=\s*[\w\d]+)?;)"), [&](auto& match) {
-            class_def["events"].get<XArray>().push(XDict{
+            class_def["events"].get<xlist>().push(xdict{
                 {"raw_args", match[1]},
                 {"name", match[2]},
             });
         });
         tools::regex_foreach(body, regex(R"(XINVOKABLE\s+([\w:]+)\s+(\w+)\s*\(\s*([\w <>():&,]+)?\)\s*[;{])"), [&](auto& match) {
-            XArray args;
+            xlist args;
             tools::regex_foreach(match[3], regex(R"(,?\s*((const)?\s*([\w:<>,]+)&?)\s*(\w+)?)"), [&](auto& match) {
                 string name = match[4].matched ? match[4] : "arg" + to_string(args.size());
-                args.push(XDict{
+                args.push(xdict{
                               {"type", match[1]},
                               {"clean_type", match[3]},
                               {"name", name},
                           });
             });
             string args_decl = tools::join(args, ", ", [](auto& v) {
-                    return v.template get<XDict>().at("type").toString() + " " + v.template get<XDict>().at("name").toString();
+                    return v.template get<xdict>().at("type").toString() + " " + v.template get<xdict>().at("name").toString();
             });
             string args_types = tools::join(args, ", ", [](auto& v) {
-                    return v.template get<XDict>().at("clean_type").toString();
+                    return v.template get<xdict>().at("clean_type").toString();
             });
             string args_names = tools::join(args, ", ", [](auto& v) {
-                    return v.template get<XDict>().at("name").toString();
+                    return v.template get<xdict>().at("name").toString();
             });
-            class_def["invokables"].get<XArray>().push(XDict{
+            class_def["invokables"].get<xlist>().push(xdict{
                 {"name", match[2]},
                 {"return_type", match[1]},
                 {"args", args},
@@ -305,9 +305,9 @@ void XMetaObjectCompiler::processFile(const fs::path& path) try
         });
 
         static const regex metadata_expr(R"(XMETADATA\((\w+)\s{0,},\s{0,}([^)]+))");
-        XDict metadata;
+        xdict metadata;
         tools::regex_foreach(body, metadata_expr, [&](auto& match) {
-            metadata[match[1]] = XVariant::FromJSON(match[2]);
+            metadata[match[1]] = xvar::FromJSON(match[2]);
             cout << "-- metadata found: " << match[1] << " = " << metadata[match[1]] << endl;
         });
 

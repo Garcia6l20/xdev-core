@@ -21,8 +21,8 @@ namespace variant {
     class Dict;
 }
 
-using XVariant = variant::Variant;
-using XDict = variant::Dict;
+using xvar = variant::Variant;
+using xdict = variant::Dict;
 
 class XObjectBase;
 
@@ -45,8 +45,8 @@ public:
 
     using list_t = vector<XMetaPropertyBase>;
     using map_t = map<string, XMetaPropertyBase>;
-    using setter_t = function<void(XObjectBase*, const XVariant&)>;
-    using getter_t = function<XVariant(XObjectBase*)>;
+    using setter_t = function<void(XObjectBase*, const xvar&)>;
+    using getter_t = function<xvar(XObjectBase*)>;
     XMetaPropertyBase(const string& name,
                   const type_index& typeindex,
                   const ctti::type_id_t& type_id,
@@ -95,7 +95,7 @@ struct PropertyListenerBase {
     using ptr = shared_ptr<PropertyListenerBase>;
     using wptr = weak_ptr<PropertyListenerBase>;
     inline virtual ~PropertyListenerBase();
-    virtual void notify(const XVariant&) const = 0;
+    virtual void notify(const xvar&) const = 0;
 protected:
     inline PropertyListenerBase(const reference_wrapper<XPropertyBase>& prop);
     reference_wrapper<XPropertyBase> _property;
@@ -103,13 +103,13 @@ protected:
     friend struct XPropertyBase;
 };
 
-template <typename T = XVariant>
+template <typename T = xvar>
 struct PropertyListener: PropertyListenerBase {
     typedef void(*TargetType)(T);
     using WatchFunc = function<void(T)>;
     PropertyListener(WatchFunc watcher, const reference_wrapper<XPropertyBase>& prop);
     virtual ~PropertyListener() override;
-    void notify(const XVariant&) const override;
+    void notify(const xvar&) const override;
 private:
     WatchFunc _watcher;
 };
@@ -118,8 +118,8 @@ struct XPropertyBase {
     using Access = PropertyAccess;
     using Kind = PropertyKind;
     using IllegalAccess = XMetaPropertyBase::IllegalAccess;
-    inline virtual void operator=(const XVariant&);
-    inline virtual XVariant value() const;
+    inline virtual void operator=(const xvar&);
+    inline virtual xvar value() const;
     ctti::type_id_t typeId() const { return _typeId; }
 
     template <typename T>
@@ -132,9 +132,9 @@ struct XPropertyBase {
     inline void listen(const PropertyListenerBase::ptr& listener);
     inline void stopListening(const PropertyListenerBase::ptr&);
     inline void stopListening(const PropertyListenerBase*);
-    template <typename ListenT = XVariant>
+    template <typename ListenT = xvar>
     inline void stopListening(const PropertyListenerBase::ptr&);
-    template <typename ListenT = XVariant>
+    template <typename ListenT = xvar>
     const PropertyListenerBase::ptr listen(typename PropertyListener<ListenT>::WatchFunc watch);
 
     template <typename T>
@@ -162,8 +162,8 @@ struct property: XPropertyBase {
     property(const T& value): property() { _value = value; }
     property(XObjectBase* owner): property() { _owner = owner; }
     property(XObjectBase* owner, const T& value): property() { _value = value; _owner = owner; }
-    virtual void operator=(const XVariant&) override;
-    virtual XVariant value() const override;
+    virtual void operator=(const xvar&) override;
+    virtual xvar value() const override;
 
     // read-only access operator
     T& operator()(XObjectBase* owner) {

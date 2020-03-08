@@ -52,6 +52,10 @@ struct Function: std::function<Variant(List)> {
 
     auto operator<=>(const Function&) const = default;
     inline bool operator ==(const Function&) const;
+
+    static constexpr const char* ctti_nameof() {
+        return "xfn";
+    }
 };
 
 }

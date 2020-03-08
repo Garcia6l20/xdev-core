@@ -1,6 +1,8 @@
 #include <catch2/catch.hpp>
 #include <xdev/xdev.hpp>
 
+using namespace xdev;
+
 SCENARIO("basic types are accessible as normal types", "[core.api.variant.v1.0]") {
     GIVEN("An basic string value") {
         xvar val = "42";

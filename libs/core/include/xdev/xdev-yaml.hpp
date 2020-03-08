@@ -12,21 +12,25 @@ namespace xdev::yaml {
  */
 class Parser {
 public:
-    Parser(const std::string& data);
-    inline XVariant operator()();
+    inline Parser(const std::string& data);
+    inline xvar operator()();
 private:
 
     const std::string& _data;
 };
 
-inline XVariant parse(const std::string& data) {
+inline xvar parse(const std::string& data) {
     return Parser{data}();
 }
 
 } // xdev::yaml
 
-inline xdev::XVariant operator "" _xyaml(const char* data, size_t size) {
+namespace xdev {
+
+inline xdev::xvar operator "" _xyaml(const char* data, size_t size) {
     return xdev::yaml::parse(std::string{data, size});
 }
+
+} // xdev
 
 #include <xdev/xdev-yaml.inl>

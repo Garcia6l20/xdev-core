@@ -24,7 +24,7 @@ class BaseBlock
 {
 public:
     using ptr = shared_ptr<BaseBlock>;
-    virtual string process(const XDict& context) = 0;
+    virtual string process(const xdict& context) = 0;
 protected:
     BaseBlock(const XResources::ptr& resources);
     static bool ExtractFunction(const string& raw_content, string& function_name, vector<string>& args);
@@ -37,7 +37,7 @@ class BlockList : public vector<BaseBlock::ptr>
 {
 public:
     using vector<BaseBlock::ptr>::vector;
-    inline string process(const XDict& context)
+    inline string process(const xdict& context)
     {
         string result;
         for (auto& item : *this)
@@ -51,7 +51,7 @@ public:
 class TreeBlock : public BaseBlock
 {
 public:
-    virtual string process(const XDict& context) override;
+    virtual string process(const xdict& context) override;
 protected:
     using BaseBlock::BaseBlock;
     BlockList m_children;
@@ -85,7 +85,7 @@ public:
         m_content(content)
     {
     }
-    virtual string process(const XDict& /*context*/) override
+    virtual string process(const xdict& /*context*/) override
     {
         return m_content;
     }
@@ -106,7 +106,7 @@ public:
     RenderBlock(const string& content, const XResources::ptr& resources);
     using ptr = shared_ptr<RenderBlock>;
     static ptr TryLoad(const string& input, size_t& offset, const XResources::ptr& resources);
-    virtual string process(const XDict& context) override;
+    virtual string process(const xdict& context) override;
 };
 
 /**
@@ -179,7 +179,7 @@ class IfBlock : public ControlBlock
 {
 public:
     IfBlock(const string& block, const string& input, size_t& offset, const XResources::ptr& resources);
-    virtual string process(const XDict& context) override;
+    virtual string process(const xdict& context) override;
 private:
     vector<pair<Expression::ptr, BlockList>> m_ifChildren;
 };
@@ -194,7 +194,7 @@ class ForBlock : public ControlBlock
     vector<string> m_keys;
 public:
     ForBlock(const string& block, const string& input, size_t& offset, const XResources::ptr& resources);
-    virtual string process(const XDict& context) override;
+    virtual string process(const xdict& context) override;
 };
 
 /**
@@ -209,7 +209,7 @@ public:
     BlockBlock(const string& block, const string& input, size_t& offset, const XResources::ptr& resources);
     inline string id() const { return m_id; }
     inline void setSuper(const BlockBlock::ptr& super) { m_super = super; }
-    virtual string process(const XDict& context) override;
+    virtual string process(const xdict& context) override;
 private:
     string m_id;
     BlockBlock::ptr m_super;

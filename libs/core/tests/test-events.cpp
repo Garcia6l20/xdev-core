@@ -140,7 +140,7 @@ TEST_CASE("Events.FunctionWrap") {
         REQUIRE(val == value);
         called = true;
     };
-    XFunction test = lambda;
+    xfn test = lambda;
     test(val);
     REQUIRE(called);
 }
@@ -149,7 +149,7 @@ TEST_CASE("Events.FunctionWrap") {
 //    XArray val = {42};
 //    bool called = false;
 //    // note: lambdas must be typed as function
-//    XFunction test = function([&](const XArray& value) {
+//    xfn test = function([&](const XArray& value) {
 //        for (size_t ii = 0 ; ii < value.size(); ++ii) {
 //            ASSERT_EQ(val[ii], value[ii]);
 //        }

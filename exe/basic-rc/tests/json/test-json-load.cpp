@@ -9,6 +9,6 @@
 using namespace xdev;
 
 TEST_CASE("JSonResources", "Loading") {
-    auto root = XdevRcTestJsonLoadResources->getJson("test.json").get<XDict>();
+    auto root = XdevRcTestJsonLoadResources->getJson("test.json");
     REQUIRE(root["the_response"] == 42.0);
 }

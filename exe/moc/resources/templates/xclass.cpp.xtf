@@ -12,7 +12,7 @@
     // events{% for event in xclass.events %}
     _events.emplace_back(MetaFunction<void({{ event.raw_args }})>{"{{ event.name }}"});{% endfor %}
     {% for key, value in xclass.metadata %}
-    _metadata["{{ key }}"] = XVariant::FromJSON(R"({{ value }})");{% endfor %}
+    _metadata["{{ key }}"] = R"({{ value }})"_xjson;{% endfor %}
 }
 
 {{ xclass.name }}StaticClass::~{{ xclass.name }}StaticClass() {

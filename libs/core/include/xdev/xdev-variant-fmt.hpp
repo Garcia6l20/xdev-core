@@ -7,7 +7,7 @@
 //
 
 template <>
-struct fmt::formatter<xdev::XVariant>: fmt::formatter<std::string> {
+struct fmt::formatter<xdev::xvar>: fmt::formatter<std::string> {
   using base = fmt::formatter<std::string>;
   // presentation format 'j' - json, 't' - typename, 'f' - full <value>[<type>]
   char presentation = 'j';
@@ -27,7 +27,7 @@ struct fmt::formatter<xdev::XVariant>: fmt::formatter<std::string> {
   // Formats the point p using the parsed format specification (presentation)
   // stored in this formatter.
   template <typename FormatContext>
-  auto format(const xdev::XVariant& v, FormatContext& ctx) {
+  auto format(const xdev::xvar& v, FormatContext& ctx) {
       return format_to(
               ctx.out(),
               presentation == 'j' ? "{0}" : presentation == 't' ? "{1}" : "{0}[{1}]",

@@ -3,6 +3,8 @@
 #include <xdev/xdev.hpp>
 #include <xdev/xdev-yaml.hpp>
 
+using namespace xdev;
+
 SCENARIO("basic type should be handled correctly") {
     GIVEN("a parsed yaml string") {
         xvar var = R"("42")"_xyaml;

@@ -61,9 +61,9 @@ TemplateExpression::TemplateExpression(const string& content) :
 
 TemplateExpression::~TemplateExpression() {}
 
-XVariant TemplateExpression::eval(const XDict& context, const XResources::ptr& res)
+xvar TemplateExpression::eval(const xdict& context, const XResources::ptr& res)
 {
-    XVariant result;
+    xvar result;
     if (m_baseVariable.size())
     {
         try {
@@ -71,7 +71,7 @@ XVariant TemplateExpression::eval(const XDict& context, const XResources::ptr& r
         }
         catch (const std::out_of_range&) {
             try {
-                result = XVariant::FromJSON(m_baseVariable);
+                result = xvar::FromJSON(m_baseVariable);
             } catch (const exception&) {
                 throw Error("Undefined variable: " + m_baseVariable);
             }
@@ -79,13 +79,13 @@ XVariant TemplateExpression::eval(const XDict& context, const XResources::ptr& r
     }
     for(auto&[func, arg_list]: m_functionCalls)
     {
-        XList args;
+        xlist args;
         if (!result.empty())
         {
             args.push(result);
         }
         for(auto& arg: arg_list) {
-            XVariant var;
+            xvar var;
             cmatch what;
             static const regex string_re(R"(['"](.+)?['"])");
             static const regex num_re(R"(\d+(\.\d+)?)");
@@ -119,7 +119,7 @@ XVariant TemplateExpression::eval(const XDict& context, const XResources::ptr& r
 TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
 {
     TemplateExpression::RenderFunctionMap map;
-    map["date"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["date"] = [](const xlist& args, const xdict& /*context*/, const XResources::ptr& /*res*/) -> xvar {
         string fmt = "%c %Z";
         if (args.size() > 0)
             fmt = args[0].get<string>();
@@ -131,19 +131,19 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
 
     };
 
-    map["upper"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["upper"] = [](const xlist& args, const xdict& /*context*/, const XResources::ptr& /*res*/) -> xvar {
         string input = args[0].get<string>();
         tools::to_upper(input);
         return input;
     };
 
-    map["lower"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["lower"] = [](const xlist& args, const xdict& /*context*/, const XResources::ptr& /*res*/) -> xvar {
         string input = args[0].get<string>();
         tools::to_lower(input);
         return input;
     };
 
-    map["replace"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
+    map["replace"] = [](const xlist& args, const xdict& /*context*/, const XResources::ptr& /*res*/) -> xvar {
         string str = args[0].get<string>();
         string from = args[1].get<string>();
         string to = args[2].get<string>();
@@ -151,14 +151,14 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
         return str;
     };
 
-    map["length"] = [](const XList& args, const XDict& /*context*/, const XResources::ptr& /*res*/) -> XVariant {
-        if (args[0].is<XDict>())
+    map["length"] = [](const xlist& args, const xdict& /*context*/, const XResources::ptr& /*res*/) -> xvar {
+        if (args[0].is<xdict>())
         {
-            return int(args[0].get<XDict>().size());
+            return int(args[0].get<xdict>().size());
         }
-        else if (args[0].is<XList>())
+        else if (args[0].is<xlist>())
         {
-            return int(args[0].get<XList>().size());
+            return int(args[0].get<xlist>().size());
         }
         else if (args[0].is<string>())
         {
@@ -167,7 +167,7 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
         throw Expression::Error("Cannot apply 'length' to "s/* + args[0].typeName()*/);
     };
 
-    map["render"] = [](const XList& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["render"] = [](const xlist& args, const xdict& context, const XResources::ptr& res) -> xvar {
         string key = args[0].get<string>();
         if (res->has(key))
         {
@@ -176,7 +176,7 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
         throw Error("TODO");
     };
 
-    map["super"] = [](const XList& args, const XDict& context, const XResources::ptr& res) -> XVariant {
+    map["super"] = [](const xlist& args, const xdict& context, const XResources::ptr& res) -> xvar {
         try
         {
             return TemplateExpression::CallFunction(context.at("$super_key").get<string>(),
@@ -197,7 +197,7 @@ void TemplateExpression::AddFunction(const string & key, const TemplateExpressio
     RenderFunctions[key] = function;
 }
 
-XVariant TemplateExpression::CallFunction(const string & key, const XList& nodes, const XDict& context, const XResources::ptr& res)
+xvar TemplateExpression::CallFunction(const string & key, const xlist& nodes, const xdict& context, const XResources::ptr& res)
 {
     try {
         return RenderFunctions.at(key)(nodes, context, res);
@@ -240,7 +240,7 @@ TestExpression::TestExpression(const string& content):
     m_operator = Operators[match[2]];
 }
 
-XVariant TestExpression::eval(const XDict& context, const XResources::ptr& res)
+xvar TestExpression::eval(const xdict& context, const XResources::ptr& res)
 {
     return m_operator(m_left->eval(context, res), m_right->eval(context, res));
 }
@@ -248,16 +248,16 @@ XVariant TestExpression::eval(const XDict& context, const XResources::ptr& res)
 template <template<typename> typename Functor>
 struct OperatorVisitor
 {
-    const XVariant& m_left;
+    const xvar& m_left;
 
-    OperatorVisitor(const XVariant& left): m_left(left) {}
+    OperatorVisitor(const xvar& left): m_left(left) {}
 
     template <typename T>
     bool operator()(const T& right)
     {
         return Functor<T>()(m_left.convert<T>(), right);
     }
-    bool operator()(const XNone&)
+    bool operator()(const xnone&)
     {
         return false;
     }
@@ -266,19 +266,19 @@ struct OperatorVisitor
 //    {
 //        return false; //m_left.get<XObject::ptr>() == right;
 //    }
-    bool operator()(const XList& /*right*/)
+    bool operator()(const xlist& /*right*/)
     {
         return false; //m_left.get<XList>() == right;
     }
-    bool operator()(const XDict& /*right*/)
+    bool operator()(const xdict& /*right*/)
     {
         return false; //m_left.get<XDict>() == right;
     }
-    bool operator()(const XValue&)
+    bool operator()(const xval&)
     {
         throw std::runtime_error("might never append");
     }
-    bool operator()(const XFunction&)
+    bool operator()(const xfn&)
     {
         throw std::runtime_error("functions not handled here");
     }
@@ -287,22 +287,22 @@ struct OperatorVisitor
 TestExpression::OperatorMap TestExpression::InitOperators()
 {
     TestExpression::OperatorMap test_operators;
-    test_operators["=="] = [](const XVariant& left, const XVariant& right) {
+    test_operators["=="] = [](const xvar& left, const xvar& right) {
         return right.visit(OperatorVisitor<std::equal_to>(left));
     };
-    test_operators["!="] = [](const XVariant& left, const XVariant& right) {
+    test_operators["!="] = [](const xvar& left, const xvar& right) {
         return right.visit(OperatorVisitor<std::not_equal_to>(left));
     };
-    test_operators["<="] = [](const XVariant& left, const XVariant& right) {
+    test_operators["<="] = [](const xvar& left, const xvar& right) {
         return right.visit(OperatorVisitor<std::less_equal>(left));
     };
-    test_operators[">="] = [](const XVariant& left, const XVariant& right) {
+    test_operators[">="] = [](const xvar& left, const xvar& right) {
         return right.visit(OperatorVisitor<std::greater_equal>(left));
     };
-    test_operators["<"] = [](const XVariant& left, const XVariant& right) {
+    test_operators["<"] = [](const xvar& left, const xvar& right) {
         return right.visit(OperatorVisitor<std::less>(left));
     };
-    test_operators[">"] = [](const XVariant& left, const XVariant& right) {
+    test_operators[">"] = [](const xvar& left, const xvar& right) {
         return right.visit(OperatorVisitor<std::greater>(left));
     };
     return test_operators;

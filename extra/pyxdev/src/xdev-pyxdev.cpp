@@ -37,27 +37,27 @@ struct xvariant_to_python {
         out.inc_ref();
         return out.ptr();
     }
-    py::handle operator()(const XNone&) {
+    py::handle operator()(const xnone&) {
         return py::none{};
     }
-    py::handle operator()(XDict& item) {
-        return type_caster_base<XDict>::cast(item, _policy, _parent);
+    py::handle operator()(xdict& item) {
+        return type_caster_base<xdict>::cast(item, _policy, _parent);
     }
-    py::handle operator()(XList&item) {
-        return type_caster_base<XList>::cast(item, _policy, _parent);
+    py::handle operator()(xlist&item) {
+        return type_caster_base<xlist>::cast(item, _policy, _parent);
     }
     py::handle operator()(XObjectBase::ptr& item) {
         return type_caster_base<XObjectBase>::cast(*item, _policy, _parent);
     }
-    py::handle operator()(const XFunction& item) {
-        return type_caster_base<XFunction>::cast(item, _policy, _parent);
+    py::handle operator()(const xfn& item) {
+        return type_caster_base<xfn>::cast(item, _policy, _parent);
     }
-    py::handle operator()(const XValue&) {
+    py::handle operator()(const xval&) {
         throw std::runtime_error("might never append");
     }
 };
 
-template <> struct type_caster<XVariant>: public type_caster_base<XVariant> {
+template <> struct type_caster<xvar>: public type_caster_base<xvar> {
 public:
     /**
      * This macro establishes the name 'inty' in
@@ -66,7 +66,7 @@ public:
      */
     // PYBIND11_TYPE_CASTER(XVariant, _("XVariant"));
 
-    using base = type_caster_base<XVariant>;
+    using base = type_caster_base<xvar>;
 
     /**
      * Conversion part 1 (Python->C++): convert a PyObject into a inty
@@ -77,21 +77,21 @@ public:
         if (base::load(src, convert)) {
             return true;
         } else if(py::isinstance<py::none>(src)) {
-            value = new XVariant(XNone{});
+            value = new xvar(xnone{});
         } else if(py::isinstance<py::bool_>(src)) {
-            value = new XVariant(py::cast<bool>(src));
+            value = new xvar(py::cast<bool>(src));
         } else if(py::isinstance<py::int_>(src)) {
-            value = new XVariant(py::cast<int>(src));
+            value = new xvar(py::cast<int>(src));
         } else if(py::isinstance<py::float_>(src)) {
-            value = new XVariant(py::cast<double>(src));
+            value = new xvar(py::cast<double>(src));
         } else if(py::isinstance<py::str>(src)) {
-            value = new XVariant(py::cast<std::string>(src));
+            value = new xvar(py::cast<std::string>(src));
         } else if(py::isinstance<py::dict>(src)) {
-            XDict d;
+            xdict d;
             for(const auto& [k, v]: py::cast<py::dict>(src)) {
-                d[py::cast<XVariant>(k).get<xval>()] = py::cast<XVariant>(v);
+                d[py::cast<xvar>(k).get<xval>()] = py::cast<xvar>(v);
             }
-            value = new XVariant(d);
+            value = new xvar(d);
         } else {
             return false;
         }
@@ -105,7 +105,7 @@ public:
      * ``return_value_policy::reference_internal``) and are generally
      * ignored by implicit casters.
      */
-    static handle cast(XVariant&& src, return_value_policy policy, handle parent) {
+    static handle cast(xvar&& src, return_value_policy policy, handle parent) {
         return src.visit(xvariant_to_python{policy, parent});
     }
 };
@@ -122,84 +122,84 @@ PYBIND11_MODULE(pyxdev, m) {
       .def("path", [](const std::shared_ptr<XLibrary>& self) { return self->path().string(); } )
       .def("name", &XLibrary::name);
 
-    py::class_<XVariant>(m, "Variant");
+    py::class_<xvar>(m, "Variant");
 
-    py::class_<XDict>(m, "Dict")
+    py::class_<xdict>(m, "Dict")
     .def(py::init<>())
     .def(py::init([](const py::dict& in) {
-        auto* self = new XDict();
+        auto* self = new xdict();
         for (const auto& [k, v]: in) {
-            (*self)[py::cast<XVariant>(k).get<xval>()] = py::cast<XVariant>(v);
+            (*self)[py::cast<xvar>(k).get<xval>()] = py::cast<xvar>(v);
         }
         return self;
     }))
-    .def("__setitem__", [](XDict& self, py::handle k, py::handle v) {
-        self[py::cast<XVariant>(k).get<xval>()] = py::cast<XVariant>(v);
+    .def("__setitem__", [](xdict& self, py::handle k, py::handle v) {
+        self[py::cast<xvar>(k).get<xval>()] = py::cast<xvar>(v);
     })
-    .def("__getitem__", [](XDict& self, py::handle k) {
-        return self[std::forward<XVariant>(py::cast<XVariant&>(k)).get<xval>()];
+    .def("__getitem__", [](xdict& self, py::handle k) {
+        return self[std::forward<xvar>(py::cast<xvar&>(k)).get<xval>()];
     })
     .def_static("fromJson", [](const std::string& str){
-        return XVariant::FromJSON(str).get<XDict>();
+        return xvar::FromJSON(str).get<xdict>();
     })
     .def_static("fromYaml", [](const std::string& str){
-        return XVariant::FromYAML(str).get<XDict>();
+        return xvar::FromYAML(str).get<xdict>();
     })
-    .def("__str__", &XDict::toString);
+    .def("__str__", &xdict::toString);
 
-    py::class_<XList>(m, "Array")
+    py::class_<xlist>(m, "Array")
     .def(py::init<>())
     .def(py::init([](const py::tuple& in) {
-        auto* self = new XList();
+        auto* self = new xlist();
         for (const auto& v: in) {
-            (*self).push(py::cast<XVariant>(v));
+            (*self).push(py::cast<xvar>(v));
         }
         return self;
     }))
     .def(py::init([](const py::args& in) {
-        auto* self = new XList();
+        auto* self = new xlist();
         for (const auto& v: in) {
-            (*self).push(py::cast<XVariant>(v));
+            (*self).push(py::cast<xvar>(v));
         }
         return self;
     }))
-    .def("__setitem__", [](XList& self, py::int_ index, py::handle v) {
-        self[py::cast<size_t>(index)] = py::cast<XVariant>(v);
+    .def("__setitem__", [](xlist& self, py::int_ index, py::handle v) {
+        self[py::cast<size_t>(index)] = py::cast<xvar>(v);
     })
-    .def("__getitem__", [](XList& self, py::int_ index) {
+    .def("__getitem__", [](xlist& self, py::int_ index) {
         return self[py::cast<size_t>(index)];
     })
-    .def("__str__", &XList::toString);
+    .def("__str__", &xlist::toString);
 
-    py::class_<XFunction>(m, "Function")
-    .def("__call__", [](XFunction& self) {
+    py::class_<xfn>(m, "Function")
+    .def("__call__", [](xfn& self) {
         return self();
     })
-    .def("__call__", [](XFunction& self, const py::args& args) {
-        XList a;
+    .def("__call__", [](xfn& self, const py::args& args) {
+        xlist a;
         for (const auto& v: args) {
-            a.push(py::cast<XVariant>(v));
+            a.push(py::cast<xvar>(v));
         }
         return self.apply(std::move(a));
     });
 
-    py::implicitly_convertible<py::dict, XDict>();
-    py::implicitly_convertible<py::args, XList>();
-    py::implicitly_convertible<py::tuple, XList>();
-    py::implicitly_convertible<py::list, XList>();
-    py::implicitly_convertible<XList, XVariant>();
-    py::implicitly_convertible<XDict, XVariant>();
-    py::implicitly_convertible<XFunction, XVariant>();
-    py::implicitly_convertible<XObjectBase::ptr, XVariant>();
-    py::implicitly_convertible<XObjectBase, XVariant>();
+    py::implicitly_convertible<py::dict, xdict>();
+    py::implicitly_convertible<py::args, xlist>();
+    py::implicitly_convertible<py::tuple, xlist>();
+    py::implicitly_convertible<py::list, xlist>();
+    py::implicitly_convertible<xlist, xvar>();
+    py::implicitly_convertible<xdict, xvar>();
+    py::implicitly_convertible<xfn, xvar>();
+    py::implicitly_convertible<XObjectBase::ptr, xvar>();
+    py::implicitly_convertible<XObjectBase, xvar>();
 
     py::class_<XObjectBase, std::shared_ptr<XObjectBase>>(m, "Object")
     .def("__getattr__", [](std::shared_ptr<XObjectBase>& self, const std::string& attr)
-            -> std::variant<XVariant, std::reference_wrapper<XDict>, XFunction> {
+            -> std::variant<xvar, std::reference_wrapper<xdict>, xfn> {
         if (self->has_prop(attr)) {
             auto& prop = self->prop(attr);
-            if (prop.is<XDict>())
-                return std::ref(prop.get<XDict>());
+            if (prop.is<xdict>())
+                return std::ref(prop.get<xdict>());
             return prop.value();
         } else {
             return self->method(attr);
@@ -208,13 +208,13 @@ PYBIND11_MODULE(pyxdev, m) {
     .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XObjectBase::ptr& var){
         return self->prop(attr) = var;
     })
-    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XDict& var){
+    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const xdict& var){
         return self->prop(attr) = var;
     })
-    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XList& var){
+    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const xlist& var){
         return self->prop(attr) = var;
     })
-    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const XVariant& var){
+    .def("__setattr__", [](const std::shared_ptr<XObjectBase>& self, const std::string& attr, const xvar& var){
         return self->prop(attr) = var;
     });
 

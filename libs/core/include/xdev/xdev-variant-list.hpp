@@ -23,11 +23,6 @@ public:
     inline List& operator=(List&&other);
     inline List(const List&other);
     inline List& operator=(const List&other);
-
-    template <typename...Ts>
-        requires (not one_of<std::decay_t<Ts>, Value, Variant, List> && ...)
-    inline List(Ts&&...args);
-
     inline List(const ListInitList& value);
 
     using iterator = list_t::iterator;
@@ -75,9 +70,8 @@ public:
 
     friend inline bool operator==(const List&, const List&);
 
-    static constexpr const char* ctti_nameof()
-    {
-        return "XList";
+    static constexpr const char* ctti_nameof() {
+        return "xlist";
     }
 
 private:

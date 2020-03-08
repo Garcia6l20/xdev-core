@@ -9,6 +9,7 @@
 #include <xdev/xdev-exception.hpp>
 #include <xdev/xdev-variant.hpp>
 #include <xdev/xdev-json.hpp>
+#include <xdev/xdev-yaml.hpp>
 #include <xdev/xdev-properties.hpp>
 #include <xdev/xdev-object.hpp>
 #include <xdev/xdev-app.hpp>

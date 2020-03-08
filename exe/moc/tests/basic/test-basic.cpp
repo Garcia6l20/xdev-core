@@ -15,16 +15,17 @@ inline filesystem::path source_dir() {
 TEST(MOCBasicObject, BasicUsage) {
     auto obj = XObjectBase::Create<TestObject>();
     ASSERT_EQ(obj->prop("ADoubleValue"), 1.0);
-    ASSERT_THROW(obj->prop("ADoubleValue") = "1.0", XVariant::ConvertError);
+    ASSERT_THROW(obj->prop("ADoubleValue") = "1.0", xvar::ConvertError);
     ASSERT_THROW(obj->prop("AReadOnlyValue") = 2.0, XMetaPropertyBase::IllegalAccess);
     //ASSERT_THROW(obj->setProperty("AConstantValue", 2.0), XMetaPropertyBase::IllegalAccess);
     ASSERT_NO_THROW(obj->prop("ADoubleValue") = 42.0);
     ASSERT_EQ(obj->prop("ADoubleValue"), 42.0);
     ASSERT_NE(obj->prop("ADoubleValue"), 21.0);
-    XVariant test = obj;
+    static_assert(xdev::XObjectPointer<decltype(obj)>, "fu");
+    xvar test = obj;
     obj->call("printThisTestObject", obj);
-    TestObject::ptr ref = test.get<XObjectBase::ptr>()->cast<TestObject>();
-    TestObject::ptr ref2 = test.get<TestObject>();
+    auto ref = test.get<XObjectBase::ptr>()->cast<TestObject>();
+    auto ref2 = test.get<TestObject>();
     ASSERT_EQ(obj, ref2);
 }
 

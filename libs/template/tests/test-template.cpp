@@ -3,7 +3,7 @@
 
 using namespace xdev;
 
-static XDict g_context = XVariant::FromJSON(R"({
+static xdict g_context = xvar::FromJSON(R"({
     "who": "__world__",
     "dict": {
         "one": 1,
@@ -15,7 +15,7 @@ static XDict g_context = XVariant::FromJSON(R"({
         { "a": [ [], [] ] },
         { "a": [ ] }
     ]
-})").get<XDict>();
+})").get<xdict>();
 
 
 TEST(TemplateTest, Basic) {
@@ -40,19 +40,19 @@ TEST(TemplateTest, Loops) {
 TEST(TemplateTest, Conditions) {
     XTemplate::ptr if_test = XTemplate::Compile("{% if d %}Dict: ok={% if d.ok %}OK{% else %}KO{% endif %}{% else %}No dict{% endif %}");
     auto res = if_test->process(
-        XDict{});
+        xdict{});
     ASSERT_EQ(res, "No dict");
     res = if_test->process(
-        XDict{ { "d", XDict{
+        xdict{ { "d", xdict{
         } } });
     ASSERT_EQ(res, "Dict: ok=KO");
     res = if_test->process(
-        XDict{ { "d", XDict{
+        xdict{ { "d", xdict{
             { "ok", false }
         } } });
     ASSERT_EQ(res, "Dict: ok=KO");
     res = if_test->process(
-        XDict{ { "d", XDict{
+        xdict{ { "d", xdict{
             { "ok", true }
         } } });
     ASSERT_EQ(res, "Dict: ok=OK");

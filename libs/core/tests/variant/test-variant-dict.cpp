@@ -1,6 +1,8 @@
 #include <catch2/catch.hpp>
 #include <xdev/xdev.hpp>
 
+using namespace xdev;
+
 SCENARIO("dict types are accessible as normal dicts", "[core.api.variant.v1.0]") {
     GIVEN("A simple dict") {
         xvar val = xdict{

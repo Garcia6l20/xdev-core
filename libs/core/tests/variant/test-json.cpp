@@ -1,6 +1,8 @@
 #include <catch2/catch.hpp>
 #include <xdev/xdev.hpp>
 
+using namespace xdev;
+
 TEST_CASE("VariantJsonTest.HelloWorld") {
     auto data = R"({
         "hello": "world"

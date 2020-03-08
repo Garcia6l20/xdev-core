@@ -1,6 +1,8 @@
 #include <catch2/catch.hpp>
 #include <xdev/xdev.hpp>
 
+using namespace xdev;
+
 SCENARIO("function types are accessible as normal functions", "[core.api.variant.v1.0]") {
     GIVEN("A simple function") {
         xvar var = xfn{[](int value) {
