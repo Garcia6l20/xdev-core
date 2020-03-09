@@ -376,7 +376,7 @@ namespace variant {
         friend BaseStaticClass;
 
     template <class ObjectClassT, class StaticClassT = XStaticClass>
-    struct XObject: XObjectBase {
+    struct xobj: XObjectBase {
         _XOBJECT_BASE_EXTEND(ObjectClassT, StaticClassT)
     };
 }

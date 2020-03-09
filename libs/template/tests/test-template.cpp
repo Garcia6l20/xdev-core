@@ -1,9 +1,10 @@
+#include <xdev/xdev.hpp>
 #include <xdev/xdev-template.hpp>
 #include <gtest/gtest.h>
 
 using namespace xdev;
 
-static xdict g_context = xvar::FromJSON(R"({
+static xvar g_context = R"({
     "who": "__world__",
     "dict": {
         "one": 1,
@@ -15,43 +16,46 @@ static xdict g_context = xvar::FromJSON(R"({
         { "a": [ [], [] ] },
         { "a": [ ] }
     ]
-})").get<xdict>();
+})"_xjson;
 
 
 TEST(TemplateTest, Basic) {
-    ASSERT_EQ(XTemplate::Compile("Hello {{ who | replace('_', '#') | upper }} !!")->process(g_context),
+    auto temp = "Hello {{ who | replace('_', '#') | upper }} !!"_xtemplate;
+    ASSERT_EQ(temp.render(g_context), "Hello ##WORLD## !!");
+
+    ASSERT_EQ("Hello {{ who | replace('_', '#') | upper }} !!"_xtemplate.render(g_context),
               "Hello ##WORLD## !!");
-    ASSERT_EQ(XTemplate::Compile("Hello {{ who | replace('_','') | upper }} !!")->process(g_context),
+    ASSERT_EQ("Hello {{ who | replace('_','') | upper }} !!"_xtemplate.render(g_context),
               "Hello WORLD !!");
 
-    ASSERT_THROW(XTemplate::Compile("Hello {{ nobody | replace('_','') | upper }} !!")->process(g_context), temp::Error);
+    ASSERT_THROW("Hello {{ nobody | replace('_','') | upper }} !!"_xtemplate.render(g_context), temp::Error);
 }
 
 TEST(TemplateTest, Loops) {
-    auto res = XTemplate::Compile("{% for v in int_array %}{{v}}!{% endfor %}{% for v in int_array %}{{v}}!{% endfor %}")->process(g_context);
+    auto res = xtemplate::Compile("{% for v in int_array %}{{v}}!{% endfor %}{% for v in int_array %}{{v}}!{% endfor %}")->render(g_context);
     ASSERT_EQ(res, "1.000000!2.000000!3.000000!1.000000!2.000000!3.000000!");
-    res = XTemplate::Compile("{% for elem in array_array %}_{% for i in elem.a %}-{% for u in i %}+{{ u }}+{% endfor %}-{% endfor %}_{% endfor %}")->process(g_context);
+    res = xtemplate::Compile("{% for elem in array_array %}_{% for i in elem.a %}-{% for u in i %}+{{ u }}+{% endfor %}-{% endfor %}_{% endfor %}")->render(g_context);
     ASSERT_EQ(res, "_-+1.000000++2.000000++3.000000+--+1.000000++2.000000++3.000000+-__----___");
 
     // enfor missing
-    ASSERT_THROW(XTemplate::Compile("{% for elem in a %}_{% for i in elem.a %}-{% for u in i %}+{{ u }}+{% endfor %}-_{% endfor %}"), temp::Error);
+    ASSERT_THROW(xtemplate::Compile("{% for elem in a %}_{% for i in elem.a %}-{% for u in i %}+{{ u }}+{% endfor %}-_{% endfor %}"), temp::Error);
 }
 
 TEST(TemplateTest, Conditions) {
-    XTemplate::ptr if_test = XTemplate::Compile("{% if d %}Dict: ok={% if d.ok %}OK{% else %}KO{% endif %}{% else %}No dict{% endif %}");
-    auto res = if_test->process(
+    xtemplate::ptr if_test = xtemplate::Compile("{% if d %}Dict: ok={% if d.ok %}OK{% else %}KO{% endif %}{% else %}No dict{% endif %}");
+    auto res = if_test->render(
         xdict{});
     ASSERT_EQ(res, "No dict");
     res = if_test->process(
         xdict{ { "d", xdict{
         } } });
     ASSERT_EQ(res, "Dict: ok=KO");
-    res = if_test->process(
+    res = if_test->render(
         xdict{ { "d", xdict{
             { "ok", false }
         } } });
     ASSERT_EQ(res, "Dict: ok=KO");
-    res = if_test->process(
+    res = if_test->render(
         xdict{ { "d", xdict{
             { "ok", true }
         } } });
@@ -61,7 +65,7 @@ TEST(TemplateTest, Conditions) {
 TEST(TemplateTest, Extending) {
     XResources::ptr test_res = XResources::Make();
     test_res->add("templates/compiled/main",
-        XTemplate::Compile("{% block content1 %}parent content1 {{who}}{% endblock %} {% block content2 %}parent content2 {{who}}{% endblock %}"));
-    auto res = XTemplate::Compile("{% extends templates/compiled/main %}{% block content1 %}who:{{who}}{% endblock %}", test_res)->process(g_context);
+        xtemplate::Compile("{% block content1 %}parent content1 {{who}}{% endblock %} {% block content2 %}parent content2 {{who}}{% endblock %}"));
+    auto res = xtemplate::Compile("{% extends templates/compiled/main %}{% block content1 %}who:{{who}}{% endblock %}", test_res)->render(g_context);
     ASSERT_EQ(res, "who:__world__ parent content2 __world__");
 }

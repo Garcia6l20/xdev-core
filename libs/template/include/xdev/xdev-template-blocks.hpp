@@ -69,6 +69,9 @@ public:
     static RootBlock::ptr Compile(const string& input, const XResources::ptr& resources = nullptr);
     static RootBlock::ptr CompileFile(const string& path, const XResources::ptr& resources = nullptr);
     static RootBlock::ptr CompileResource(const string& key, const XResources::ptr& resources);
+    inline string render(const xvar& context = xdict{}) {
+        return process(context.get<xdict>());
+    }
 private:
     using TreeBlock::TreeBlock;
     friend struct tools::make_shared_enabler<RootBlock>;

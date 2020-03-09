@@ -19,33 +19,33 @@ It uses many moderncpp libraries to create an easy to use framework.
 
 ## What it does
 
-The main stuff of this library are `XVariant` and `XObject<>` classes.
-The `XVariant` class is designed to hold basic types (`XValue` [bool, int, float, ...]) but also dictionaries (`XDict`), lists (`XList`), functions (`XFunction`) and object (`XObject<>` derived types).
+The main stuff of this library are `xvar` and `XObject<>` classes.
+The `xvar` class is designed to hold basic types (`xval` [bool, int, float, ...]) but also dictionaries (`xdict`), lists (`xlist`), functions (`xfn`) and object (`xobj<>` derived types).
 
-The `XVariant` api is intuitive (though you must know what you are handling...), it is quite similare to `std::variant` in an object oriented way.
+The `xvar` api is intuitive (though you must know what you are handling...), it is quite similare to `std::variant` in an object oriented way.
 
-If your `XVariant` holds a basic type you can access to it in a regular way:
+If your `xvar` holds a basic type you can access to it in a regular way:
 ```cpp
-XVariant var = 41; // holds an integer
+xvar var = 41; // holds an integer
 var++;
 assert(var == 42);
 ```
 
 Same for other stuff:
 ```cpp
-XVariant list = {1, 2, 3., "4"}; // yes you can put any thing that can be hold by a XVariant
-for (const auto& item: list) {
-  fmt::print("{}\n", item);
+xvar var = xlist{1, 2, 3., "4"};
+for (const auto& item: var.get<xlist>()) {
+  fmt::print("{:f}\n", item);
 }
 // seamless serialization - yaml also supported
-XVariant dict = R"({
+xvar dict = R"({
   "The question": "What is the answer to the universe and everything ?",
   "The answer": 42
 })"_xjson;
 for (const auto& [k, v]: dict) {
   fmt::print("{} = {}\n", k, v);
 }
-XVariant func = [](const XDict& d, const XList& l) {
+xvar func = [](const xdict& d, const xlist& l) {
   fmt::print("The dict is: {}\n", d);
   fmt::print("The list is: {}\n", l);
 };
@@ -54,24 +54,23 @@ func(dict, list);
 
 ### Templates
 
-The `xdev-template` library is a twig-like template engine that interacts with `XVariant` objects.
+The `xdev-template` library is a twig-like template engine that interacts with `xvar` objects.
 
 Example is better than precept:
 ```cpp
-XVariant dict = R"({
+xvar dict = R"({
 question: "What is the answer to the universe and everything ?"
 answer: 42
 list: [1, 2, 3., "4"]
 })"_xyaml;
-fmt::print("{}\n", XTemplate::Render(R"({
+fmt::print("{}\n", R"({
 {{question}}
 The answer is {{answer}} !
 The list contains:
 {% for item in list %}
   - {{item}}
 {% endfor %}
-})"));
-), dict);
+})"_xtemplate.render(dict));
 ```
 
 ## What is used
@@ -80,13 +79,15 @@ core:
 - [libfmt](https://github.com/fmtlib/fmt)
 - [speedlog](https://github.com/gabime/spdlog)
 - [ctti](https://github.com/Manu343726/ctti)
-- [boost](https://github.com/boostorg/boost) - I'm planning to remove it, it's used json parsing (I'll parse it by my own [sorry for [nlohmann_json](https://github.com/nlohmann/json) but I dont want to wrap his object types to mines]) and templates expression [will be replaced by [chaiscript](https://github.com/ChaiScript/ChaiScript)]).
+- [boost](https://github.com/boostorg/boost) - I'm planning to remove it, it's used for templates expression [will be replaced by [chaiscript](https://github.com/ChaiScript/ChaiScript)]).
 
 testing:
 - [catch2](https://github.com/catchorg/Catch2)
 - [gtest](https://github.com/google/googletest) - Also planned to remove (I prefer catch2).
 
 ## Building
+
+> As this project use latest features only available with c++20 standard, it only compiles with the latest gcc-trunk version (gcc-10.0.1). A Dockerfile will be added ASAP in order to be able to build it from anywhere.
 
 - [optional]: Add xdev-center conan's repository:
 ```bash

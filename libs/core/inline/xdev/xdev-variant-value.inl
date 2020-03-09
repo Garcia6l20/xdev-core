@@ -50,6 +50,13 @@ Value::Value(const char* value) noexcept: _value(std::string(value)) {}
 
 Value& Value::operator=(const char* value) noexcept { _value = std::string(value); return *this; }
 
+std::string Value::typeName() const {
+    return std::visit([]<typename T>(T&&) -> std::string {
+        using TClean = std::decay_t<T>;
+        return ctti::nameof<TClean>().str();
+    }, _value);
+}
+
 Value& Value::operator!() {
     std::visit(tools::overloaded{
        [this]<typename TInput>(TInput&) {

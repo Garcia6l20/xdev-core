@@ -8,6 +8,10 @@
 
 namespace xdev {
 
-using XTemplate = temp::RootBlock;
+using xtemplate = temp::RootBlock;
+
+inline xtemplate operator "" _xtemplate(const char* data, size_t size) {
+    return *xdev::xtemplate::Compile(std::string{data, size});
+}
 
 } // namespace xdev

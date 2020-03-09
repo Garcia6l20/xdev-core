@@ -40,10 +40,10 @@ private:
     void processPools(const filesystem::path& path);
 	void processFile(const filesystem::path& path);
 
-    XTemplate::ptr m_headerTemplate;
-    XTemplate::ptr m_sourceTemplate;
-    XTemplate::ptr m_poolsHeaderTemplate;
-    XTemplate::ptr m_poolsSourceTemplate;
+    xtemplate::ptr m_headerTemplate;
+    xtemplate::ptr m_sourceTemplate;
+    xtemplate::ptr m_poolsHeaderTemplate;
+    xtemplate::ptr m_poolsSourceTemplate;
 
     xvar m_pools;
     xvar m_poolsIncludes;

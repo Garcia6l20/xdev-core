@@ -171,7 +171,7 @@ TemplateExpression::RenderFunctionMap TemplateExpression::InitRunderFunctions()
         string key = args[0].get<string>();
         if (res->has(key))
         {
-            return XTemplate::CompileResource(key, res)->process(context);
+            return xtemplate::CompileResource(key, res)->process(context);
         }
         throw Error("TODO");
     };

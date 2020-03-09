@@ -75,6 +75,8 @@ public:
 
     inline std::string toString() const;
 
+    inline std::string typeName() const;
+
     static constexpr const char* ctti_nameof() {
         return "xval";
     }

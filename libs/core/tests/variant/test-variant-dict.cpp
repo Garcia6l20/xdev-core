@@ -113,3 +113,17 @@ SCENARIO("dict types should be comparable", "[core.api.variant.v1.0]") {
         }
     }
 }
+SCENARIO("dict types should be iterable", "[core.api.variant.v1.0]") {
+    GIVEN("A simple list") {
+        xvar val = xdict{
+            {1, "1"},
+            {"1", 1},
+            {"3", "three"},
+        };
+        THEN("a normal iteration can be realized") {
+            for(auto&& [k, v]: val.get<xdict>()) {
+                fmt::print("- {:f}: {:f}\n", k, v);
+            }
+        }
+    }
+}

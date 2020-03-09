@@ -36,3 +36,15 @@ SCENARIO("list types should be comparable", "[core.api.variant.v1.0]") {
         }
     }
 }
+
+SCENARIO("list types should be iterable", "[core.api.variant.v1.0]") {
+    GIVEN("A simple list") {
+        xvar val = xlist{1, 2, "3"};
+        THEN("a normal iteration can be realized") {
+            for(auto&& item: val.get<xlist>()) {
+                fmt::print("- {:f}\n", item);
+            }
+        }
+
+    }
+}

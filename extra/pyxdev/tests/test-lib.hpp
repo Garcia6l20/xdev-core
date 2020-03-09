@@ -4,7 +4,7 @@
 
 using namespace xdev;
 
-X(class) TestObject: public xdev::XObject<TestObject>
+X(class) TestObject: public xdev::xobj<TestObject>
 {
 public:
     virtual void initialize() override

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.13)
 
 project(xdev-core)
 
@@ -45,7 +45,7 @@ if(MSVC)
     add_compile_options("/std:c++latest")
 endif()
 
-
+add_subdirectory(docker)
 add_subdirectory(libs)
 add_subdirectory(exe)
 add_subdirectory(extra)

@@ -10,6 +10,7 @@
 #include <cctype>
 #include <cstddef>
 #include <filesystem>
+#include <variant>
 
 #include <xdev/xdev-typetraits.hpp>
 

@@ -48,13 +48,13 @@ XMetaObjectCompiler::XMetaObjectCompiler(const std::string& project_name, const 
     m_projectName(project_name),
 	m_files(files),
 	m_macroArgs(R"((\s{0,}([\w\d]+)\s{0,},?){0,})"),
-    m_headerTemplate(XTemplate::CompileResource("templates/moc.h.xtf",
+    m_headerTemplate(xtemplate::CompileResource("templates/moc.h.xtf",
                                                 XdevMocLibResources)),
-    m_sourceTemplate(XTemplate::CompileResource("templates/moc.cpp.xtf",
+    m_sourceTemplate(xtemplate::CompileResource("templates/moc.cpp.xtf",
                                                 XdevMocLibResources)),
-    m_poolsHeaderTemplate(XTemplate::CompileResource("templates/pools.h.xtf",
+    m_poolsHeaderTemplate(xtemplate::CompileResource("templates/pools.h.xtf",
                                                      XdevMocLibResources)),
-    m_poolsSourceTemplate(XTemplate::CompileResource("templates/pools.cpp.xtf",
+    m_poolsSourceTemplate(xtemplate::CompileResource("templates/pools.cpp.xtf",
                                                      XdevMocLibResources)),
     m_pools(xdict()),
     m_poolsIncludes(xlist())
@@ -250,7 +250,7 @@ void XMetaObjectCompiler::processFile(const fs::path& path) try
         string class_name_check = match[11];
         if (class_def["name"] != class_name_check) {
             throw XException(class_def["name"].get<string>() +
-                    " must inherit from template XObject parent (eg.: XObject<" + class_def["name"].get<string>() + ">)" );
+                    " must inherit from template xobj parent (eg.: xobj<" + class_def["name"].get<string>() + ">)" );
         }
         class_def["base"] = match[10];
         cout << "-- xdev class found: " << class_def["name"] << endl;

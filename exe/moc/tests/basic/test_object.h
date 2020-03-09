@@ -8,7 +8,7 @@
 
 using namespace xdev;
 
-X(class) TestObject: public XObject<TestObject>
+X(class) TestObject: public xobj<TestObject>
 {
 public:
     TestObject() {
