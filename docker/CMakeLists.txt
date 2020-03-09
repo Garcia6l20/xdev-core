@@ -24,8 +24,5 @@ add_custom_target(xdev-environment
     ${CMAKE_COMMAND} -E env UID=${UID} GID=${GID} SOURCE_DIR=${CMAKE_SOURCE_DIR}
       docker-compose -f ${CMAKE_CURRENT_LIST_DIR}/docker-compose.yml up -d xdev-builder
   COMMAND
-    docker exec -it xdev-builder bash
-  # COMMAND
-  #   ${CMAKE_COMMAND} -E env UID=${UID} GID=${GID} SOURCE_DIR=${CMAKE_SOURCE_DIR}
-  #     docker-compose -f ${CMAKE_CURRENT_LIST_DIR}/docker-compose.yml run xdev-builder
+    docker attach xdev-builder
 )
