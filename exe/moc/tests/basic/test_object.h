@@ -12,10 +12,11 @@ X(class) TestObject: public xobj<TestObject>
 {
 public:
     TestObject() {
+        ++*InstanceCounter;
         *ADoubleValue = 1.0;
         AReadOnlyValue(this) = 42.;
         *AStringValue = "Original";
-        ObjectNum = ++*InstanceCounter;
+        ObjectNum = ++*ObjectCounter;
         cout << "TestObject " << *ObjectNum << " created" << endl;
         onTriggered = [](double /*value*/) {
             cout << __PRETTY_FUNCTION__ << " called" << endl;
@@ -29,6 +30,7 @@ public:
     virtual ~TestObject() override
     {
         cout << "TestObject " << *ObjectNum << " destroyed" << endl;
+        --*InstanceCounter;
     }
 
     XMETADATA(TestMeta,         {"hello": "world"})
@@ -37,7 +39,8 @@ public:
     property<double>                   ADoubleValue;
     property<string>                   AStringValue;
     property<int>                      ObjectNum;
-    static property<int>               InstanceCounter;
+    static inline property<int>               ObjectCounter = 0;
+    static inline property<int>               InstanceCounter = 0;
 
     event<double>            trigger;
     function<void(double)>   onTriggered;

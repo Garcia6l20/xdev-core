@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.13)
 
+
+option(XDEV_USE_BUILDER "Use builder" OFF)
+if(XDEV_USE_BUILDER)
+    add_subdirectory(docker)
+    return()
+endif()
+
 project(xdev-core)
 
 add_custom_target(xdev-core-pkg
@@ -45,7 +52,6 @@ if(MSVC)
     add_compile_options("/std:c++latest")
 endif()
 
-add_subdirectory(docker)
 add_subdirectory(libs)
 add_subdirectory(exe)
 add_subdirectory(extra)

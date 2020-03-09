@@ -87,18 +87,29 @@ testing:
 
 ## Building
 
-> As this project use latest features only available with c++20 standard, it only compiles with the latest gcc-trunk version (gcc-10.0.1). A Dockerfile will be added ASAP in order to be able to build it from anywhere.
+> As this project use latest features only available with c++20 standard, it only compiles with the latest gcc-trunk version (gcc-10.0.1). A Dockerfile is provided to create a minimal ubuntu with all requirements.
 
 - [optional]: Add xdev-center conan's repository:
 ```bash
 conan remote add xdev-center https://api.bintray.com/conan/6l20garcia/xdev
 ```
 
-- Linux:
+- Linux (if you have gcc >=10.0.1):
 ```bash
 mkdir build && cd build
-cmake -DXDEV_UNIT_TESTING=ON -DCMAKE_BUILD_TYPE=<BUILD_TYPE> ..
+cmake ..
 cmake --build .
+ctest
+```
+
+- Docker:
+```
+mkdir build && cd build
+cmake -DXDEV_USE_BUILDER=ON ..
+# it will prepare the container (might be quite long the first time...)
+# then drops you inside the build container
+cmake ..
+make
 ctest
 ```
 

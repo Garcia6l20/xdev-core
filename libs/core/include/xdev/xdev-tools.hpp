@@ -289,4 +289,14 @@ auto visit_2way(auto handler, auto lhs, auto rhs) {
 //    }, lhs);
 //}
 
+class finally {
+public:
+    finally(std::function<void()>&& handler): _handler{std::move(handler)} {}
+    ~finally() {
+        _handler();
+    }
+private:
+    std::function<void()> _handler;
+};
+
 } // namespace xdev::tools

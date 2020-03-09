@@ -4,15 +4,16 @@
 
 using namespace xdev;
 
-property<int> TestObject::InstanceCounter = 0;
 //const property<int> TestObject::AStaticConstValue = 42;
 
 inline filesystem::path source_dir() {
     return filesystem::path(__FILE__).parent_path();
 }
 
-
 TEST(MOCBasicObject, BasicUsage) {
+    auto _ = tools::finally{[]{
+       ASSERT_EQ(TestObject::InstanceCounter, 0);
+    }};
     auto obj = XObjectBase::Create<TestObject>();
     ASSERT_EQ(obj->prop("ADoubleValue"), 1.0);
     ASSERT_THROW(obj->prop("ADoubleValue") = "1.0", xvar::ConvertError);
@@ -30,6 +31,9 @@ TEST(MOCBasicObject, BasicUsage) {
 }
 
 TEST(MOCBasicObject, Events) {
+    auto _ = tools::finally{[]{
+       ASSERT_EQ(TestObject::InstanceCounter, 0);
+    }};
     auto obj1 = XObjectBase::Create<TestObject>();
     auto obj2 = XObjectBase::Create<TestObject>();
     obj1->connect("trigger", obj2, "onTriggered");
@@ -37,6 +41,9 @@ TEST(MOCBasicObject, Events) {
 }
 
 TEST(MOCBasicObject, Invokables) {
+    auto _ = tools::finally{[]{
+       ASSERT_EQ(TestObject::InstanceCounter, 0);
+    }};
     auto obj1 = XObjectBase::Create<TestObject>();
     auto obj2 = XObjectBase::Create<TestObject>();
     obj2->setObjectName("Can you see me ???");

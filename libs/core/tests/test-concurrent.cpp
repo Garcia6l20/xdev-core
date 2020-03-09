@@ -1,4 +1,5 @@
 #include <xdev/xdev-concurrent.hpp>
+#include <xdev/xdev-tools.hpp>
 #include <catch2/catch.hpp>
 #include <spdlog/spdlog.h>
 
@@ -108,19 +109,25 @@ using concurrent::subscription_channel;
 using concurrent::scoped_subscription;
 
 TEST_CASE("Concurrent.Publisher") {
+    int events_received = 0;
+    tools::finally _{[&events_received]{
+        REQUIRE(events_received == 4);
+    }};
     subscription_channel<int> to_thread;
-    auto sub1 = async([&rx = to_thread] {
+    auto sub1 = async([&rx = to_thread, &events_received] {
         scoped_subscription sub(rx);
         int value;
         do {
             value = rx.pop();
+            spdlog::info("event#{}: {}", ++events_received, value);
         } while (value != -1);
     });
-    auto sub2 = async([&rx = to_thread] {
+    auto sub2 = async([&rx = to_thread, &events_received] {
         scoped_subscription sub(rx);
         int value;
         do {
             value = rx.pop();
+            spdlog::info("event#{}: {}", ++events_received, value);
         } while (value != -1);
     });
     this_thread::sleep_for(10ms);

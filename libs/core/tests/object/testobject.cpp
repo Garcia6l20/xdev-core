@@ -36,8 +36,8 @@ XObjectBase::ptr TestObjectStaticClass::Create() const
 
     // invokables
     objectMetadata(instance.get()).functions
-            .emplace("printTestObject", function<void(XObjectBase::ptr)>([&instance](const XObjectBase::ptr& obj) {
-                         instance->printTestObject(obj->cast<TestObject>());
+            .emplace("printTestObject", function<void(XObjectBase::ptr)>([weak_instance](const XObjectBase::ptr& obj) {
+                         weak_instance.lock()->printTestObject(obj->cast<TestObject>());
                      }));
 
     // events

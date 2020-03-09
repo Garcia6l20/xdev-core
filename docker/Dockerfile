@@ -16,15 +16,6 @@ RUN make ${MAKE_ARGS}
 
 RUN make install
 
-# WORKDIR /src
-# RUN git clone https://github.com/Kitware/CMake.git -b v3.16.5
-#
-# WORKDIR /build/CMake
-# RUN /src/CMake/configure
-# RUN make ${MAKE_FLAGS}
-# RUN make install
-
-
 FROM base AS xdev-env
 
 RUN rm -r /src/gcc
@@ -33,7 +24,7 @@ RUN rm -r /build/gcc
 WORKDIR /root
 
 RUN apt-get update && apt-get upgrade --no-install-recommends -y && \
-    apt-get install -y vim cmake sudo python3-pip
+    apt-get install -y vim cmake cmake-curses-gui sudo python3-pip
 RUN pip3 install conan
 
 ENV CC=/usr/local/bin/gcc

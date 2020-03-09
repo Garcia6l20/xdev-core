@@ -33,8 +33,8 @@ XObjectBase::ptr {{ xclass.name }}StaticClass::Create() const
     {% endfor %}
     // invokables{% for invokable in xclass.invokables %}
     objectMetadata(instance.get()).functions
-        .emplace("{{ invokable.name }}", function<{{ invokable.return_type }}({{ invokable.args_types }})>([instance]({{ invokable.args_decl }}) {
-                   {% if invokable.return_type != "void" %}return {% endif %}instance->{{ invokable.name }}({{ invokable.args_names }});
+        .emplace("{{ invokable.name }}", function<{{ invokable.return_type }}({{ invokable.args_types }})>([weak_instance]({{ invokable.args_decl }}) {
+                   {% if invokable.return_type != "void" %}return {% endif %}weak_instance.lock()->{{ invokable.name }}({{ invokable.args_names }});
                 }));{% endfor %}
 
     // events{% for event in xclass.events %}
