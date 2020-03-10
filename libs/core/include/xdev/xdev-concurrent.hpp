@@ -20,7 +20,7 @@
 #include <xdev/std-concepts.hpp>
 #endif
 
-// #define XDEV_DEBUG_CONCURRENT
+#define XDEV_DEBUG_CONCURRENT
 #ifdef XDEV_DEBUG_CONCURRENT
 #include <iostream>
 #define CONCURRENT_DEBUG(...) \
