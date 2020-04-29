@@ -234,10 +234,10 @@ decltype(auto) Variant::visit(Visitor&&visitor) const {
 std::string Variant::toString() const {
     return visit<false>([](auto&&value) -> std::string {
         using T = std::decay_t<decltype(value)>;
-        if constexpr (is_one_of<T, Value, List, Dict>::value)
+        if constexpr (one_of<T, Value, List, Dict>)
             return value.toString();
-        //else if constexpr (is_same_v<T, ObjectPtr>)
-        //    return fmt::format("{}[0x{}]", value->objectName(), static_cast<void*>(value.get()));
+        else if constexpr (XObjectPointer<T>)
+            return fmt::format("{}[0x{}]", value->objectName(), static_cast<void*>(value.get()));
         else throw std::runtime_error("Shall not append");
     });
 }

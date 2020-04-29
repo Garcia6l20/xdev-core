@@ -199,5 +199,3 @@ private:
 };
 
 } // xdev
-
-#include <xdev/xdev-properties.inl>

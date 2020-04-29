@@ -14,77 +14,74 @@ class XObjectBase;
 
 namespace variant {
 
-struct None: std::monostate {
-    auto operator==(const None&) const {return false;};
-};
+  struct None : std::monostate {
+    auto operator==(const None &) const { return false; };
+  };
 
-class Variant;
-class List;
-class Dict;
-class Function;
+  class Variant;
+  class List;
+  class Dict;
+  class Function;
 
-using SharedObject = std::shared_ptr<XObjectBase>;
+  using SharedObject = std::shared_ptr<XObjectBase>;
 
-class Value {
-public:
-
+  class Value {
+  public:
     inline Value() noexcept;
 
 
-    inline Value(const char* value) noexcept;
-    inline Value& operator=(const char* value) noexcept;
+    inline Value(const char *value) noexcept;
+    inline Value &operator=(const char *value) noexcept;
 
-    inline Value(const Value&other) noexcept;
-    inline Value& operator=(const Value&other) noexcept;
+    inline Value(const Value &other) noexcept;
+    inline Value &operator=(const Value &other) noexcept;
 
-    inline Value(Value&&other) noexcept;
-    inline Value& operator=(Value&&other) noexcept;
+    inline Value(Value &&other) noexcept;
+    inline Value &operator=(Value &&other) noexcept;
 
-    inline Value(const XValueConvertible auto&value);
-    inline Value(XValueConvertible auto&&value);
+    inline Value(const XValueConvertible auto &value);
+    inline Value(XValueConvertible auto &&value);
 
-    inline Value& operator!();
+    inline Value &operator!();
 
-    inline bool operator==(const Value& rhs) const;
-    inline std::weak_ordering operator<=>(const Value& rhs) const;
-    inline bool operator==(char const* rhs) const;
-    inline std::weak_ordering operator<=>(const char* rhs) const;
+    inline bool operator==(const Value &rhs) const;
+    inline std::weak_ordering operator<=>(const Value &rhs) const;
+    inline bool operator==(char const *rhs) const;
+    inline std::weak_ordering operator<=>(const char *rhs) const;
 
-    inline Value& operator++();
+    inline Value &operator++();
     inline Value operator++(int);
 
-    inline Value& operator--();
+    inline Value &operator--();
     inline Value operator--(int);
 
-    template <typename T>
-    inline T& get();
+    template<typename T>
+    inline T &get();
 
-    template <typename T>
-    inline const T& get() const;
+    template<typename T>
+    inline const T &get() const;
 
     template<typename T>
     inline bool is() const;
 
     inline size_t hash() const;
 
-    template <typename Visitor>
-    inline decltype(auto) visit(Visitor&&visitor);
+    template<typename Visitor>
+    inline decltype(auto) visit(Visitor &&visitor);
 
-    template <typename Visitor>
-    inline decltype(auto) visit(Visitor&&visitor) const;
+    template<typename Visitor>
+    inline decltype(auto) visit(Visitor &&visitor) const;
 
     inline std::string toString() const;
 
     inline std::string typeName() const;
 
-    static constexpr const char* ctti_nameof() {
-        return "xval";
-    }
+    static constexpr const char *ctti_nameof() { return "xval"; }
 
-private:
-    using value_t = std::variant<None, bool, int, double, std::string>;
+  private:
+    using value_t = variant_type;
     value_t _value;
-};
+  };
 
-} // namspace variant
-} // namspace xdev
+} // namespace variant
+} // namespace xdev

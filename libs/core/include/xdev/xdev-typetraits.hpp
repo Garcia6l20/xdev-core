@@ -6,7 +6,12 @@
 #include <type_traits>
 #include <string>
 #include <functional>
+
+#ifdef __cpp_lib_concepts
 #include <concepts>
+#else
+#include <xdev/std-concepts.hpp>
+#endif
 
 #ifdef _WIN32
 namespace std {

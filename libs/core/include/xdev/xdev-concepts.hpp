@@ -27,11 +27,15 @@ namespace xdev {
 // forward declaration
 class XObjectBase;
 
-template<typename T> struct is_shared_ptr : std::false_type {};
-template<typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+template<typename T>
+struct is_shared_ptr : std::false_type {};
+template<typename T>
+struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
-template <typename T>
-constexpr bool is_shared_ptr_v() { return is_shared_ptr<T>::value; }
+template<typename T>
+constexpr bool is_shared_ptr_v() {
+  return is_shared_ptr<T>::value;
+}
 
 /**
  * @defgroup xobj-concepts XObject concepts
@@ -41,39 +45,37 @@ constexpr bool is_shared_ptr_v() { return is_shared_ptr<T>::value; }
 /**
  * @brief An XObject derived item.
  */
-template <typename T>
-concept XObjectDerived = std::same_as<std::decay_t<T>, xdev::XObjectBase> or std::derived_from<std::decay_t<T>, xdev::XObjectBase>;
+template<typename T>
+concept XObjectDerived =
+  std::same_as<std::decay_t<T>, xdev::XObjectBase> or std::derived_from<std::decay_t<T>, xdev::XObjectBase>;
 
 /**
  * @brief An XObject container.
  */
-template <typename T>
+template<typename T>
 concept XObjectPointer = is_shared_ptr<T>::value and requires(T ptr) {
-    {*ptr} -> XObjectDerived;  // must have an arrow accessor
+  { *ptr }
+  ->XObjectDerived; // must have an arrow accessor
 };
 
 namespace variant {
-class Value;
-class Variant;
-class List;
-class Dict;
-class Function;
-}
+  class None;
+  using variant_type = std::variant<None, bool, int, double, std::string>;
+} // namespace variant
 
-template <typename T>
-concept XValueConvertible = not one_of<std::decay_t<T>, xdev::variant::Value, xdev::variant::Variant, xdev::variant::List, xdev::variant::Dict, xdev::variant::Function>
-                            and not XObjectPointer<std::decay_t<T>>
-                            and not is_shared_ptr<std::decay_t<T>>::value;
+
+template<typename T>
+concept XValueConvertible = std::convertible_to<std::decay_t<T>, variant::variant_type>;
 
 /** @} */
 
 /**
  * @brief A string convertible object
  */
-template <typename T>
+template<typename T>
 concept Stringable = requires(T obj) {
-    {obj.toString()} -> std::same_as<std::string>;
-    {obj.toString()} -> std::convertible_to<std::string>;
+  { obj.toString() } ->std::same_as<std::string>;
+  { obj.toString() } ->std::convertible_to<std::string>;
 };
 
 } // namespace xdev

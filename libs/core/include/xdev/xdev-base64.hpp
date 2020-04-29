@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 
 namespace xdev::base64 {
 
-static const std::string _chars =
+static constexpr const std::string_view _chars =
              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
              "abcdefghijklmnopqrstuvwxyz"
              "0123456789+/";

@@ -14,6 +14,5 @@ using namespace xdev;
 /**
  * @brief {{ pool.name }} declaration
  */
-extern XObjectPool {{ pool.name }}Pool;
-{% endfor %}
-{% endblock %}
+extern XObjectPool {{pool.name}}Pool;
+{% endfor %} {% endblock %}

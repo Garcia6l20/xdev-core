@@ -9,12 +9,6 @@
 using namespace xdev;
 using namespace xdev::rc;
 
-void help()
-{
-    cout << "Usage: xdev-basic-rc PROJECT_NAME RESOURCE_PATH" << std::endl;
-	cout << "    Build application resources." << std::endl;
-}
-
 int main(int argc, char** argv) {
 
     bool help = false;

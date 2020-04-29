@@ -10,42 +10,45 @@
 #include <xdev/xdev-exception.hpp>
 #include <xdev/xdev-template.hpp>
 
+#include <span>
+
 namespace xdev {
-class XDEV_MOC_LIB_EXPORT XMetaObjectCompiler
-{
+class XDEV_MOC_LIB_EXPORT XMetaObjectCompiler {
 public:
+  class CompileError : public XException {
+  public:
+    CompileError(const string &what);
+    CompileError(const string &what, const string &file_path, int line);
+    inline const string &filePath() const { return _file_path; }
+    inline int line() const { return _line; }
 
-	class CompileError : public XException
-	{
-	public:
-		CompileError(const string& what);
-		CompileError(const string& what, const string& file_path, int line);
-		inline const string& filePath() const { return m_filePath;  }
-		inline int line() const { return m_line;  }
-	private:
-		string m_filePath;
-		int m_line;
-	};
+  private:
+    string _file_path;
+    int _line;
+  };
 
 
-    XMetaObjectCompiler(const std::string& project_name, const std::vector<xdev::filesystem::path>& files);
-	void compile();
+  XMetaObjectCompiler(const xdict &metadata);
+  void compile();
+
 private:
-    string m_projectName;
-    std::vector<xdev::filesystem::path> m_files;
-	std::string m_macroArgs;
+  string _project_name;
+  filesystem::path _src_path;
+  filesystem::path _bin_path;
+  xdict _metadata;
+  std::string _macroArgs;
 
-    void createPools();
-    void registerPools(const filesystem::path& path);
-    void processPools(const filesystem::path& path);
-	void processFile(const filesystem::path& path);
+  void createPools();
+  void registerPools(xdict &meta);
+  void processPools(xdict &meta);
+  void processFile(xdict &meta);
 
-    xtemplate::ptr m_headerTemplate;
-    xtemplate::ptr m_sourceTemplate;
-    xtemplate::ptr m_poolsHeaderTemplate;
-    xtemplate::ptr m_poolsSourceTemplate;
+  xtemplate::ptr _header_template;
+  xtemplate::ptr _source_template;
+  xtemplate::ptr _pools_header_template;
+  xtemplate::ptr _pools_source_template;
 
-    xvar m_pools;
-    xvar m_poolsIncludes;
+  xvar _pools;
+  xlist _pools_includes;
 };
-}
+} // namespace xdev

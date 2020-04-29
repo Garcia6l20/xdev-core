@@ -3,9 +3,7 @@
 /**
  * @file concepts
  **/
-
-#ifndef _GLIBCXX_CONCEPTS
-#define _GLIBCXX_CONCEPTS 1
+#pragma once
 
 #pragma GCC system_header
 
@@ -94,5 +92,3 @@ concept common =
 #endif
 
 } // namespace std
-
-#endif // _GLIBCXX_CONCEPTS
