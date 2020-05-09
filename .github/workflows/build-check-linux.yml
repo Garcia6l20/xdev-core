@@ -1,18 +1,18 @@
 name: Build linux
 
-on:
-  push:
-    paths-ignore:
-      - '*.md'
-    branches:
-      - master
-      - devel
-  pull_request:
-    paths-ignore:
-      - '*.md'
-    branches:
-      - master
-      - devel
+#on:
+#  push:
+#    paths-ignore:
+#      - '*.md'
+#    branches:
+#      - master
+#      - devel
+#  pull_request:
+#    paths-ignore:
+#      - '*.md'
+#    branches:
+#      - master
+#      - devel
 
 jobs:
   linux:
@@ -22,13 +22,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ubuntu-18.04-gcc-9]
+        name: [ubuntu-20.04]
 
         include:
-          - name: ubuntu-18.04-gcc-9
-            os: ubuntu-18.04
+          - name: ubuntu-20.04
+            os: ubuntu-20.04
             compiler: gcc
-            version: "9"
+            version: "10"
 
     steps:
       - uses: actions/checkout@v1
@@ -36,17 +36,6 @@ jobs:
         run: |
           set -xe
 
-          CMAKE_VERSION=3.16.4
-          echo -- Installing cmake...
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz -o cmake.tar.gz
-          sudo tar xf cmake.tar.gz --strip 1 -C /usr/local
-
-          echo -- Removing outdated compilers
-          sudo apt autoremove gcc g++
-
-          echo -- Setting up xenial repositories
-          sudo add-apt-repository "deb http://dk.archive.ubuntu.com/ubuntu/ xenial main"
-          sudo add-apt-repository "deb http://dk.archive.ubuntu.com/ubuntu/ xenial universe"
           sudo apt-get update
 
           # install required gcc version
