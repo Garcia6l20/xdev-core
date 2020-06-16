@@ -33,6 +33,8 @@ conan_requires(
     "lyra/1.3.0"
     "spdlog/1.5.0"
     "pybind11/2.3.0@conan/stable"
+    "ctre/2.8.2"
+    "benchmark/1.5.0"
   OPTIONS
     "boost:header_only=True"
   BUILD outdated

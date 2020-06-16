@@ -63,3 +63,6 @@ struct fmt::formatter<xdev::xvar>: fmt::formatter<std::string> {
               v.toString(), v.typeName());
   }
 };
+
+template <>
+struct fmt::formatter<xdev::xdict>: fmt::formatter<xdev::xvar> {};

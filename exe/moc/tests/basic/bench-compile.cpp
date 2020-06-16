@@ -1,6 +1,6 @@
 #include <xdev/xdev.hpp>
 #include <xdev/xdev-moc.hpp>
-#include <gtest/gtest.h>
+#include <benchmark/benchmark.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
@@ -10,7 +10,7 @@ inline filesystem::path source_dir() {
   return filesystem::path(__FILE__).parent_path();
 }
 
-TEST(MOCBasicObject, Compilation) {
+static void BM_MOCBasicObjectCompilation(benchmark::State& state) {
   auto config = fmt::format(R"(
 project_name: test
 target: test
@@ -27,8 +27,13 @@ headers:
     (source_dir() / "test_object.h").string(),
     "test_object.h");
   auto data = yaml::parse(config);
-  spdlog::set_level(spdlog::level::debug);
   spdlog::info("config: {}", data);
-  XMetaObjectCompiler compiler(data.get<xdict>());
-  compiler.compile();
+  spdlog::set_level(spdlog::level::err);
+  for (auto&& _ : state) {
+    XMetaObjectCompiler{data.get<xdict>()}.compile();
+  }
 }
+
+BENCHMARK(BM_MOCBasicObjectCompilation);
+
+BENCHMARK_MAIN();

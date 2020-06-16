@@ -36,7 +36,7 @@ struct hash<xdev::variant::Value>
 namespace xdev {
 namespace variant {
 
-Value::Value() noexcept: _value(None{}) {}
+constexpr Value::Value() noexcept: _value(None{}) {}
 
 Value::Value(const Value&other) noexcept: _value(other._value) {}
 Value& Value::operator=(const Value&other) noexcept { _value = other._value; return *this; }

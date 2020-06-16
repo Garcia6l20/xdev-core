@@ -3,14 +3,14 @@
 {% block xclass_content %}
 {{ xclass.name }}StaticClass::{{ xclass.name }}StaticClass():
         BaseStaticClass("{{ xclass.name }}")
-{   // properties{% for prop in xclass.properties %}
-    _properties.emplace("{{ prop.name }}", XMetaProperty<{{ prop.raw_args }}>("{{ prop.name }}"));{% endfor %}
-    // functions{% for function in xclass.functions %}
-    _functions.emplace_back(MetaFunction<{{function.raw_args}}>{"{{ function.name }}"});{% endfor %}
+{   // properties{% for prop_name, prop_data in xclass.properties %}
+    _properties.emplace("{{ prop_name }}", XMetaProperty<{{ prop_data.raw_args }}>("{{ prop_name }}"));{% endfor %}
+    // functions{% for fn_name, fn_data in xclass.functions %}
+    _functions.emplace_back(MetaFunction<{{fn_data.raw_args}}>{"{{ fn_name }}"});{% endfor %}
     // invokables{% for invokable in xclass.invokables %}
     _functions.emplace_back(MetaFunction<{{ invokable.return_type }}({{ invokable.args_types }})>{"{{ invokable.name }}"});{% endfor %}
-    // events{% for event in xclass.events %}
-    _events.emplace_back(MetaFunction<void({{ event.raw_args }})>{"{{ event.name }}"});{% endfor %}
+    // events{% for ev_name, ev_data in xclass.events %}
+    _events.emplace_back(MetaFunction<void({{ ev_data.raw_args }})>{"{{ ev_name }}"});{% endfor %}
     {% for key, value in xclass.metadata %}
     _metadata["{{ key }}"] = R"({{ value }})"_xjson;{% endfor %}
 }
@@ -22,14 +22,14 @@ XObjectBase::ptr {{ xclass.name }}StaticClass::Create() const
 {
     auto instance = Make<{{ xclass.name }}>();
     weak_ptr<{{ xclass.name }}> weak_instance = instance;
-    // properties{% for prop in xclass.properties %}
-    objectMetadata(instance.get()).properties.emplace("{{ prop.name }}", instance->{{ prop.name }});{% endfor %}
-    {% for prop in xclass.properties %}{% if prop.autowire %}instance->{{ prop.name }} = {{ prop.autowire.pool.name }}Pool["{{ prop.autowire.name }}"]->cast<{{ prop.autowire.name }}>();{% endif %}{% endfor %}
-    // functions{% for function in xclass.functions %}
-    if (!instance->{{ function.name }}) {
-        throw XException("uninitialized function '{{ function.name }}' in class '{{ xclass.name }}'");
+    // properties{% for prop_name, prop_data in xclass.properties %}
+    objectMetadata(instance.get()).properties.emplace("{{ prop_name }}", instance->{{ prop_name }});{% endfor %}
+    {% for prop in xclass.properties %}{% if prop_data.autowire %}instance->{{ prop_name }} = {{ prop_data.autowire.pool.name }}Pool["{{ prop_data.autowire.name }}"]->cast<{{ prop_data.autowire.name }}>();{% endif %}{% endfor %}
+    // functions{% for fn_name, fn_data in xclass.functions %}
+    if (!instance->{{ fn_name }}) {
+        throw XException("uninitialized function '{{ fn_name }}' in class '{{ xclass.name }}'");
     }
-    objectMetadata(instance.get()).functions.emplace("{{ function.name }}", instance->{{ function.name }});
+    objectMetadata(instance.get()).functions.emplace("{{ fn_name }}", instance->{{ fn_name }});
     {% endfor %}
     // invokables{% for invokable in xclass.invokables %}
     objectMetadata(instance.get()).functions
@@ -37,8 +37,8 @@ XObjectBase::ptr {{ xclass.name }}StaticClass::Create() const
                    {% if invokable.return_type != "void" %}return {% endif %}weak_instance.lock()->{{ invokable.name }}({{ invokable.args_names }});
                 }));{% endfor %}
 
-    // events{% for event in xclass.events %}
-    objectMetadata(instance.get()).events.emplace("{{ event.name }}", instance->{{ event.name }});
+    // events{% for ev_name, ev_data in xclass.events %}
+    objectMetadata(instance.get()).events.emplace("{{ ev_name }}", instance->{{ ev_name }});
     {% endfor %}
     instance->initialize();
     return instance;

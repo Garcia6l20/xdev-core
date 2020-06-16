@@ -27,9 +27,9 @@ namespace variant {
 
   class Value {
   public:
-    inline Value() noexcept;
+    constexpr Value() noexcept;
 
-
+    // TODO(Sylvain) Switch to constexpr as soon as std::string ctor is constexpr too
     inline Value(const char *value) noexcept;
     inline Value &operator=(const char *value) noexcept;
 

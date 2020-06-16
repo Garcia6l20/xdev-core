@@ -182,7 +182,6 @@ namespace xdev::yaml {
         value.get<xdict>()[key] = node.value;
         lend = begin;
         _YAML_DEBUG("MappingNode: {} {}", key, node.value);
-        // std::cout << value.get<XDict>()[key] << std::endl;
       }
       begin = lend;
     }
@@ -205,7 +204,6 @@ namespace xdev::yaml {
         begin = sep + 1;
         auto node = Node::Parse(begin, this_end);
         value.get<xdict>()[key] = node.value;
-        // std::cout << value.get<XDict>()[key] << std::endl;
         static const char tokens[] = {',', '}'};
         auto next = find_first_of(begin, end, tokens, tokens + sizeof(tokens));
         begin = next + 1;
@@ -259,12 +257,10 @@ namespace xdev::yaml {
         }
         auto node = Node::Parse(begin, this_end);
         value.get<xlist>().push(node.value);
-        // std::cout << value.get<XList>().back() << std::endl;
         static const char tokens[] = {',', ']'};
         auto next = find_first_of(begin, end, tokens, tokens + sizeof(tokens));
         begin = next + 1;
         if (*next == ']') {
-          ;
           return;
         }
       }
@@ -276,7 +272,6 @@ namespace xdev::yaml {
     static const char non_scalar_seps[] = {'{', '[', ':', '-', '\n'};
     iterator test = find_first_of(subbegin, end, non_scalar_seps, non_scalar_seps + sizeof(non_scalar_seps));
 
-    // if (first_alnum < test) test = first_alnum;
     if (*test == '-' && (*(test + 1) == ' ' || *(test + 1) == '\n')) {
       SequenceNode node;
       node.process(begin, end);
@@ -306,7 +301,6 @@ namespace xdev::yaml {
     auto begin = _data.begin();
     auto root = Node::Parse(begin, _data.end());
     return root.value;
-    // return process(_data.begin(), _data.end()).value();
   }
 
 } // namespace xdev::yaml

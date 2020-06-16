@@ -59,7 +59,7 @@ concept XObjectPointer = is_shared_ptr<T>::value and requires(T ptr) {
 };
 
 namespace variant {
-  class None;
+  struct None;
   using variant_type = std::variant<None, bool, int, double, std::string>;
 } // namespace variant
 

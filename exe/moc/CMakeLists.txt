@@ -14,7 +14,7 @@ xdev_library(${PROJECT_NAME}-lib
         include/xdev/xdev-moc.hpp
     SOURCES
         src/xdev-moc.cpp
-    LIBRARIES XDev::template CONAN_PKG::lyra CONAN_PKG::fmt
+    LIBRARIES XDev::template CONAN_PKG::lyra CONAN_PKG::fmt CONAN_PKG::ctre
     ALIAS XDev::moc
     RESOURCES_DIRS resources
     FOLDER xdev
