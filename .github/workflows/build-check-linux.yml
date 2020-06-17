@@ -4,9 +4,6 @@ on:
   push:
     paths-ignore:
       - '*.md'
-    branches:
-      - master
-      - devel
   pull_request:
     paths-ignore:
       - '*.md'
@@ -22,13 +19,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ubuntu-18.04-gcc-9]
+        name: [ubuntu-20.04-gcc-10]
 
         include:
-          - name: ubuntu-18.04-gcc-9
-            os: ubuntu-18.04
+          - name: ubuntu-20.04-gcc-10
+            os: ubuntu-20.04
             compiler: gcc
-            version: "9"
+            version: 10
 
     steps:
       - uses: actions/checkout@v1
@@ -36,25 +33,15 @@ jobs:
         run: |
           set -xe
 
-          CMAKE_VERSION=3.16.4
-          echo -- Installing cmake...
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz -o cmake.tar.gz
-          sudo tar xf cmake.tar.gz --strip 1 -C /usr/local
-
-          echo -- Removing outdated compilers
-          sudo apt autoremove gcc g++
-
-          echo -- Setting up xenial repositories
-          sudo add-apt-repository "deb http://dk.archive.ubuntu.com/ubuntu/ xenial main"
-          sudo add-apt-repository "deb http://dk.archive.ubuntu.com/ubuntu/ xenial universe"
           sudo apt-get update
+          sudo apt-get install cmake
 
           # install required gcc version
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             echo -- Installing gcc-${{ matrix.version }}...
             sudo apt-get install -y g++-${{ matrix.version }}
-            echo "::set-env name=CC::gcc-${{ matrix.version }}"
-            echo "::set-env name=CXX::g++-${{ matrix.version }}"
+            sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-${{ matrix.version }} 100
+            sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-${{ matrix.version }} 100
           fi
 
           echo -- Installing setuptools, pip, wheel and conan
@@ -68,11 +55,6 @@ jobs:
         run: |
           mkdir build
           cd build
-          # conan install .. --profile=../.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
           cmake -DCMAKE_BUILD_TYPE=Debug -DXDEV_UNIT_TESTING=ON ..
           make -j
           ctest
-
-      # - name: Build conan package
-      #   run: |
-      #     conan create . -s build_type=Debug --profile=./.conan/profiles/${{ matrix.compiler }}-${{ matrix.version }} --build missing
