@@ -70,7 +70,7 @@ namespace xdev {
         template <typename FirstT, typename...RestT>
         static constexpr bool test()
         {
-            if constexpr (std::same_as<T, FirstT>) {
+            if constexpr (std::same_as<std::decay_t<T>, FirstT>) {
                 return true;
             } else if constexpr (sizeof...(RestT) > 0) {
                 return test<RestT...>();

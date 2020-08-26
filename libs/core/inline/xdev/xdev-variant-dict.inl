@@ -64,6 +64,14 @@ Variant& Dict::operator[](const Value& key) {
     else return item->second;
 }
 
+bool Dict::operator==(const Dict &other) const {
+  return _value == other._value;
+}
+
+auto Dict::operator<=>(const Dict &other) const {
+    return _value <=> other._value;
+}
+
 inline Dict& Dict::update(Dict&& other) {
     for (auto&& [k, v]: other._value) {
         _value.emplace(std::move(k), std::move(v));

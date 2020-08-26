@@ -28,10 +28,14 @@ private:
         create_func_t create;
         ClassData(const XStaticClass::ptr& clazz, create_func_t create_func): staticClass(clazz), create(create_func) {}
         bool operator==(const string& name) const {
-            return staticClass.lock()->name() == name;
+            if (auto sc = staticClass.lock(); sc)
+                return sc->name() == name;
+            return false;
         }
         bool operator==(const XStaticClass* clazz) const {
-            return staticClass.lock().get() == clazz;
+            if (auto sc = staticClass.lock(); sc)
+                return sc.get() == clazz;
+            return false;
         }
     };
     vector<ClassData> _classes;

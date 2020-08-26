@@ -28,15 +28,13 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(xdev)
 
 conan_requires(
-    "boost/1.72.0"
-    "fmt/6.1.2"
-    "lyra/1.3.0"
-    "spdlog/1.5.0"
-    "pybind11/2.3.0@conan/stable"
+    "boost/1.74.0"
+    "fmt/7.0.1"
+    "lyra/1.4.0"
+    "spdlog/1.7.0"
+    "pybind11/2.5.0"
     "ctre/2.8.2"
     "benchmark/1.5.0"
-  OPTIONS
-    "boost:header_only=True"
   BUILD outdated
 )
 

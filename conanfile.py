@@ -16,7 +16,7 @@ class MeltConanFile(ConanFile):
         "revision": "auto"
     }
     requires = "boost/1.72.0", "fmt/6.1.2", "lyra/1.3.0", "spdlog/1.5.0", "pybind11/2.3.0@conan/stable", "ctre/2.8.2", "benchmark/1.5.0"
-    build_requires = "gtest/1.10.0", "catch2/2.11.0"
+    build_requires = "catch2/2.11.0"
     options = {"fPIC": [True, False], "shared": [True, False], }
     default_options = {
         "fPIC": True,

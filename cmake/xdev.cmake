@@ -131,7 +131,7 @@ endfunction()
 
 find_package(Threads REQUIRED)
 
-macro(_link_if_is_library target library)
+macro(_link_if_IS_LIBRARY target library)
 if (TARGET ${library})
     get_target_property(library_type ${library} TYPE)
     if (library_type MATCHES ".*_LIBRARY")

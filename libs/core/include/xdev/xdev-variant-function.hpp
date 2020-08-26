@@ -26,8 +26,10 @@ concept is_xfunction_wrappable = requires(T f) {
     {f(Args{}...)};
 };
 
-struct Function: std::function<Variant(List)> {
+class Function: std::function<Variant(List)> {
     typedef Variant(*target_t)(List);
+
+public:
     using base = std::function<Variant(List)>;
     using base::function;
     using base::operator();
@@ -50,7 +52,7 @@ struct Function: std::function<Variant(List)> {
     template <typename ResultT = Variant>
     ResultT apply(const List& args);
 
-    auto operator<=>(const Function&) const = default;
+    inline auto operator<=>(const Function&) const;
     inline bool operator ==(const Function&) const;
 
     static constexpr const char* ctti_nameof() {

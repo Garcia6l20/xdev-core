@@ -17,7 +17,7 @@ void XClass::UnRegister(const XStaticClass* clazz) {
 }
 
 XObjectBase::ptr XClass::Create(const string &name) {
-    for (auto& clazz: Get()._classes) {
+    for (auto clazz: Get()._classes) {
         if (clazz == name) {
             return clazz.create();
         }

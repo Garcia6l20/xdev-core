@@ -94,6 +94,10 @@ ResultT Function::operator()() {
     else return apply<ResultT>(xlist{}).template get<ResultT>();
 }
 
+auto Function::operator<=>(const Function& other) const {
+    return target<target_t>() <=> other.target<target_t>();
+}
+
 bool Function::operator==(const Function& other) const {
     return target<target_t>() == other.target<target_t>();
 }

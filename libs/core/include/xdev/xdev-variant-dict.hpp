@@ -48,7 +48,8 @@ public:
 
   inline Dict &update(Dict &&other);
 
-  auto operator<=>(const Dict &) const = default;
+  inline bool operator==(const Dict &) const;
+  inline auto operator<=>(const Dict &) const;
 
   template<typename T>
   inline bool contains(const T &key) const {

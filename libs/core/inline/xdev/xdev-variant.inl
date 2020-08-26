@@ -57,11 +57,10 @@ bool Variant::operator==(const Variant& b) const {
             return lhs == rhs;
         },
         []<typename T>
-        requires (std::convertible_to<T, Value>)
-        (const Value& lhs, const T& rhs){
+        (const Value& lhs, const T& rhs) requires (std::convertible_to<T, Value> and not std::same_as<T, Value>) {
             return lhs == rhs;
         },
-        []<typename T, typename U>(const T&, const U&){
+        []<typename T, typename U>(const T&, const U&) requires (not std::same_as<T, U>){
             return false;
         }
     }, _value, b._value);

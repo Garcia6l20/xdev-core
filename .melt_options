@@ -8,10 +8,9 @@ GNU_EXTRA_FLAGS = -Wno-error=shadow
 ENABLE_IPO = OFF
 
 # testing backends
-TESTING_BACKENDS = gtest/1.10.0 \
-                   catch2/2.11.0
+TESTING_BACKENDS = catch2/2.11.0
 
-TESTING_DEFAULT_BACKEND = GTEST
+TESTING_DEFAULT_BACKEND = CATCH
 
 #Suppress warnings
 #SUPPRESS_WARNINGS = -Wuseless-cast \

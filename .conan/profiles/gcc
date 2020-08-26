@@ -2,7 +2,7 @@ include(all)
 
 [settings]
 
-compiler=gcc
+compiler=gcc-11
 compiler.libcxx=libstdc++11
 
 gtest:compiler=gcc

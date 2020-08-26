@@ -53,7 +53,7 @@ namespace variant {
   class Variant;
   class Dict;
   class List;
-  struct Function;
+  class Function;
 } // namespace variant
 
 using xvar = variant::Variant;
@@ -63,10 +63,10 @@ using xfn = variant::Function;
 
 
 template<typename T>
-static inline constexpr bool is_xvariant = is_same<T, xvar>::value;
+static constexpr bool is_xvariant = is_same<T, xvar>::value;
 
 template<typename T>
-static inline constexpr bool is_xobject = is_base_of<XObjectBase, T>::value;
+static constexpr bool is_xobject = is_base_of<XObjectBase, T>::value;
 
 
 class XObjectBase;
