@@ -174,6 +174,8 @@ namespace xdev {
 
                 using tuple_type = std::invoke_result_t<_make>;
             };
+
+            using args_tuple_type = std::tuple<Args...>;
         };
     }
 
