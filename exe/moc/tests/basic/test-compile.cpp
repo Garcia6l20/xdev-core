@@ -1,6 +1,8 @@
+#include <catch2/catch.hpp>
+
 #include <xdev/xdev.hpp>
 #include <xdev/xdev-moc.hpp>
-#include <gtest/gtest.h>
+
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
@@ -10,7 +12,7 @@ inline filesystem::path source_dir() {
   return filesystem::path(__FILE__).parent_path();
 }
 
-TEST(MOCBasicObject, Compilation) {
+TEST_CASE("MOCBasicObject.Compilation") {
   auto config = fmt::format(R"(
 project_name: test
 target: test
