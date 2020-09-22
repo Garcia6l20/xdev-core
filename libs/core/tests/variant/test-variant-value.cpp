@@ -1,5 +1,5 @@
 #include <catch2/catch.hpp>
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 
 using namespace xdev;
 

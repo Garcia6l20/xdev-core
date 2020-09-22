@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev-tuple-tools.hpp>
+#include <xdev/tuple-tools.hpp>
 #include <ctti/type_id.hpp>
 
 #include <spdlog/spdlog.h>

@@ -1,7 +1,7 @@
 #pragma once
 
 // #include <testobject.xdev.hpp>
-#include <xdev/xdev-object.hpp>
+#include <xdev/object.hpp>
 
 using namespace xdev;
 

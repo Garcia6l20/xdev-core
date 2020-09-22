@@ -1,6 +1,6 @@
 #include "testobject.h"
 
-#include <xdev/xdev-xclass.hpp>
+#include <xdev/xclass.hpp>
 
 TestObjectStaticClass::TestObjectStaticClass():
     XStaticClass("TestObject")

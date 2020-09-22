@@ -1,5 +1,5 @@
-#include <xdev/xdev-concurrent.hpp>
-#include <xdev/xdev-tools.hpp>
+#include <xdev/concurrent.hpp>
+#include <xdev/tools.hpp>
 #include <catch2/catch.hpp>
 #include <spdlog/spdlog.h>
 

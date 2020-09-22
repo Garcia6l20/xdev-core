@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(xdev-template)
 
-file(GLOB src_files src/xdev-*.cpp)
-file(GLOB hdr_files_pub include/xdev/xdev-*.hpp)
+file(GLOB src_files src/*.cpp)
+file(GLOB hdr_files_pub include/xdev/*.hpp)
 
 melt_library(${PROJECT_NAME} STATIC
     HEADERS ${hdr_files_pub}

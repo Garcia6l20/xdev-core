@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev.hpp>
-#include <xdev/xdev-moc.hpp>
+#include <xdev.hpp>
+#include <xdev/moc.hpp>
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>

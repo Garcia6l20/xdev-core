@@ -1,4 +1,4 @@
-#include <xdev/xdev-moc.hpp>
+#include <xdev/moc.hpp>
 
 #include <lyra/lyra.hpp>
 #include <fmt/format.h>

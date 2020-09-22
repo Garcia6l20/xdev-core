@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 #include <test_object.h>
 
 using namespace xdev;

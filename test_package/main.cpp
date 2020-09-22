@@ -1,4 +1,4 @@
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 #include <test-object.hpp>
 
 #include <cassert>

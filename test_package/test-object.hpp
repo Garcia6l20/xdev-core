@@ -1,6 +1,6 @@
 #pragma once
 
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 
 using namespace xdev;
 

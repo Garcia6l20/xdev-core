@@ -1,12 +1,12 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 #include <iostream>
 #include <cassert>
-#include <xdev/xdev-xclass.hpp>
+#include <xdev/xclass.hpp>
 
 #include <spdlog/spdlog.h>
-#include <xdev/xdev-variant-fmt.hpp>
+#include <xdev/variant-fmt.hpp>
 
 #include "testobject.h"
 

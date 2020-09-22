@@ -1,10 +1,10 @@
 #ifndef TEST_OBJECT_H
 #define TEST_OBJECT_H
 
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 
 #include <iostream>
-#include <xdev/xdev-object-pool.hpp>
+#include <xdev/object-pool.hpp>
 
 using namespace xdev;
 

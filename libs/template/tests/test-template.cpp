@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev.hpp>
-#include <xdev/xdev-template.hpp>
+#include <xdev.hpp>
+#include <xdev/template.hpp>
 
 using namespace xdev;
 

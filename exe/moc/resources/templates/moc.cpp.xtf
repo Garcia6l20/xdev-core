@@ -6,7 +6,7 @@
 {% block includes %}
 #include <{{ origin_filename }}>
 #include <{{ basename }}.xdev.hpp>
-#include <xdev/xdev-xclass.hpp>
+#include <xdev/xclass.hpp>
 {% endblock %}
 
 #include <iostream>

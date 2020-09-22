@@ -1,7 +1,7 @@
 {% extends templates/header.xtf %}
 
 {% block header_body %}
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 {% if pools %}
 #include <pools.xdev.hpp>
 {% endif %}

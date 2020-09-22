@@ -1,4 +1,4 @@
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 #include <MetaObjectCompiler.h>
 #include <gtest/gtest.h>
 

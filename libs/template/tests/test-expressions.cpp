@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev-template-expressions.hpp>
+#include <xdev/template-expressions.hpp>
 
 using namespace xdev;
 

@@ -1,4 +1,4 @@
-#include <xdev/xdev-object.hpp>
+#include <xdev/object.hpp>
 #include <catch2/catch.hpp>
 
 using namespace xdev;

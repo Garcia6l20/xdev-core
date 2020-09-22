@@ -1,5 +1,5 @@
-#include <xdev/xdev.hpp>
-#include <xdev/xdev-moc.hpp>
+#include <xdev.hpp>
+#include <xdev/moc.hpp>
 #include <benchmark/benchmark.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>

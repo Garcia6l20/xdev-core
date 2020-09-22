@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev-basic-rc.hpp>
+#include <xdev/basic-rc.hpp>
 
 using namespace xdev;
 using namespace xdev::rc;

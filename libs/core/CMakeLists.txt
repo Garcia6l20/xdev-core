@@ -1,52 +1,52 @@
 cmake_minimum_required(VERSION 3.7)
 
 set(header_files
-        include/xdev/std-concepts.hpp
-        include/xdev/xdev.hpp
-        include/xdev/xdev-app.hpp
-        include/xdev/xdev-base64.hpp
-        include/xdev/xdev-concepts.hpp
-        include/xdev/xdev-concurrent.hpp
-        include/xdev/xdev-core.hpp
-        include/xdev/xdev-exception.hpp
-        include/xdev/xdev-json.hpp
-        include/xdev/xdev-library.hpp
-        include/xdev/xdev-object.hpp
-        include/xdev/xdev-object-pool.hpp
-        include/xdev/xdev-properties.hpp
-        include/xdev/xdev-resources.hpp
-        include/xdev/xdev-tools.hpp
-        include/xdev/xdev-typetraits.hpp
-        include/xdev/xdev-variant.hpp
-        include/xdev/xdev-variant-dict.hpp
-        include/xdev/xdev-variant-fmt.hpp
-        include/xdev/xdev-variant-function.hpp
-        include/xdev/xdev-variant-list.hpp
-        include/xdev/xdev-variant-value.hpp
-        include/xdev/xdev-xclass.hpp
-        include/xdev/xdev-yaml.hpp
-)
+  include/xdev/std-concepts.hpp
+  include/xdev.hpp
+  include/xdev/app.hpp
+  include/xdev/base64.hpp
+  include/xdev/concepts.hpp
+  include/xdev/concurrent.hpp
+  include/xdev/core.hpp
+  include/xdev/exception.hpp
+  include/xdev/json.hpp
+  include/xdev/library.hpp
+  include/xdev/object.hpp
+  include/xdev/object-pool.hpp
+  include/xdev/properties.hpp
+  include/xdev/resources.hpp
+  include/xdev/tools.hpp
+  include/xdev/typetraits.hpp
+  include/xdev/variant.hpp
+  include/xdev/variant-dict.hpp
+  include/xdev/variant-fmt.hpp
+  include/xdev/variant-function.hpp
+  include/xdev/variant-list.hpp
+  include/xdev/variant-value.hpp
+  include/xdev/xclass.hpp
+  include/xdev/yaml.hpp
+  )
 
 set(inline_files
-        inline/xdev/xdev-json.inl
-        inline/xdev/xdev-object.inl
-        inline/xdev/xdev-variant.inl
-        inline/xdev/xdev-variant-dict.inl
-        inline/xdev/xdev-variant-function.inl
-        inline/xdev/xdev-variant-list.inl
-        inline/xdev/xdev-variant-value.inl
-        inline/xdev/xdev-yaml.inl
-)
+  inline/xdev/json.inl
+  inline/xdev/object.inl
+  inline/xdev/variant.inl
+  inline/xdev/variant-dict.inl
+  inline/xdev/variant-function.inl
+  inline/xdev/variant-list.inl
+  inline/xdev/variant-value.inl
+  inline/xdev/yaml.inl
+  )
 
 set(source_files
-        src/xdev-app.cpp
-        src/xdev-base64.cpp
-        src/xdev-exception.cpp
-        src/xdev-library.cpp
-        src/xdev-object.cpp
-        src/xdev-variant.cpp
-        src/xdev-xclass.cpp
-        )
+  src/app.cpp
+  src/base64.cpp
+  src/exception.cpp
+  src/library.cpp
+  src/object.cpp
+  src/variant.cpp
+  src/xclass.cpp
+  )
 
 include(FetchContent)
 

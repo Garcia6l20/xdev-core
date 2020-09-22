@@ -2,7 +2,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev-resources.hpp>
+#include <xdev/resources.hpp>
 
 #include <resources/xdev-rc-test-json-load-resources.hpp>
 

@@ -11,9 +11,9 @@ project(xdev-moc)
 
 xdev_library(${PROJECT_NAME}-lib
     HEADERS
-        include/xdev/xdev-moc.hpp
+      include/xdev/moc.hpp
     SOURCES
-        src/xdev-moc.cpp
+      src/moc.cpp
     LIBRARIES XDev::template CONAN_PKG::lyra CONAN_PKG::fmt CONAN_PKG::ctre
     ALIAS XDev::moc
     RESOURCES_DIRS resources

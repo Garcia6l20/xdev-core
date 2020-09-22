@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include <xdev/xdev.hpp>
-#include <xdev/xdev-yaml.hpp>
+#include <xdev.hpp>
+#include <xdev/yaml.hpp>
 
 using namespace xdev;
 

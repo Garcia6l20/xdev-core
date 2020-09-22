@@ -1,8 +1,8 @@
 {% extends templates/header.xtf %}
 
 {% block header_body %}
-#include <xdev/xdev.hpp>
-#include <xdev/xdev-object-pool.hpp>
+#include <xdev.hpp>
+#include <xdev/object-pool.hpp>
 
 {% for include in includes %}
 #include <{{ include }}>

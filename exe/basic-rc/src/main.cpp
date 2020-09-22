@@ -1,4 +1,4 @@
-#include <xdev/xdev-basic-rc.hpp>
+#include <xdev/basic-rc.hpp>
 
 #include <lyra/lyra.hpp>
 #include <fmt/format.h>

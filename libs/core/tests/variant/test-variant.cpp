@@ -1,4 +1,4 @@
-#include <xdev/xdev.hpp>
+#include <xdev.hpp>
 #include <catch2/catch.hpp>
 #include <iostream>
 
