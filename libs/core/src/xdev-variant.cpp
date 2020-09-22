@@ -5,10 +5,3 @@
 using namespace xdev;
 using namespace xdev::variant;
 
-Variant Variant::FromJSON(const std::string& input) {
-    return json::parse(input);
-}
-
-Variant Variant::FromYAML(const std::string& input) {
-    return yaml::parse(input);
-}

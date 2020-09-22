@@ -60,12 +60,13 @@ concept XObjectPointer = is_shared_ptr<T>::value and requires(T ptr) {
 
 namespace variant {
   struct None;
-  using variant_type = std::variant<None, bool, int, double, std::string>;
+  template <typename StringPolicy>
+  using variant_type = std::variant<None, bool, int, double, typename StringPolicy::string_type>;
 } // namespace variant
 
 
-template<typename T>
-concept XValueConvertible = std::convertible_to<std::decay_t<T>, variant::variant_type>;
+template<typename T, typename StringPolicy>
+concept XValueConvertible = std::convertible_to<std::decay_t<T>, variant::variant_type<StringPolicy>>;
 
 /** @} */
 

@@ -4,6 +4,8 @@
  **/
 #pragma once
 
+#include <xdev/xdev-variant-policies.hpp>
+
 #include <variant>
 #include <memory>
 #include <vector>
@@ -34,7 +36,14 @@ namespace variant {
 
 using SharedObject = std::shared_ptr<XObjectBase>;
 
+template <typename StringPolicyT = StdStringPolicy>
 class Variant {
+
+  using value_type = Value<StringPolicyT>;
+  using dict_type = Dict<StringPolicyT>;
+  using list_type = List<StringPolicyT>;
+  using fn_type = Function<StringPolicyT>;
+
 public:
     inline Variant();
 
@@ -100,8 +109,8 @@ public:
      * @{
      */
 
-    inline Variant(List&&dct);
-    inline Variant(const List&dct);
+    inline Variant(List<StringPolicyT>&&dct);
+    inline Variant(const List<StringPolicyT>&dct);
 
     /** @} */
 
@@ -110,10 +119,10 @@ public:
      * @{
      */
 
-    inline Variant(Dict&&dct);
-    inline Variant(const Dict&dct);
+    inline Variant(Dict<StringPolicyT> &&dct);
+    inline Variant(const Dict<StringPolicyT> &dct);
 
-    inline Variant& update(Dict&&dct);
+    inline Variant& update(Dict<StringPolicyT> &&dct);
 
     /** @} */
 
@@ -122,16 +131,16 @@ public:
      * @{
      */
 
-    inline Variant(Function&&fcn);
-    inline Variant(const Function&fcn);
+    inline Variant(Function<StringPolicyT> &&fcn);
+    inline Variant(const Function<StringPolicyT> &fcn);
 
     inline auto operator()();
 
     template <typename FirstT, typename...RestT>
     auto operator()(FirstT&&, RestT&&...);
 
-    inline auto apply(List&& args);
-    inline auto apply(const List& args);
+    inline auto apply(List<StringPolicyT> && args);
+    inline auto apply(const List<StringPolicyT> & args);
 
     /** @} */
 
@@ -151,8 +160,8 @@ public:
      * @{
      **/
 
-    inline Variant& operator[](const Value& index);
-    inline const Variant& operator[](const Value& index) const;    
+    inline Variant& operator[](const Value<StringPolicyT>& index);
+    inline const Variant& operator[](const Value<StringPolicyT>& index) const;
 
     /** @} */
 
@@ -163,11 +172,11 @@ public:
 
     inline Variant(const char*);
 
-    inline Variant(const Value&);
-    inline Variant(Value&&);
+    inline Variant(const Value<StringPolicyT>&);
+    inline Variant(Value<StringPolicyT>&&);
 
-    Variant(const XValueConvertible auto&);
-    Variant(XValueConvertible auto&&);
+    Variant(const XValueConvertible<StringPolicyT> auto&);
+    Variant(XValueConvertible<StringPolicyT> auto&&);
 
     inline Variant& operator!();
 
@@ -175,33 +184,40 @@ public:
 
     // in/decrement operators
 
-    inline Value& operator++();
-    inline Value operator++(int);
+    inline auto& operator++();
+    inline auto operator++(int);
 
-    inline Value& operator--();
-    inline Value operator--(int);
+    inline auto & operator--();
+    inline auto operator--(int);
 
     /** @} */
 
-    static XDEV_CORE_EXPORT Variant FromJSON(const std::string&);
-    static XDEV_CORE_EXPORT Variant FromYAML(const std::string&);
+    static inline Variant FromJSON(const std::string&);
+    static inline Variant FromYAML(const std::string&);
 
     static constexpr const char* ctti_nameof() {
         return "xvar";
     }
 private:
-    using value_t = std::variant<Value, List, Dict, Function, SharedObject>;
+    using value_t = std::variant<Value<StringPolicyT>, List<StringPolicyT>, Dict<StringPolicyT>, Function<StringPolicyT>, SharedObject>;
     value_t _value;
 };
 
 } // variant
 
 using xnone = variant::None;
-using xval  = variant::Value;
-using xlist = variant::List;
-using xdict = variant::Dict;
-using xfn   = variant::Function;
-using xvar  = variant::Variant;
+
+using xval  = variant::Value<struct StdStringPolicy>;
+using xlist = variant::List<struct StdStringPolicy>;
+using xdict = variant::Dict<struct StdStringPolicy>;
+using xfn   = variant::Function<struct StdStringPolicy>;
+using xvar  = variant::Variant<struct StdStringPolicy>;
+
+using xcval  = variant::Value<struct StdStringViewPolicy>;
+using xclist = variant::List<struct StdStringViewPolicy>;
+using xcdict = variant::Dict<struct StdStringViewPolicy>;
+using xcfn   = variant::Function<struct StdStringViewPolicy>;
+using xcvar  = variant::Variant<struct StdStringViewPolicy>;
 
 } // xdev
 

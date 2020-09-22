@@ -81,8 +81,8 @@ SCENARIO("object can be hold by xvar", "[object.variant_compat]") {
     }
     GIVEN("an xobj copied to an xvarian holding an object") {
         auto obj = XClass::Create<TestObject>("TestObject");
-        static_assert(xdev::XObjectPointer<decltype(obj)>, "xdev::XObjectPointer is wrong");
-        static_assert(not xdev::XValueConvertible<decltype(obj)>, "xdev::XValueConvertible is wrong");
+        STATIC_REQUIRE(xdev::XObjectPointer<decltype(obj)>);
+        STATIC_REQUIRE(not xdev::XValueConvertible<xdev::StdStringViewPolicy, decltype(obj)>);
         xvar var = obj;
 //        REQUIRE(var["intProp"].is<int>());
 //        REQUIRE(var["intProp"] == 42);

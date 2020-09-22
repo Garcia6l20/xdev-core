@@ -6,21 +6,42 @@
 namespace xdev {
 namespace variant {
 
-Dict::Dict(): _value() {}
-Dict::Dict(const DictInitList &value): _value(value) {}
-Dict::Dict(Dict&&other): _value(std::move(other._value)) {}
-Dict& Dict::operator=(Dict&&other) { _value = std::move(other._value); return *this; }
-Dict::Dict(const Dict&other): _value(other._value) {}
-Dict& Dict::operator=(const Dict&other) { _value = other._value; return *this; }
+template <typename StringPolicy>
+Dict<StringPolicy>::Dict(): _value() {}
+
+template <typename StringPolicy>
+Dict<StringPolicy>::Dict(const DictInitList<StringPolicy> &value): _value(value) {}
+
+template <typename StringPolicy>
+Dict<StringPolicy>::Dict(Dict&&other): _value(std::move(other._value)) {}
+
+template <typename StringPolicy>
+Dict<StringPolicy>& Dict<StringPolicy>::operator=(Dict&&other) { _value = std::move(other._value); return *this; }
+
+template <typename StringPolicy>
+Dict<StringPolicy>::Dict(const Dict&other): _value(other._value) {}
+
+template <typename StringPolicy>
+Dict<StringPolicy>& Dict<StringPolicy>::operator=(const Dict&other) { _value = other._value; return *this; }
 
 
-Dict::iterator Dict::begin() { return _value.begin(); }
-Dict::iterator Dict::end() { return _value.end(); }
-Dict::const_iterator Dict::begin() const { return _value.cbegin(); }
-Dict::const_iterator Dict::end() const { return _value.cend(); }
-size_t Dict::size() const { return _value.size(); }
+template <typename StringPolicy>
+typename Dict<StringPolicy>::iterator Dict<StringPolicy>::begin() { return _value.begin(); }
 
-std::string Dict::toString() const {
+template <typename StringPolicy>
+typename Dict<StringPolicy>::iterator Dict<StringPolicy>::end() { return _value.end(); }
+
+template <typename StringPolicy>
+typename Dict<StringPolicy>::const_iterator Dict<StringPolicy>::begin() const { return _value.cbegin(); }
+
+template <typename StringPolicy>
+typename Dict<StringPolicy>::const_iterator Dict<StringPolicy>::end() const { return _value.cend(); }
+
+template <typename StringPolicy>
+size_t Dict<StringPolicy>::size() const { return _value.size(); }
+
+template <typename StringPolicy>
+std::string Dict<StringPolicy>::toString() const {
     std::string res = "{";
     res += tools::join(*this, ", ", [](auto&&item) {
         std::string tmp = std::string("\"") + item.first.toString() + "\": ";
@@ -33,11 +54,12 @@ std::string Dict::toString() const {
     return res;
 }
 
-Variant& Dict::operator[](const Value& key) {
+template <typename StringPolicy>
+Variant<StringPolicy>& Dict<StringPolicy>::operator[](const Value<StringPolicy>& key) {
     auto item = _value.find(key);
     if (item == end()) {
-        if (key.is<std::string>()) {
-            auto skey = tools::split(key.get<std::string>(), '.');
+        if (key.template is<std::string>()) {
+            auto skey = tools::split(key.template get<std::string>(), '.');
             Dict* d = this;
             auto it = skey.begin();
             auto end = skey.end();
@@ -49,88 +71,95 @@ Variant& Dict::operator[](const Value& key) {
                 if (tmp.empty()) {
                     tmp = Dict{};
                 }
-                d = &tmp.get<Dict>();
+                d = &tmp.template get<Dict>();
             }
             k = std::move(*it);
             if(!d->contains(k)) {
-                return d->_value.insert_or_assign(k, Variant{}).first->second;
+                return d->_value.insert_or_assign(k, Variant<StringPolicy>{}).first->second;
             } else {
                 return d->_value.at(k);
             }
         } else {
-            return _value.insert_or_assign(key, Variant{}).first->second;
+            return _value.insert_or_assign(key, Variant<StringPolicy>{}).first->second;
         }
     }
     else return item->second;
 }
 
-bool Dict::operator==(const Dict &other) const {
+template <typename StringPolicy>
+bool Dict<StringPolicy>::operator==(const Dict &other) const {
   return _value == other._value;
 }
 
-auto Dict::operator<=>(const Dict &other) const {
+template <typename StringPolicy>
+auto Dict<StringPolicy>::operator<=>(const Dict &other) const {
     return _value <=> other._value;
 }
 
-inline Dict& Dict::update(Dict&& other) {
+template <typename StringPolicy>
+inline Dict<StringPolicy>& Dict<StringPolicy>::update(Dict&& other) {
     for (auto&& [k, v]: other._value) {
         _value.emplace(std::move(k), std::move(v));
     }
     return *this;
 }
 
+template <typename StringPolicy>
 template <typename...RestT>
-Variant& Dict::at(Value&& key, RestT&&...rest) {
+Variant<StringPolicy>& Dict<StringPolicy>::at(Value<StringPolicy>&& key, RestT&&...rest) {
     try {
-        auto& v = _value.at(std::forward<Value>(key));
+        auto& v = _value.at(xfwd(key));
         if constexpr (sizeof...(rest) > 0) {
-            return v.get<Dict>().at(std::forward<Variant>(rest)...);
+            return v.template get<Dict<StringPolicy>>().at(xfwd(rest)...);
         } else {
             return v;
         }
     } catch (const std::out_of_range& e) {
-        if (!key.is<std::string>())
-            throw std::move(e);
+        if (!key.template is<std::string>())
+            throw e;
         // handle dot notation
-        return dotAt(key.get<std::string>());
+        return dotAt(key.template get<std::string>());
     }
 }
 
+template <typename StringPolicy>
 template <typename...RestT>
-Variant& Dict::at(const Value &key, const RestT&...rest) {
-    try {
-        auto& v = _value.at(key);
-        if constexpr (sizeof...(rest) > 0) {
-            return v.get<Dict>().at(rest...);
-        } else {
-            return v;
-        }
-    } catch (const std::out_of_range& e) {
-        if (!key.is<std::string>())
-            throw std::move(e);
-        // handle dot notation
-        return dotAt(key.get<std::string>());
-    }
-}
-
-template <typename...RestT>
-const Variant& Dict::at(const Value &key, const RestT&...rest) const {
+Variant<StringPolicy>& Dict<StringPolicy>::at(const Value<StringPolicy> &key, const RestT&...rest) {
     try {
         auto& v = _value.at(key);
         if constexpr (sizeof...(rest) > 0) {
-            return v.get<Dict>().at(rest...);
+            return v.template get<Dict>().at(rest...);
         } else {
             return v;
         }
     } catch (const std::out_of_range& e) {
-        if (!key.is<std::string>())
+        if (!key.template is<std::string>())
             throw std::move(e);
         // handle dot notation
-        return dotAt(key.get<std::string>());
+        return dotAt(key.template get<std::string>());
     }
 }
 
-Variant& Dict::dotAt(const std::string& key) {
+template <typename StringPolicy>
+template <typename...RestT>
+const Variant<StringPolicy>& Dict<StringPolicy>::at(const Value<StringPolicy> &key, const RestT&...rest) const {
+    try {
+        auto& v = _value.at(key);
+        if constexpr (sizeof...(rest) > 0) {
+            return v.template get<Dict>().at(rest...);
+        } else {
+            return v;
+        }
+    } catch (const std::out_of_range& e) {
+        if (!key.template is<std::string>())
+            throw e;
+        // handle dot notation
+        return dotAt(key.template get<std::string>());
+    }
+}
+
+template <typename StringPolicy>
+Variant<StringPolicy>& Dict<StringPolicy>::dotAt(const std::string& key) {
     auto skey = tools::split(key, '.');
     Dict* d = this;
     auto it = skey.begin();
@@ -138,7 +167,7 @@ Variant& Dict::dotAt(const std::string& key) {
     --end;
     for(; it != end; ++it) {
         try {
-            d = &d->_value.at(Value{*it}).get<Dict>();
+            d = &d->_value.at(Value{*it}).template get<Dict>();
         } catch (std::bad_variant_access&) {
             throw std::out_of_range("Cannot resolve dot notation");
         }
@@ -146,7 +175,8 @@ Variant& Dict::dotAt(const std::string& key) {
     return d->_value.at(*it);
 }
 
-const Variant& Dict::dotAt(const std::string& key) const {
+template <typename StringPolicy>
+const Variant<StringPolicy>& Dict<StringPolicy>::dotAt(const std::string& key) const {
     auto skey = tools::split(key, '.');
     const Dict* d = this;
     auto it = skey.begin();
@@ -154,7 +184,7 @@ const Variant& Dict::dotAt(const std::string& key) const {
     --end;
     for(; it != end; ++it) {
         try {
-            d = &d->_value.at(*it).get<Dict>();
+            d = &d->_value.at(*it).template get<Dict>();
         } catch (std::bad_variant_access&) {
             throw std::out_of_range("Cannot resolve dot notation");
         }

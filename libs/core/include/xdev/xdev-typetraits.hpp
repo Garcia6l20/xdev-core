@@ -216,4 +216,10 @@ namespace xdev {
     template <template <class...> class Template, class... Args>
     struct is_specialization<Template<Args...>, Template> : std::true_type {};
 
-} // xdev
+    template <class T, template <class...> class Template>
+    concept specialization_of = is_specialization<std::decay_t<T>, Template>::value;
+
+    template <typename DecaysT, typename ToT>
+    concept decays_to = std::same_as<std::decay_t<DecaysT>, ToT>;
+
+    } // xdev

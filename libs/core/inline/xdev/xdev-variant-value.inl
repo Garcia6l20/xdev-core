@@ -11,326 +11,232 @@
 #include <type_traits>
 #include <concepts>
 
-namespace std {
+namespace xdev::variant {
 
-template <>
-struct hash<xdev::variant::None>
-{
-    inline std::size_t operator()(const xdev::variant::None& var) const
-    {
-        return hash<monostate>{}(var);
-    }
-};
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy>::Value() noexcept : _value(None {}) {}
 
-template <>
-struct hash<xdev::variant::Value>
-{
-    std::size_t operator()(const xdev::variant::Value& var) const
-    {
-        return var.hash();
-    }
-};
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy>::Value(const Value &other) noexcept : _value(other._value) {}
 
-} // std
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy> &Value<StringPolicy>::operator=(const Value &other) noexcept {
+    _value = other._value;
+    return *this;
+  }
 
-namespace xdev {
-namespace variant {
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy>::Value(Value &&other) noexcept : _value(std::move(other._value)) {
+    other._value = None {};
+  }
 
-constexpr Value::Value() noexcept: _value(None{}) {}
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy> &Value<StringPolicy>::operator=(Value &&other) noexcept {
+    _value = std::move(other._value);
+    other._value = None {};
+    return *this;
+  }
 
-Value::Value(const Value&other) noexcept: _value(other._value) {}
-Value& Value::operator=(const Value&other) noexcept { _value = other._value; return *this; }
-Value::Value(Value&&other) noexcept: _value(std::move(other._value)) { other._value = None{}; }
-Value& Value::operator=(Value&&other) noexcept { _value = std::move(other._value); other._value = None{}; return *this; }
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy>::Value(const XValueConvertible<StringPolicy> auto &value) : _value(value) {}
 
-Value::Value(const XValueConvertible auto&value): _value(value) {}
-Value::Value(XValueConvertible auto&&value): _value(xfwd(value)) { }
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy>::Value(XValueConvertible<StringPolicy> auto &&value) : _value(xfwd(value)) {}
 
-Value::Value(const char* value) noexcept: _value(std::string(value)) {}
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy>::Value(const char *value) noexcept : _value(string_type(value)) {}
 
-Value& Value::operator=(const char* value) noexcept { _value = std::string(value); return *this; }
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy> &Value<StringPolicy>::operator=(const char *value) noexcept {
+    _value = string_type(value);
+    return *this;
+  }
 
-std::string Value::typeName() const {
-    return std::visit([]<typename T>(T&&) -> std::string {
+  template<typename StringPolicy>
+  constexpr std::string_view Value<StringPolicy>::typeName() const {
+    return std::visit(
+      []<typename T>(T &&) {
         using TClean = std::decay_t<T>;
-        return ctti::nameof<TClean>().str();
-    }, _value);
-}
+        auto name = ctti::nameof<TClean>();
+        return std::string_view {std::begin(name), std::end(name)};
+      },
+      _value);
+  }
 
-Value& Value::operator!() {
-    std::visit(tools::overloaded{
-       [this]<typename TInput>(TInput&) {
-           throw std::runtime_error(fmt::format("{} values cannot be negated", ctti::nameof<TInput>().cppstring()));
-       },
-       [](bool& value) {
-           value = !value;
-       },
-       [](int& value) {
-           value = !value;
-       },
-       [](double& value) {
-           value = !value;
-       }
-    }, _value);
+  template<typename StringPolicy>
+  constexpr Value<StringPolicy> &Value<StringPolicy>::operator!() {
+    std::visit(tools::overloaded {[this]<typename TInput>(TInput &) {
+                                    throw std::runtime_error(
+                                      fmt::format("{} values cannot be negated", ctti::nameof<TInput>().cppstring()));
+                                  },
+                 [](bool &value) { value = !value; },
+                 [](int &value) { value = !value; },
+                 [](double &value) { value = !value; }},
+      _value);
     return *this;
-}
+  }
 
-bool Value::operator==(const Value& b) const {
-    return tools::visit_2way(tools::overloaded{
-       []<typename T>(const T& lhs, const T& rhs){
-           return lhs == rhs;
-       },
-       []<typename T, typename U>(const T&, const U&){
-           return false;
-       },
-       [](const std::string& lhs, const std::string& rhs){
-          return lhs.size() == rhs.size() &&
-            std::strcmp(lhs.c_str(), rhs.c_str()) == 0;
-       }
-    }, _value, b._value);
-}
+  template<typename StringPolicy>
+  constexpr bool Value<StringPolicy>::operator==(const Value &b) const {
+    return tools::visit_2way(tools::overloaded {[]<typename T>(const T &lhs, const T &rhs) { return lhs == rhs; },
+                               []<typename T, typename U>(const T &, const U &) { return false; },
+                               [](const string_type &lhs, const string_type &rhs) {
+                                 return lhs.size() == rhs.size() && std::strcmp(lhs.data(), rhs.data()) == 0;
+                               }},
+      _value,
+      b._value);
+  }
 
-std::weak_ordering Value::operator<=>(const Value& b) const {
-    return tools::visit_2way(tools::overloaded{
-         []<typename T>(const T&lhs, const T&rhs){
-             auto cmp = lhs <=> rhs;
-            if (cmp == std::partial_ordering::unordered)
-                return std::strong_ordering::less;
-            else if (cmp == std::partial_ordering::greater)
-                return std::strong_ordering::greater;
-            else if (cmp == std::partial_ordering::less)
-                return std::strong_ordering::less;
-            else return std::strong_ordering::equal;
-         },
-       []<typename T, typename U>(const T&, const U&){
-           return std::strong_ordering::less;
-       },
-      []<typename T>(const T&, const std::string&){
-          return std::strong_ordering::less;
-      },
-      []<typename T>(const std::string&, const T&){
-          return std::strong_ordering::greater;
-      },
-       [](const std::string& lhs, const std::string& rhs){
-          return std::strcmp(lhs.c_str(), rhs.c_str()) <=> 0;
-       }
-    }, _value, b._value);
-}
+  template<typename StringPolicy>
+  constexpr std::weak_ordering Value<StringPolicy>::operator<=>(const Value &b) const {
+    return tools::visit_2way(
+      tools::overloaded {[]<typename T>(const T &lhs, const T &rhs) {
+                           auto cmp = lhs <=> rhs;
+                           if (cmp == std::partial_ordering::unordered)
+                             return std::strong_ordering::less;
+                           else if (cmp == std::partial_ordering::greater)
+                             return std::strong_ordering::greater;
+                           else if (cmp == std::partial_ordering::less)
+                             return std::strong_ordering::less;
+                           else
+                             return std::strong_ordering::equal;
+                         },
+        []<typename T, typename U>(const T &, const U &) { return std::strong_ordering::less; },
+        []<typename T>(const T &, const string_type &) { return std::strong_ordering::less; },
+        []<typename T>(const string_type &, const T &) { return std::strong_ordering::greater; },
+        [](const string_type &lhs, const string_type &rhs) { return std::strcmp(lhs.data(), rhs.data()) <=> 0; }},
+      _value,
+      b._value);
+  }
 
-bool Value::operator==(char const* b) const {
-    return std::visit(tools::overloaded{
-       []<typename T>(const T&){
-           return false;
-       },
-       [b](const std::string& lhs){
-          return std::strcmp(lhs.c_str(), b) == 0;
-       }
-    }, _value);
-}
-std::weak_ordering Value::operator<=>(const char* b) const {
-    return std::visit(tools::overloaded{
-       []<typename T>(const T&){
-          return std::strong_ordering::less;
-       },
-        // gcc bug ? 0-compared values interpreted as char*
-      [b](const bool& val){
-         return static_cast<size_t>(val) <=> reinterpret_cast<size_t>(b);
-      },
-      [b](const int& val){
-         return static_cast<size_t>(val) <=> reinterpret_cast<size_t>(b);
-      },
-       [b](const std::string& lhs){
-          return std::strcmp(lhs.c_str(), b) <=> 0;
-       }
-    }, _value);
-}
+  template<typename StringPolicy>
+  constexpr bool Value<StringPolicy>::operator==(char const *b) const {
+    return std::visit(tools::overloaded {[]<typename T>(const T &) { return false; },
+                        [b](const string_type &lhs) { return std::strcmp(lhs.data(), b) == 0; }},
+      _value);
+  }
 
-//template <typename T>
-//bool Value::operator==(const T& val) const {
-//    if constexpr (std::same_as<T, Variant>)
-//        return val.template get<Value>() == *this;
-//    else return is<T>() ? get<T>() == val : false;
-//}
+  template<typename StringPolicy>
+  constexpr std::weak_ordering Value<StringPolicy>::operator<=>(const char *b) const {
+    return std::visit(tools::overloaded {[]<typename T>(const T &) { return std::strong_ordering::less; },
+                        // gcc bug ? 0-compared values interpreted as char*
+                        [b](const bool &val) { return static_cast<size_t>(val) <=> reinterpret_cast<size_t>(b); },
+                        [b](const int &val) { return static_cast<size_t>(val) <=> reinterpret_cast<size_t>(b); },
+                        [b](const string_type &lhs) { return std::strcmp(lhs.data(), b) <=> 0; }},
+      _value);
+  }
 
-//bool Value::operator==(const Value& value) const {
-//    return hash() == value.hash();
-//}
+  // in/decrement operators
 
-//bool Value::operator==(const char* value) const {
-//    return is<std::string>() ? get<std::string>().compare(value) == 0 : false;
-//}
-
-//template <typename T>
-//bool Value::operator!=(const T& value) const {
-//    return is<T>() ? get<T>() != value : true;
-//}
-
-//bool Value::operator!=(const Value& value) const {
-//    return hash() != value.hash();
-//}
-
-//bool Value::operator!=(const char* value) const {
-//    return is<std::string>() ? get<std::string>().compare(value) != 0 : true;
-//}
-
-
-// in/decrement operators
-
-Value& Value::operator++() {
-    std::visit([]<typename InputT>(InputT&& item){
+  template<typename StringPolicy>
+  constexpr auto &Value<StringPolicy>::operator++() {
+    std::visit(
+      []<typename InputT>(InputT &&item) {
         using T = std::decay_t<InputT>;
         if constexpr (std::integral<T> && !std::same_as<T, bool>) {
-            ++item;
+          ++item;
         } else {
-            throw std::bad_cast{};
+          throw std::bad_cast {};
         }
-    }, _value);
+      },
+      _value);
     return *this;
-}
+  }
 
-Value Value::operator++(int) {
-    Value prev = static_cast<const Value&>(*this);
-    std::visit([]<typename InputT>(InputT&& item){
+  template<typename StringPolicy>
+  constexpr auto Value<StringPolicy>::operator++(int) {
+    Value prev = static_cast<const Value &>(*this);
+    std::visit(
+      []<typename InputT>(InputT &&item) {
         using T = std::decay_t<InputT>;
         if constexpr (std::integral<T> && !std::same_as<T, bool>) {
-            ++item;
+          ++item;
         } else {
-            throw std::bad_cast{};
+          throw std::bad_cast {};
         }
-    }, _value);
+      },
+      _value);
     return prev;
-}
+  }
 
-Value& Value::operator--() {
-    std::visit([]<typename InputT>(InputT&& item){
-       using T = std::decay_t<InputT>;
+  template<typename StringPolicy>
+  constexpr auto &Value<StringPolicy>::operator--() {
+    std::visit(
+      []<typename InputT>(InputT &&item) {
+        using T = std::decay_t<InputT>;
         if constexpr (std::integral<T> && !std::same_as<T, bool>) {
-            --item;
+          --item;
         } else {
-            throw std::bad_cast{};
+          throw std::bad_cast {};
         }
-    }, _value);
+      },
+      _value);
     return *this;
-}
+  }
 
-Value Value::operator--(int) {
-    Value prev = static_cast<const Value&>(*this);
-    std::visit([]<typename InputT>(InputT&& item){
+  template<typename StringPolicy>
+  constexpr auto Value<StringPolicy>::operator--(int) {
+    Value prev = static_cast<const Value &>(*this);
+    std::visit(
+      []<typename InputT>(InputT &&item) {
         using T = std::decay_t<InputT>;
         if constexpr (std::integral<T> && !std::same_as<T, bool>) {
-            --item;
+          --item;
         } else {
-            throw std::bad_cast{};
+          throw std::bad_cast {};
         }
-    }, _value);
+      },
+      _value);
     return prev;
-}
+  }
 
-template <typename T>
-T& Value::get() {
+  template<typename StringPolicy>
+  template<typename T>
+  constexpr T &Value<StringPolicy>::get() {
     return std::get<T>(_value);
-}
+  }
 
-template <typename T>
-const T& Value::get() const {
+  template<typename StringPolicy>
+  template<typename T>
+  constexpr const T &Value<StringPolicy>::get() const {
     return std::get<T>(_value);
-}
+  }
 
-template<typename T>
-bool Value::is() const {
-    return std::visit([]<typename ValueT>(ValueT&&){
-        return std::same_as<T, std::decay_t<ValueT>>;
-    }, _value);
-}
+  template<typename StringPolicy>
+  template<typename T>
+  constexpr bool Value<StringPolicy>::is() const {
+    return std::visit([]<typename ValueT>(ValueT &&) { return std::same_as<T, std::decay_t<ValueT>>; }, _value);
+  }
 
-template <typename Visitor>
-decltype(auto) Value::visit(Visitor&&visitor) {
+  template<typename StringPolicy>
+  template<typename Visitor>
+  constexpr decltype(auto) Value<StringPolicy>::visit(Visitor &&visitor) {
     return std::visit(std::forward<Visitor>(visitor), _value);
-}
+  }
 
-template <typename Visitor>
-decltype(auto) Value::visit(Visitor&&visitor) const {
+  template<typename StringPolicy>
+  template<typename Visitor>
+  constexpr decltype(auto) Value<StringPolicy>::visit(Visitor &&visitor) const {
     return std::visit(std::forward<Visitor>(visitor), _value);
-}
+  }
 
-std::string Value::toString() const {
-    return visit([]<typename InputT>(InputT&&value) -> std::string {
-        using T = std::decay_t<InputT>;
-        if constexpr (std::same_as<T, bool>)
-            return value ? "true" : "false";
-        else if constexpr (std::same_as<T, None>)
-            return "none";
-        else if constexpr (std::same_as<T, std::string>)
-            return value;
-        else if constexpr (has_to_string<T>::value)
-            return to_string(value);
-        else if constexpr (has_std_to_string<T>::value)
-            return std::to_string(value);
-        else static_assert (always_false<T>::value,
-                           "Missing toString converter");
+  template<typename StringPolicy>
+  std::string Value<StringPolicy>::toString() const {
+    return visit([]<typename InputT>(InputT &&value) -> std::string {
+      using T = std::decay_t<InputT>;
+      if constexpr (std::same_as<T, bool>)
+        return value ? "true" : "false";
+      else if constexpr (std::same_as<T, None>)
+        return "none";
+      else if constexpr (std::same_as<T, string_type>)
+        return value;
+      else if constexpr (has_to_string<T>::value)
+        return to_string(value);
+      else if constexpr (has_std_to_string<T>::value)
+        return std::to_string(value);
+      else
+        static_assert(always_false<T>::value, "Missing toString converter");
     });
-}
+  }
 
-
-size_t Value::hash() const {
-    return std::hash<value_t>{}(_value);
-}
-
-//bool Value::operator<(const Value& other) const {
-//    return visit([&other]<typename InputT>(InputT&&value) -> bool {
-//         using T = std::decay_t<InputT>;
-//        if constexpr (std::same_as<T, None>) {
-//            return true;
-//        } else return value < other.get<std::decay_t<T>>();
-//    });
-//}
-
-//bool Value::operator>(const Value& other) const {
-//    return visit([&other]<typename InputT>(InputT&&value) -> bool {
-//         using T = std::decay_t<InputT>;
-//        if constexpr (std::same_as<T, None>) {
-//            return false;
-//        } else return value > other.get<std::decay_t<T>>();
-//    });
-//}
-
-//bool Value::operator<=(const Value& other) const {
-//    return visit([&other]<typename InputT>(InputT&&value) -> bool {
-//         using T = std::decay_t<InputT>;
-//        if constexpr (std::same_as<T, None>) {
-//            return true;
-//        } else return value <= other.get<std::decay_t<T>>();
-//    });
-//}
-
-//bool Value::operator>=(const Value& other) const {
-//    return visit([&other]<typename InputT>(InputT&&value) -> bool {
-//        using T = std::decay_t<InputT>;
-//        if constexpr (std::same_as<T, None>) {
-//            return false;
-//        } else return value >= other.get<std::decay_t<T>>();
-//    });
-//}
-
-//std::weak_ordering Value::operator<=>(const Value& other) const {
-//    auto cmp = visit([&other]<typename InputT>(InputT&&value) {
-//        using T = std::decay_t<InputT>;
-//        if constexpr (std::same_as<T, None>) {
-//            return std::weak_ordering::less;
-//        } else return other.visit([&]<typename OtherInputT>(OtherInputT&& other_value) {
-//            using OtherT = std::decay_t<OtherInputT>;
-//            if constexpr (!std::same_as<T, OtherT>) {
-//                return std::weak_ordering::less;
-//            } else if constexpr (std::same_as<T, std::string>
-//                              && std::same_as<OtherT, std::string>) {
-//                return std::weak_ordering::less;
-//            }  else {
-//                return value <=> other_value;
-//            }
-//        });
-//    });
-//    return cmp;
-//}
-
-} // variant
-} // xdev
+} // namespace xdev::variant

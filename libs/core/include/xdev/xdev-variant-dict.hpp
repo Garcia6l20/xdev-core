@@ -7,43 +7,50 @@
 
 namespace xdev::variant {
 
+template <typename StringPolicy>
 class Variant;
+
+template <typename StringPolicy>
 class Value;
 
-using DictNode = std::pair<const Value, Variant>;
-using DictInitList = std::initializer_list<DictNode>;
+template <typename StringPolicy>
+using DictNode = std::pair<const Value<StringPolicy>, Variant<StringPolicy>>;
 
+template <typename StringPolicy>
+using DictInitList = std::initializer_list<DictNode<StringPolicy>>;
+
+template <typename StringPolicy>
 class Dict {
 public:
-  using map_t = std::map<Value, Variant>;
+  using map_t = std::map<Value<StringPolicy>, Variant<StringPolicy>>;
 
   inline Dict();
   inline Dict(const Dict &other);
   inline Dict &operator=(const Dict &other);
   inline Dict(Dict &&other);
   inline Dict &operator=(Dict &&other);
-  inline Dict(const DictInitList &value);
+  inline Dict(const DictInitList<StringPolicy> &value);
 
-  using iterator = map_t::iterator;
-  using const_iterator = map_t::const_iterator;
+  using iterator = typename map_t::iterator;
+  using const_iterator = typename map_t::const_iterator;
   inline iterator begin();
   inline iterator end();
   inline const_iterator begin() const;
   inline const_iterator end() const;
   inline size_t size() const;
-  inline Variant &operator[](const Value &index);
+  inline Variant<StringPolicy> &operator[](const Value<StringPolicy> &index);
 
   template<typename... RestT>
-  inline Variant &at(Value &&key, RestT &&... rest);
+  inline Variant<StringPolicy> &at(Value<StringPolicy> &&key, RestT &&... rest);
 
   template<typename... RestT>
-  inline Variant &at(const Value &key, const RestT &... rest);
+  inline Variant<StringPolicy> &at(const Value<StringPolicy> &key, const RestT &... rest);
 
   template<typename... RestT>
-  inline const Variant &at(const Value &key, const RestT &... rest) const;
+  inline const Variant<StringPolicy> &at(const Value<StringPolicy> &key, const RestT &... rest) const;
 
-  inline Variant &dotAt(const std::string &key);
-  inline const Variant &dotAt(const std::string &key) const;
+  inline Variant<StringPolicy> &dotAt(const std::string &key);
+  inline const Variant<StringPolicy> &dotAt(const std::string &key) const;
   inline std::string toString() const;
 
   inline Dict &update(Dict &&other);

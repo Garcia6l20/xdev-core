@@ -11,8 +11,12 @@
 
 namespace xdev::variant {
 
+
+template <typename StringPolicy>
 class Variant;
-using ListInitList = std::initializer_list<Variant>;
+
+template <typename StringPolicy>
+using ListInitList = std::initializer_list<Variant<StringPolicy>>;
 
 
 template<template<class, class> typename what, typename T, typename... Args>
@@ -31,12 +35,13 @@ concept is_container = requires(T v) {
 };
 static_assert(is_container<std::list<int>>);
 
-template<typename T>
-concept XListConvertible = is_container<T> and std::convertible_to<typename T::value_type, variant_type>;
+template<typename T, typename StringPolicy>
+concept XListConvertible = is_container<T> and std::convertible_to<typename T::value_type, variant_type<StringPolicy>>;
 
+template <typename StringPolicy>
 class List {
 public:
-  using list_t = std::list<Variant>;
+  using list_t = std::list<Variant<StringPolicy>>;
 
   inline List();
 
@@ -44,22 +49,25 @@ public:
   inline List &operator=(List &&other);
   inline List(const List &other);
   inline List &operator=(const List &other);
-  inline List(const ListInitList &value);
-  inline List(XListConvertible auto &&value);
-  inline List(const XListConvertible auto &value);
+  inline List(const ListInitList<StringPolicy> &value);
+  inline List(XListConvertible<StringPolicy> auto &&value);
+  inline List(const XListConvertible<StringPolicy> auto &value);
 
-  using iterator = list_t::iterator;
-  using const_iterator = list_t::const_iterator;
+  using iterator = typename list_t::iterator;
+  using const_iterator = typename list_t::const_iterator;
   inline iterator begin();
   inline iterator end();
-  inline Variant &front();
-  inline Variant &back();
+  inline auto &front();
+  inline auto &back();
   inline const_iterator begin() const;
   inline const_iterator end() const;
   inline size_t size() const;
-  inline Variant &operator[](size_t index);
-  inline const Variant &operator[](size_t index) const;
+  inline auto &operator[](size_t index);
+  inline const auto &operator[](size_t index) const;
+
+  // TODO use StringPolicy::string_type
   inline std::string toString() const;
+
   template<typename... ArgsT>
   iterator emplace(const_iterator pos, ArgsT... args) {
     return _value.emplace(pos, xfwd(args)...);
@@ -80,20 +88,27 @@ public:
   template<Direction direction = Back, typename First, typename... Rest>
   inline void push(First &&first, Rest &&... var);
 
-  inline List::iterator find(Variant &&value);
+  inline List::iterator find(Variant<StringPolicy> &&value);
 
   template<typename IteratorT>
   auto erase(IteratorT &&iter) {
     return _value.erase(xfwd(iter));
   }
 
-  friend inline List &operator>>(Variant &&var, List &);
+  template <typename FriendStringPolicy>
+  friend inline List &operator>>(Variant<StringPolicy> &&var, List &);
+
+  template <typename FriendStringPolicy>
   friend inline List &operator-(size_t count, List &);
 
-  friend inline List &operator<<(List &, Variant &&var);
+  template <typename FriendStringPolicy>
+  friend inline List &operator<<(List &, Variant<StringPolicy> &&var);
+
+  template <typename FriendStringPolicy>
   friend inline List &operator-(List &, size_t count);
 
-  friend inline bool operator==(const List &, const List &);
+  template <typename FriendStringPolicy>
+  friend constexpr bool operator==(const List<FriendStringPolicy> &, const List<FriendStringPolicy> &);
 
   static constexpr const char *ctti_nameof() { return "xlist"; }
 

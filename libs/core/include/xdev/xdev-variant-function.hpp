@@ -13,12 +13,15 @@
 
 namespace xdev::variant {
 
+template <typename StringPolicy>
 class Variant;
+
+template <typename StringPolicy>
 class List;
 
-template <typename T>
+template <typename T, typename StringPolicy>
 concept is_xfunction = requires(T f) {
-    {f(List())} -> std::convertible_to<Variant>;
+    {f(List<StringPolicy>())} -> std::convertible_to<Variant<StringPolicy>>;
 };
 
 template <typename T, typename...Args>
@@ -26,31 +29,32 @@ concept is_xfunction_wrappable = requires(T f) {
     {f(Args{}...)};
 };
 
-class Function: std::function<Variant(List)> {
-    typedef Variant(*target_t)(List);
+template <typename StringPolicy>
+class Function: std::function<Variant<StringPolicy>(List<StringPolicy>)> {
+    typedef Variant<StringPolicy>(*target_t)(List<StringPolicy>);
 
 public:
-    using base = std::function<Variant(List)>;
+    using base = std::function<Variant<StringPolicy>(List<StringPolicy>)>;
     using base::function;
     using base::operator();
     using base::operator=;
     using base::operator bool;
 
     template <typename Functor>
-        requires(is_callable_v<Functor> and (not is_xfunction<Functor>) and (not std::same_as<Function, Variant>))
+        requires(is_callable_v<Functor> and (not is_xfunction<Functor, StringPolicy>) and (not std::same_as<Function<StringPolicy>, Variant<StringPolicy>>))
     Function(Functor ftor);
 
-    template <typename ResultT = Variant>
+    template <typename ResultT = Variant<StringPolicy>>
     ResultT operator()();
 
-    template <typename ResultT = Variant, typename FirstT, typename...RestT>
+    template <typename ResultT = Variant<StringPolicy>, typename FirstT, typename...RestT>
     ResultT operator()(FirstT&&, RestT&&...);
 
-    template <typename ResultT = Variant>
-    ResultT apply(List&& args);
+    template <typename ResultT = Variant<StringPolicy>>
+    ResultT apply(List<StringPolicy>&& args);
 
-    template <typename ResultT = Variant>
-    ResultT apply(const List& args);
+    template <typename ResultT = Variant<StringPolicy>>
+    ResultT apply(const List<StringPolicy>& args);
 
     inline auto operator<=>(const Function&) const;
     inline bool operator ==(const Function&) const;

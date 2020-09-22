@@ -5,50 +5,81 @@
 
 namespace xdev::variant {
 
-List::List() : _value() {}
+template <typename StringPolicy>
+List<StringPolicy>::List() : _value() {}
 
-List::List(List &&other) : _value(std::move(other._value)) {}
-List &List::operator=(List &&other) {
+template <typename StringPolicy>
+List<StringPolicy>::List(List &&other) : _value(std::move(other._value)) {}
+
+template <typename StringPolicy>
+List<StringPolicy> &List<StringPolicy>::operator=(List &&other) {
   _value = std::move(other._value);
   return *this;
 }
-List::List(const List &other) : _value(other._value) {}
-List &List::operator=(const List &other) {
+
+template <typename StringPolicy>
+List<StringPolicy>::List(const List &other) : _value(other._value) {}
+
+template <typename StringPolicy>
+List<StringPolicy> &List<StringPolicy>::operator=(const List &other) {
   _value = other._value;
   return *this;
 }
 
-List::List(const ListInitList &value) : _value {value} {}
-List::List(XListConvertible auto &&container) {
+template <typename StringPolicy>
+List<StringPolicy>::List(const ListInitList<StringPolicy> &value) : _value {value} {}
+
+template <typename StringPolicy>
+List<StringPolicy>::List(XListConvertible<StringPolicy> auto &&container) {
   for (auto &&item : container) { _value.emplace_back(std::move(item)); }
 }
-List::List(const XListConvertible auto &container) {
+
+template <typename StringPolicy>
+List<StringPolicy>::List(const XListConvertible<StringPolicy> auto &container) {
   for (const auto &item : container) { _value.emplace_back(item); }
 }
 
-List::iterator List::begin() { return _value.begin(); }
-List::iterator List::end() { return _value.end(); }
-Variant &List::front() { return _value.front(); }
-Variant &List::back() { return _value.back(); }
-List::const_iterator List::begin() const { return _value.cbegin(); }
-List::const_iterator List::end() const { return _value.cend(); }
-size_t List::size() const { return _value.size(); }
 
-Variant &List::operator[](size_t index) {
+template <typename StringPolicy>
+typename List<StringPolicy>::iterator List<StringPolicy>::begin() { return _value.begin(); }
+
+template <typename StringPolicy>
+typename List<StringPolicy>::iterator List<StringPolicy>::end() { return _value.end(); }
+
+template <typename StringPolicy>
+auto &List<StringPolicy>::front() { return _value.front(); }
+
+template <typename StringPolicy>
+auto &List<StringPolicy>::back() { return _value.back(); }
+
+template <typename StringPolicy>
+typename List<StringPolicy>::const_iterator List<StringPolicy>::begin() const { return _value.cbegin(); }
+
+template <typename StringPolicy>
+typename List<StringPolicy>::const_iterator List<StringPolicy>::end() const { return _value.cend(); }
+
+template <typename StringPolicy>
+size_t List<StringPolicy>::size() const { return _value.size(); }
+
+template <typename StringPolicy>
+auto &List<StringPolicy>::operator[](size_t index) {
   if (_value.size() <= index) { throw std::out_of_range("querying index greater than size"); }
   auto it = begin();
   std::advance(it, index);
   return *it;
 }
 
-const Variant &List::operator[](size_t index) const {
+template <typename StringPolicy>
+const auto &List<StringPolicy>::operator[](size_t index) const {
   if (_value.size() <= index) { throw std::out_of_range("querying index greater than size"); }
   auto it = begin();
   std::advance(it, index);
   return *it;
 }
 
-std::string List::toString() const {
+
+template <typename StringPolicy>
+std::string List<StringPolicy>::toString() const {
   std::string res = "[";
   res += tools::join(*this, ", ", [](auto &&item) {
     if (item.template is<std::string>())
@@ -60,8 +91,10 @@ std::string List::toString() const {
   return res;
 }
 
-template<List::Direction direction>
-void List::pop(size_t count) {
+
+template <typename StringPolicy>
+template<typename List<StringPolicy>::Direction direction>
+void List<StringPolicy>::pop(size_t count) {
   while (count--) {
     if constexpr (direction == Front)
       _value.pop_front();
@@ -70,8 +103,10 @@ void List::pop(size_t count) {
   }
 }
 
-template<List::Direction direction, typename First, typename... Rest>
-void List::push(First &&first, Rest &&... rest) {
+
+template <typename StringPolicy>
+template<typename List<StringPolicy>::Direction direction, typename First, typename... Rest>
+void List<StringPolicy>::push(First &&first, Rest &&... rest) {
   if constexpr (direction == Front) {
     if constexpr (sizeof...(rest)) push<direction>(std::forward<Rest>(rest)...);
     _value.push_front(std::forward<First>(first));
@@ -81,28 +116,34 @@ void List::push(First &&first, Rest &&... rest) {
   }
 }
 
-List::iterator List::find(Variant &&value) { return std::find(begin(), end(), std::forward<Variant>(value)); }
+template <typename StringPolicy>
+typename List<StringPolicy>::iterator List<StringPolicy>::find(Variant<StringPolicy> &&value) { return std::find(begin(), end(), std::forward<Variant>(value)); }
 
-List &operator>>(Variant &&var, List &lst) {
+template <typename StringPolicy>
+List<StringPolicy> &operator>>(Variant<StringPolicy> &&var, List<StringPolicy> &lst) {
   lst._value.push_front(std::forward<Variant>(var));
   return lst;
 }
 
-List &operator-(size_t count, List &lst) {
+template <typename StringPolicy>
+List<StringPolicy> &operator-(size_t count, List<StringPolicy> &lst) {
   while (count--) lst._value.pop_front();
   return lst;
 }
 
-List &operator<<(List &lst, Variant &&var) {
+template <typename StringPolicy>
+List<StringPolicy> &operator<<(List<StringPolicy> &lst, Variant<StringPolicy> &&var) {
   lst._value.push_back(std::forward<Variant>(var));
   return lst;
 }
 
-List &operator-(List &lst, size_t count) {
+template <typename StringPolicy>
+List<StringPolicy> &operator-(List<StringPolicy> &lst, size_t count) {
   while (count--) lst._value.pop_back();
   return lst;
 }
 
-inline bool operator==(const List &lhs, const List &rhs) { return lhs._value == rhs._value; }
+template <typename StringPolicy>
+constexpr bool operator==(const List<StringPolicy> &lhs, const List<StringPolicy> &rhs) { return lhs._value == rhs._value; }
 
 } // namespace xdev::variant

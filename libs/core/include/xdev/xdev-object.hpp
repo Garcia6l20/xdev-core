@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include <utility>
 #include <xdev/xdev-core-export.hpp>
 
 #include <xdev/xdev-core.hpp>
@@ -50,30 +51,34 @@ namespace xdev {
 using namespace std;
 
 namespace variant {
+  template <typename StringPolicy>
   class Variant;
+  template <typename StringPolicy>
   class Dict;
+  template <typename StringPolicy>
   class List;
+  template <typename StringPolicy>
   class Function;
 } // namespace variant
 
-using xvar = variant::Variant;
-using xdict = variant::Dict;
-using xlist = variant::List;
-using xfn = variant::Function;
+using xvar = variant::Variant<struct StdStringPolicy>;
+using xdict = variant::Dict<struct StdStringPolicy>;
+using xlist = variant::List<struct StdStringPolicy>;
+using xfn = variant::Function<struct StdStringPolicy>;
 
+
+template<typename T, typename StringPolicy>
+concept is_xvariant = decays_to<T, variant::Variant<StringPolicy>>;
 
 template<typename T>
-static constexpr bool is_xvariant = is_same<T, xvar>::value;
-
-template<typename T>
-static constexpr bool is_xobject = is_base_of<XObjectBase, T>::value;
+concept is_xobject = is_base_of<XObjectBase, T>::value;
 
 
 class XObjectBase;
 
 struct XDEV_CORE_EXPORT MetaFunctionBase {
-  MetaFunctionBase(const string &p_name, ctti::type_id_t ret, vector<ctti::type_id_t> args) :
-    name(p_name), returnType(ret), argumentsTypes(args) {}
+  MetaFunctionBase(std::string p_name, ctti::type_id_t ret, std::vector<ctti::type_id_t> args) :
+    name(std::move(p_name)), returnType(ret), argumentsTypes(std::move(args)) {}
   string name;
   ctti::type_id_t returnType;
   vector<ctti::type_id_t> argumentsTypes;

@@ -262,7 +262,7 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;  // (2)
  * @param lhs The lhs std::variant value
  * @param rhs The rhs std::variant value
  */
-auto visit_2way(auto handler, auto lhs, auto rhs) {
+constexpr auto visit_2way(auto handler, auto lhs, auto rhs) {
     return std::visit(overloaded{
        [&handler, &rhs](const auto& lhs_item) {
           return std::visit(overloaded{

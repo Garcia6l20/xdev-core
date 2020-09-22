@@ -99,6 +99,7 @@ endfunction()
 # @param directory The directory to manage
 #
 function(xdev_resources target directory)
+
     file(GLOB_RECURSE resource_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${directory}/*)
     set(output_dir ${CMAKE_CURRENT_BINARY_DIR}/${directory})
     execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${output_dir})

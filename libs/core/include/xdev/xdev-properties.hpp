@@ -17,12 +17,16 @@ namespace xdev {
 using namespace std;
 
 namespace variant {
+
+    template <typename StringPolicy>
     class Variant;
+
+    template <typename StringPolicy>
     class Dict;
 }
 
-using xvar = variant::Variant;
-using xdict = variant::Dict;
+using xvar = variant::Variant<struct StdStringPolicy>;
+using xdict = variant::Dict<struct StdStringPolicy>;
 
 class XObjectBase;
 

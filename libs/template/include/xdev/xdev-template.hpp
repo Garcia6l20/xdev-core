@@ -11,7 +11,7 @@ namespace xdev {
 using xtemplate = temp::RootBlock;
 
 inline xtemplate operator "" _xtemplate(const char* data, size_t size) {
-    return *xdev::xtemplate::Compile(std::string{data, size});
+    return *xdev::xtemplate::Compile({data, size});
 }
 
 } // namespace xdev

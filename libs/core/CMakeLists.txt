@@ -90,4 +90,7 @@ xdev_library(${PROJECT_NAME} SHARED
 if(NOT WIN32)
     # target_compile_options(${PROJECT_NAME} PUBLIC -fconcepts)
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wfatal-errors)
 endif()
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC "$<IF:$<CONFIG:DEBUG>,XDEV_DEBUG=true,DEV_DEBUG=false>")

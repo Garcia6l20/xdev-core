@@ -3,6 +3,11 @@
 
 using namespace xdev;
 
+SCENARIO("xcval can be constexpr", "[core.api.variant.v1.0]") {
+  constexpr xcval val = "42";
+  STATIC_REQUIRE(val == "42");
+}
+
 SCENARIO("basic types are accessible as normal types", "[core.api.variant.v1.0]") {
     GIVEN("An basic string value") {
         xvar val = "42";

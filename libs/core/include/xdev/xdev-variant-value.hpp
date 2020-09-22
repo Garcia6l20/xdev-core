@@ -18,68 +18,75 @@ namespace variant {
     auto operator==(const None &) const { return false; };
   };
 
+  template <typename StringPolicy>
   class Variant;
+
+  template <typename StringPolicy>
   class List;
+
+  template <typename StringPolicy>
   class Dict;
+
+  template <typename StringPolicy>
   class Function;
 
   using SharedObject = std::shared_ptr<XObjectBase>;
 
+  template <typename StringPolicy = struct StdStringPolicy>
   class Value {
   public:
+    using string_type = typename StringPolicy::string_type;
+
     constexpr Value() noexcept;
 
-    // TODO(Sylvain) Switch to constexpr as soon as std::string ctor is constexpr too
-    inline Value(const char *value) noexcept;
-    inline Value &operator=(const char *value) noexcept;
+    constexpr Value(const char *value) noexcept;
+    constexpr Value &operator=(const char *value) noexcept;
 
-    inline Value(const Value &other) noexcept;
-    inline Value &operator=(const Value &other) noexcept;
+    constexpr Value(const Value &other) noexcept;
+    constexpr Value &operator=(const Value &other) noexcept;
 
-    inline Value(Value &&other) noexcept;
-    inline Value &operator=(Value &&other) noexcept;
+    constexpr Value(Value &&other) noexcept;
+    constexpr Value &operator=(Value &&other) noexcept;
 
-    inline Value(const XValueConvertible auto &value);
-    inline Value(XValueConvertible auto &&value);
+    constexpr Value(const XValueConvertible<StringPolicy> auto &value);
+    constexpr Value(XValueConvertible<StringPolicy> auto &&value);
 
-    inline Value &operator!();
+    constexpr Value &operator!();
 
-    inline bool operator==(const Value &rhs) const;
-    inline std::weak_ordering operator<=>(const Value &rhs) const;
-    inline bool operator==(char const *rhs) const;
-    inline std::weak_ordering operator<=>(const char *rhs) const;
+    constexpr bool operator==(const Value &rhs) const;
+    constexpr std::weak_ordering operator<=>(const Value &rhs) const;
+    constexpr bool operator==(char const *rhs) const;
+    constexpr std::weak_ordering operator<=>(const char *rhs) const;
 
-    inline Value &operator++();
-    inline Value operator++(int);
+    constexpr auto &operator++();
+    constexpr auto operator++(int);
 
-    inline Value &operator--();
-    inline Value operator--(int);
-
-    template<typename T>
-    inline T &get();
+    constexpr auto &operator--();
+    constexpr auto operator--(int);
 
     template<typename T>
-    inline const T &get() const;
+    constexpr T &get();
 
     template<typename T>
-    inline bool is() const;
+    constexpr const T &get() const;
 
-    inline size_t hash() const;
+    template<typename T>
+    [[nodiscard]] constexpr bool is() const;
 
     template<typename Visitor>
-    inline decltype(auto) visit(Visitor &&visitor);
+    constexpr decltype(auto) visit(Visitor &&visitor);
 
     template<typename Visitor>
-    inline decltype(auto) visit(Visitor &&visitor) const;
+    constexpr decltype(auto) visit(Visitor &&visitor) const;
 
-    inline std::string toString() const;
+    [[nodiscard]] inline std::string toString() const;
 
-    inline std::string typeName() const;
+    [[nodiscard]] constexpr std::string_view typeName() const;
 
     static constexpr const char *ctti_nameof() { return "xval"; }
 
   private:
-    using value_t = variant_type;
+    using value_t = variant_type<StringPolicy>;
     value_t _value;
   };
 
