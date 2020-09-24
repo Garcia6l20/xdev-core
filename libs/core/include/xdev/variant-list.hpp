@@ -53,20 +53,21 @@ public:
   inline List(XListConvertible<StringPolicy> auto &&value);
   inline List(const XListConvertible<StringPolicy> auto &value);
 
-  using iterator = typename list_t::iterator;
-  using const_iterator = typename list_t::const_iterator;
-  inline iterator begin();
-  inline iterator end();
+  inline decltype(auto) begin();
+  inline decltype(auto) end();
   inline auto &front();
   inline auto &back();
-  inline const_iterator begin() const;
-  inline const_iterator end() const;
+  inline decltype(auto) begin() const;
+  inline decltype(auto) end() const;
   inline size_t size() const;
   inline auto &operator[](size_t index);
   inline const auto &operator[](size_t index) const;
 
   // TODO use StringPolicy::string_type
   inline std::string toString() const;
+
+  using iterator = typename list_t::iterator;
+  using const_iterator = typename list_t::const_iterator;
 
   template<typename... ArgsT>
   iterator emplace(const_iterator pos, ArgsT... args) {

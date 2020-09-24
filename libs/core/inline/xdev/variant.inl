@@ -436,6 +436,49 @@ const Variant<StringPolicy> &Variant<StringPolicy>::operator[](const Value<Strin
     _value);
 }
 
+//template <typename StringPolicy>
+//decltype(auto) Variant<StringPolicy>::begin() {
+//  return visit([this]<typename T>(T &&value) {
+//    if constexpr (one_of<T, List<StringPolicy>, Dict<StringPolicy>>) {
+//      return std::begin(xfwd(value));
+//    } else {
+//      throw std::runtime_error(fmt::format("{} is not iterable", typeName()));
+//    }
+//  });
+//}
+//
+//template <typename StringPolicy>
+//decltype(auto) Variant<StringPolicy>::begin() const {
+//  return visit([this]<typename T>(T &&value) {
+//    if constexpr (one_of<T, List<StringPolicy>, Dict<StringPolicy>>) {
+//      return std::cbegin(xfwd(value));
+//    } else {
+//      throw std::runtime_error(fmt::format("{} is not iterable", typeName()));
+//    }
+//  });
+//}
+//
+//template <typename StringPolicy>
+//decltype(auto) Variant<StringPolicy>::end() {
+//  return visit([this]<typename T>(T &&value) {
+//    if constexpr (one_of<T, List<StringPolicy>, Dict<StringPolicy>>) {
+//      return std::end(xfwd(value));
+//    } else {
+//      throw std::runtime_error(fmt::format("{} is not iterable", typeName()));
+//    }
+//  });
+//}
+//
+//template <typename StringPolicy>
+//decltype(auto) Variant<StringPolicy>::end() const {
+//  return visit([this]<typename T>(T &&value) {
+//    if constexpr (one_of<T, List<StringPolicy>, Dict<StringPolicy>>) {
+//      return std::cend(xfwd(value));
+//    } else {
+//      throw std::runtime_error(fmt::format("{} is not iterable", typeName()));
+//    }
+//  });
+//}
 
 template <typename StringPolicy>
 Variant<StringPolicy> Variant<StringPolicy>::FromJSON(const std::string& input) {

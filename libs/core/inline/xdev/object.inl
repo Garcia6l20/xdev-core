@@ -330,7 +330,7 @@ void XObjectBase::bind(const string& prop_name, const XObjectBase::ptr& source, 
 void XObjectBase::bind(const XObjectBase::ptr& source) {
     for (auto& [name, prop]: _metaData.properties) {
         try {
-            auto listener = source->listen(name, [&](auto value) {
+            auto listener = source->listen(name, [&prop = prop](auto value) {
                 prop.get() = value;
             });
             _metaData.bounded_props.push_back(listener);

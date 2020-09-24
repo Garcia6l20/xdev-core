@@ -31,12 +31,10 @@ public:
   inline Dict &operator=(Dict &&other);
   inline Dict(const DictInitList<StringPolicy> &value);
 
-  using iterator = typename map_t::iterator;
-  using const_iterator = typename map_t::const_iterator;
-  inline iterator begin();
-  inline iterator end();
-  inline const_iterator begin() const;
-  inline const_iterator end() const;
+  inline decltype(auto) begin();
+  inline decltype(auto) end();
+  inline decltype(auto) begin() const;
+  inline decltype(auto) end() const;
   inline size_t size() const;
   inline Variant<StringPolicy> &operator[](const Value<StringPolicy> &index);
 

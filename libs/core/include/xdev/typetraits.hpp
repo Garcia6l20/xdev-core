@@ -67,18 +67,7 @@ namespace xdev {
     template <typename T, typename...TypesT>
     struct is_one_of
     {
-        template <typename FirstT, typename...RestT>
-        static constexpr bool test()
-        {
-            if constexpr (std::same_as<std::decay_t<T>, FirstT>) {
-                return true;
-            } else if constexpr (sizeof...(RestT) > 0) {
-                return test<RestT...>();
-            } else {
-                return false;
-            }
-        }
-        enum { value = test<TypesT...>() };
+        enum { value = (std::same_as<std::decay_t<T>, TypesT> || ...) };
     };
     template <typename T, typename...TypesT>
     constexpr bool is_one_of_v = is_one_of<T, TypesT...>::value;

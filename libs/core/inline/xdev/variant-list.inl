@@ -41,10 +41,10 @@ List<StringPolicy>::List(const XListConvertible<StringPolicy> auto &container) {
 
 
 template <typename StringPolicy>
-typename List<StringPolicy>::iterator List<StringPolicy>::begin() { return _value.begin(); }
+decltype(auto) List<StringPolicy>::begin() { return _value.begin(); }
 
 template <typename StringPolicy>
-typename List<StringPolicy>::iterator List<StringPolicy>::end() { return _value.end(); }
+decltype(auto) List<StringPolicy>::end() { return _value.end(); }
 
 template <typename StringPolicy>
 auto &List<StringPolicy>::front() { return _value.front(); }
@@ -53,10 +53,10 @@ template <typename StringPolicy>
 auto &List<StringPolicy>::back() { return _value.back(); }
 
 template <typename StringPolicy>
-typename List<StringPolicy>::const_iterator List<StringPolicy>::begin() const { return _value.cbegin(); }
+decltype(auto) List<StringPolicy>::begin() const { return _value.cbegin(); }
 
 template <typename StringPolicy>
-typename List<StringPolicy>::const_iterator List<StringPolicy>::end() const { return _value.cend(); }
+decltype(auto) List<StringPolicy>::end() const { return _value.cend(); }
 
 template <typename StringPolicy>
 size_t List<StringPolicy>::size() const { return _value.size(); }

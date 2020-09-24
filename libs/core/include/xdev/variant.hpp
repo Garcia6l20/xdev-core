@@ -144,7 +144,6 @@ public:
 
     /** @} */
 
-
     /**
      * @defgroup variant_object_api XVariant object API
      * @{
@@ -191,6 +190,13 @@ public:
     inline auto operator--(int);
 
     /** @} */
+
+    // hum... IMO this should work
+//    decltype(auto) begin();
+//    decltype(auto) begin() const;
+//
+//    decltype(auto) end();
+//    decltype(auto) end() const;
 
     static inline Variant FromJSON(const std::string&);
     static inline Variant FromYAML(const std::string&);

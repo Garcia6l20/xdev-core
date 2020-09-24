@@ -26,16 +26,16 @@ Dict<StringPolicy>& Dict<StringPolicy>::operator=(const Dict&other) { _value = o
 
 
 template <typename StringPolicy>
-typename Dict<StringPolicy>::iterator Dict<StringPolicy>::begin() { return _value.begin(); }
+decltype(auto) Dict<StringPolicy>::begin() { return _value.begin(); }
 
 template <typename StringPolicy>
-typename Dict<StringPolicy>::iterator Dict<StringPolicy>::end() { return _value.end(); }
+decltype(auto) Dict<StringPolicy>::end() { return _value.end(); }
 
 template <typename StringPolicy>
-typename Dict<StringPolicy>::const_iterator Dict<StringPolicy>::begin() const { return _value.cbegin(); }
+decltype(auto) Dict<StringPolicy>::begin() const { return _value.cbegin(); }
 
 template <typename StringPolicy>
-typename Dict<StringPolicy>::const_iterator Dict<StringPolicy>::end() const { return _value.cend(); }
+decltype(auto) Dict<StringPolicy>::end() const { return _value.cend(); }
 
 template <typename StringPolicy>
 size_t Dict<StringPolicy>::size() const { return _value.size(); }
