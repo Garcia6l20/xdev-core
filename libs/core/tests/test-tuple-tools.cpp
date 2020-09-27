@@ -54,6 +54,27 @@ SCENARIO("foreach loop is breakable", "[xdev-core][tuple-tools]") {
   }
 }
 
+SCENARIO("foreach loop can iterate types", "[xdev-core][tuple-tools]") {
+  GIVEN("A tuple") {
+    using tuple_type = std::tuple<bool, int, std::string_view>;
+    static constexpr tuple_type tuple {true, 42, "any question ?"};
+    WHEN("i iterate over it") {
+      constexpr auto result = tt::foreach<tuple_type>([]<size_t index, typename T>() mutable {
+        if constexpr (std::same_as<T, bool>) {
+        } else if constexpr (std::same_as<T, int>) {
+          return std::make_tuple(index, T{});
+        } else {
+          throw std::runtime_error {"nope !"};
+        }
+      });
+      THEN("all variants should have been iterated until 42") {
+        STATIC_REQUIRE(decays_to<tt::at_t<1, decltype(result)>, int>);
+        STATIC_REQUIRE(tt::at<0>(result) == 1);
+      }
+    }
+  }
+}
+
 SCENARIO("tt::transform can manipulate types", "[xdev-core][tuple-tools]") {
   GIVEN("A tuple") {
     using tuple_type = std::tuple<bool, int, std::string_view>;

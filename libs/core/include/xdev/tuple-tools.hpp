@@ -24,6 +24,7 @@ namespace xdev::tt {
   template <size_t index, is_tuple TupleT>
   using at_t = std::tuple_element_t<index, TupleT>;
 
+
   template <is_tuple TupleT>
   constexpr auto size = std::tuple_size_v<TupleT>;
 
@@ -56,6 +57,13 @@ namespace xdev::tt {
   template <size_t rbegin_, typename Tuple>
   using tail_t = decltype(tail<rbegin_>(std::declval<Tuple>()));
 
+  struct break_t {
+    bool break_ = false;
+    constexpr explicit operator bool() const { return break_; }
+  };
+  constexpr break_t break_{.break_ = true};
+  constexpr break_t continue_{.break_ = false};
+
   namespace detail {
     /** @brief Index-invocable requirement
      * @details Satisfied when the object can be called with a templated operator with std::size_t as first parameter.
@@ -74,6 +82,10 @@ namespace xdev::tt {
     concept is_index_invocable = requires(T v, Args... args) {
       {v.template operator()<std::size_t(42)>(args...)};
     };
+    template <typename T, typename... Args>
+    concept is_index_invocable_with_params = requires(T v, Args... args) {
+      {v.template operator()<std::size_t(42), Args...>()};
+    };
 
     template <size_t index = 0, typename TupleT, typename LambdaT>
     constexpr auto foreach_impl(TupleT &tuple, LambdaT &&lambda) {
@@ -91,6 +103,49 @@ namespace xdev::tt {
         if constexpr (index + 1 < std::tuple_size_v<TupleT>) {
           return foreach_impl<index + 1>(tuple, xfwd(lambda));
         }
+      } else if constexpr (std::same_as<ReturnT, break_t>) {
+        // non-constexpr break
+        if constexpr (index + 1 >= size<TupleT> ) {
+          return; // did not break
+        } else {
+          if (invoker()) {
+            return;
+          } else {
+            foreach_impl<index + 1>(tuple, xfwd(lambda));
+          }
+        }
+      } else {
+        return invoker();
+      }
+    }
+
+    template <size_t index, typename TupleT, typename LambdaT>
+    constexpr auto foreach_impl2(LambdaT &&lambda) {
+      using ValueT = at_t<index, TupleT>;
+      auto invoker = [&]() mutable {
+        if constexpr (is_index_invocable_with_params<decltype(lambda), ValueT>) {
+          return lambda.template operator()<index, ValueT>();
+        } else {
+          return lambda.template operator()<ValueT>();
+        }
+      };
+      using ReturnT = decltype(invoker());
+      if constexpr (std::is_void_v<ReturnT>) {
+        invoker();
+        if constexpr (index + 1 < std::tuple_size_v<TupleT>) {
+          return foreach_impl2<index + 1, TupleT>(xfwd(lambda));
+        }
+      } else if constexpr (std::same_as<ReturnT, break_t>) {
+        // non-constexpr break
+        if constexpr (index + 1 >= size<TupleT> ) {
+          return; // did not break
+        } else {
+          if (invoker()) {
+            return;
+          } else {
+            foreach_impl2<index + 1, TupleT>(xfwd(lambda));
+          }
+        }
       } else {
         return invoker();
       }
@@ -98,7 +153,12 @@ namespace xdev::tt {
   }// namespace detail
 
   constexpr decltype(auto) foreach (is_tuple auto &tuple, auto &&functor) {
-    return detail::foreach_impl(tuple, functor);
+    return detail::foreach_impl(tuple, xfwd(functor));
+  }
+
+  template <is_tuple TupleT>
+  constexpr decltype(auto) foreach (auto &&functor) {
+    return detail::foreach_impl2<0, TupleT>(xfwd(functor));
   }
 
   constexpr decltype(auto) push_back(is_tuple auto &&tuple, auto &&elem) {

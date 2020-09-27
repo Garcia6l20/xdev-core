@@ -13,6 +13,7 @@
 
 #include <string>
 #include <memory>
+#include <variant>
 
 #ifdef __cpp_lib_concepts
 #include <concepts>

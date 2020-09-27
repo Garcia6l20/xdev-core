@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string_view>
+#include <string>
+#include <cctype>
 
 namespace xdev::base64 {
 
