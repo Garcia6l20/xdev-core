@@ -64,6 +64,9 @@ namespace xdev {
     template<typename T>
     struct always_false : std::false_type {};
 
+    template <typename T>
+    constexpr bool always_false_v = always_false<T>::value;
+
     template <typename T, typename...TypesT>
     struct is_one_of
     {
