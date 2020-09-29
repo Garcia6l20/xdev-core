@@ -1,9 +1,11 @@
 #include <xdev/str-tools.hpp>
 #include <xdev/variant.hpp>
+#include <xdev/rng.hpp>
 
 #include <spdlog/spdlog.h>
 
 #include <iostream>
+
 
 namespace xdev::variant {
 
@@ -77,6 +79,7 @@ namespace xdev::variant {
 
   template <typename StringPolicy>
   Variant<StringPolicy> &Dict<StringPolicy>::operator[](const Value<StringPolicy> &key) {
+    // TODO use ranges / string_view
     auto item = _value.find(key);
     if (item == end()) {
       if (key.template is<std::string>()) {
@@ -141,18 +144,7 @@ namespace xdev::variant {
   template <typename StringPolicy>
   template <typename... RestT>
   Variant<StringPolicy> &Dict<StringPolicy>::at(const Value<StringPolicy> &key, const RestT &... rest) {
-    try {
-      auto &v = _value.at(key);
-      if constexpr (sizeof...(rest) > 0) {
-        return v.template get<Dict>().at(rest...);
-      } else {
-        return v;
-      }
-    } catch (const std::out_of_range &e) {
-      if (!key.template is<std::string>()) throw std::move(e);
-      // handle dot notation
-      return dotAt(key.template get<std::string>());
-    }
+    return const_cast<Variant<StringPolicy> &>(static_cast<const Dict<StringPolicy> &>(*this).at(key, rest...));
   }
 
   template <typename StringPolicy>
@@ -180,12 +172,19 @@ namespace xdev::variant {
   template <typename StringPolicy>
   const Variant<StringPolicy> &Dict<StringPolicy>::dotAt(std::string_view key) const {
     Dict const *d = this;
-    auto  r = key | views::split('.') | views::transform([d](auto &&elem) {
-               auto const &value = d->_value.at(Value{typename StringPolicy::string_type{elem.begin(), elem.end()}});
-               if (value.template is<Dict>()) { d = &value.template get<Dict>(); }
-               return value;
-             });
-    return *std::end(r);
+    constexpr auto to_sv = views::transform([](auto &&r) {
+      auto sz = size_t(rng::size(r));
+      auto data = &*r.begin();
+      return std::string_view(data, sz);
+    });
+    auto keys = key | views::split('.') | to_sv;
+    auto data = rng::to<std::vector>(keys | views::transform([&d](auto &&elem) mutable {
+      typename StringPolicy::string_type k{elem.begin(), elem.size()};
+      auto const &value = d->_value.at(std::move(k));
+      if (value.template is<xdict>()) { d = &value.template get<xdict>(); }
+      return std::ref(value);
+    }));
+    return data.back();
   }
 
 }// namespace xdev::variant
