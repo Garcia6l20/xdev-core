@@ -10,13 +10,11 @@ namespace xdev::ctt {
   template <ct::string input_>
   struct renderer {
     static constexpr ct::string input = input_;
-    using toks_t = std::decay_t<decltype(parse_tokens<input>())>;
-    using blocks_t = std::decay_t<decltype(generate_blocks<input, toks_t>().output)>;
+    using toks_t                      = std::decay_t<decltype(parse_tokens<input>())>;
+    using blocks_t                    = std::decay_t<decltype(generate_blocks<input, toks_t>().output)>;
     std::string operator()(const xdict &context) {
       std::string output{};
-      ct::foreach<blocks_t>([&]<typename BlockT>() {
-        BlockT::process(context, output);
-      });
+      ct::foreach<blocks_t>([&]<typename BlockT>() { BlockT::process(context, output); });
       return output;
     }
   };
@@ -29,5 +27,5 @@ namespace xdev::ctt {
       return renderer<ct::string<sizeof...(chars)>{input}>{};
     }
 
-  } // namespace literals
-} //namespace xdev::ctt
+  }// namespace literals
+}//namespace xdev::ctt

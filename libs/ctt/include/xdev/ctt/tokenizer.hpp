@@ -13,25 +13,24 @@ namespace xdev::ctt {
     struct impl {
       /** @brief Actual matched token type
        */
-      using token_type = TokenT;
-      static constexpr auto start = start_pos;
-      static constexpr auto end = end_pos;
-      static constexpr auto content = std::string_view{input.begin() + start_pos + 2,
-                                                       input.begin() + end_pos - 1};
+      using token_type              = TokenT;
+      static constexpr auto start   = start_pos;
+      static constexpr auto end     = end_pos;
+      static constexpr auto content = std::string_view{input.begin() + start_pos + 2, input.begin() + end_pos - 1};
     };
     struct control {
       static constexpr std::string_view start_tok = "{%";
-      static constexpr std::string_view end_tok = "%}";
+      static constexpr std::string_view end_tok   = "%}";
     };
 
     struct render {
       static constexpr std::string_view start_tok = "{{";
-      static constexpr std::string_view end_tok = "}}";
+      static constexpr std::string_view end_tok   = "}}";
     };
 
     struct comment {
       static constexpr std::string_view start_tok = "{#";
-      static constexpr std::string_view end_tok = "#}";
+      static constexpr std::string_view end_tok   = "#}";
     };
 
     using tokens_t = ct::tuple<control, render, comment>;
@@ -41,10 +40,7 @@ namespace xdev::ctt {
   constexpr auto match_start() {
     if constexpr (pos < input.size() - 1) {
       return ct::foreach<tokens::tokens_t>([]<typename ElemT>() {
-        if constexpr (input[pos] == ElemT::start_tok[0] and
-                      input[pos + 1] == ElemT::start_tok[1]) {
-          return pos;
-        }
+        if constexpr (input[pos] == ElemT::start_tok[0] and input[pos + 1] == ElemT::start_tok[1]) { return pos; }
       });
     }
   }
@@ -52,8 +48,7 @@ namespace xdev::ctt {
   constexpr auto match_end() {
     //    if constexpr (pos < input.size() - 1) {
     return ct::foreach<tokens::tokens_t>([]<typename ElemT>() {
-      if constexpr (input[pos] == ElemT::end_tok[0] and
-                    input[pos + 1] == ElemT::end_tok[1]) {
+      if constexpr (input[pos] == ElemT::end_tok[0] and input[pos + 1] == ElemT::end_tok[1]) {
         return tokens::impl<input, start, pos + 1, ElemT>{};
       }
     });
@@ -86,15 +81,14 @@ namespace xdev::ctt {
     }
   }
 
-
   template <ct::string input, size_t pos>
   constexpr auto next_token() {
     if constexpr (pos < input.size() - 2) {
       auto start_pos = [] { return next_start<input, pos>(); };
       if constexpr (not std::is_void_v<decltype(start_pos())>) {
         // we have a token to find !
-        constexpr auto start = next_start<input, pos>();
-        auto get_next_end = [] { return next_end<input, start + 1, start>(); };
+        constexpr auto start        = next_start<input, pos>();
+        auto           get_next_end = [] { return next_end<input, start + 1, start>(); };
         static_assert(not std::is_void_v<decltype(get_next_end())>, "unterminated token");
         auto end = get_next_end();
         return end;
@@ -105,9 +99,7 @@ namespace xdev::ctt {
   template <ct::string input, size_t pos = 0, ct::ct_tuple result>
   constexpr auto parse_tokens_impl() {
     if constexpr (pos < input.size() - 1) {
-      auto next = [] {
-        return next_token<input, pos>();
-      };
+      auto next   = [] { return next_token<input, pos>(); };
       using NextT = decltype(next());
       if constexpr (std::is_void_v<NextT>) {
         return result{};
@@ -130,4 +122,4 @@ namespace xdev::ctt {
   constexpr auto parse() {
     return parse_tokens<input>();
   }
-}
+}// namespace xdev::ctt

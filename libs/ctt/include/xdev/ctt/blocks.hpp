@@ -11,6 +11,8 @@
 
 #include <ctre.hpp>
 
+#include <spdlog/spdlog.h>
+
 namespace xdev::ctt {
 
   template <auto input, ct::ct_tuple toks, ct::ct_tuple output, std::size_t index>
@@ -36,7 +38,7 @@ namespace xdev::ctt {
         static constexpr auto data = data_;
         template <typename OutputT>
         static void process(const xdict &context, OutputT &output) {
-          fmt::print(" - for '{}' in '{}'\n", data.iter.view(), data.container.view());
+          spdlog::debug(" - for '{}' in '{}'", data.iter.view(), data.container.view());
           // TODO optimize this
           xdict loop_context = context;
           auto cont = context.at(data.container.view());
@@ -50,7 +52,7 @@ namespace xdev::ctt {
                   loop_context[std::string{data.iter.view()}] = elem;
                 }
                 ct::foreach<blocks_t>([&]<typename BlockT>() {
-                  fmt::print(" - processing: {}\n", ctti::nameof<BlockT>().str());
+                  spdlog::debug(" - processing: {}", ctti::nameof<BlockT>().str());
                   BlockT::process(loop_context, output);
                 });
               }
@@ -58,7 +60,7 @@ namespace xdev::ctt {
               throw std::runtime_error(fmt::format("no iterable type: {}", ctti::nameof<ContainerT>().str()));
             }
           });
-          fmt::print(" - endfor '{}' in '{}'\n", data.iter.view(), data.container.view());
+          spdlog::debug(" - endfor '{}' in '{}'", data.iter.view(), data.container.view());
         }
       };
 
@@ -104,7 +106,7 @@ namespace xdev::ctt {
       static constexpr auto evaluator = evaluator_of<input, TokImplT::start + 2, TokImplT::end - 1>();
       template <typename OutputT>
       static void process(const xdict &context, OutputT &output) {
-        fmt::print(" - processing: '{}'\n", body);
+        spdlog::debug(" - processing: '{}'", body);
         output += evaluator(context).toString();
       }
     };
@@ -114,7 +116,7 @@ namespace xdev::ctt {
       static constexpr auto body = std::string_view{input.begin() + start, input.begin() + end};
       template <typename OutputT>
       static void process(const xdict &context, OutputT &output) {
-        fmt::print(" - text: '{}'\n", body);
+        spdlog::debug(" - text: '{}'", body);
         output += body;
       }
     };

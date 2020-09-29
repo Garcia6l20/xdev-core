@@ -16,7 +16,8 @@ using namespace xdev;
 using namespace xdev::ctt::literals;
 
 int main() {
-  std::vector<int> test;
+  spdlog::set_level(spdlog::level::debug);
+
   auto template_ = R"(
   head
   {% for value in input %}
@@ -24,10 +25,6 @@ int main() {
   {% endfor %}
   tail
   )"_ctt;
-  //  static_assert(ctre::match<R"(\s?for\s+(\w+)\s+in\s+(\w+)\s?)">("for t in test"));
-  //  static_assert(ctre::match<R"(\s?endfor\s?)">(" endfor"));
-
-  //  constexpr auto template_ = R"({% for t in test %}{% endfor %})"_ctt;
 
   fmt::print("input: \n{}\n", template_.input.view());
 
@@ -38,15 +35,11 @@ int main() {
   });
 
   fmt::print("\nblocks: \n");
-  ct::foreach<decltype(template_)::blocks_t>([]<typename TokenT>() {
-    fmt::print("- {}\n", ctti::nameof<TokenT>().str());
-  });
+  ct::foreach<decltype(template_)::blocks_t>(
+    []<typename TokenT>() { fmt::print("- {}\n", ctti::nameof<TokenT>().str()); });
 
   fmt::print("\nrendering: \n");
-  template_(xdict{
-    {"input", xlist {1, 2, 3}}});
+  template_(xdict{{"input", xlist{1, 2, 3}}});
 
-  fmt::print("\nresult: {}\n", template_(xdict{
-                                           {"input", xlist{1,2,3}}
-                               }));
+  fmt::print("\nresult: {}\n", template_(xdict{{"input", xlist{1, 2, 3}}}));
 }
