@@ -47,8 +47,8 @@ public:
   template<typename... RestT>
   inline const Variant<StringPolicy> &at(const Value<StringPolicy> &key, const RestT &... rest) const;
 
-  inline Variant<StringPolicy> &dotAt(const std::string &key);
-  inline const Variant<StringPolicy> &dotAt(const std::string &key) const;
+  inline Variant<StringPolicy> &dotAt(std::string_view key);
+  inline const Variant<StringPolicy> &dotAt(std::string_view key) const;
   inline std::string toString() const;
 
   inline Dict &update(Dict &&other);

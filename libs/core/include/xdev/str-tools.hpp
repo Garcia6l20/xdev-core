@@ -4,8 +4,12 @@
 #pragma once
 
 #include <string_view>
+#include <ranges>
 
 namespace xdev {
+
+  namespace rng = std::ranges;
+  namespace views = std::views;
 
   /** @brief Left trim
    *

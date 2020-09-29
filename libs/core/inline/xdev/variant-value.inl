@@ -30,6 +30,16 @@ namespace xdev::variant {
     other._value = None {};
   }
 
+//  template<typename StringPolicy>
+//  constexpr Value<StringPolicy>::Value(std::convertible_to<typename StringPolicy::string_type> auto &&value) noexcept
+//    : _value{typename StringPolicy::string_type{xfwd(value)}} {
+//  }
+//
+//  template<typename StringPolicy>
+//  constexpr Value<StringPolicy> &Value<StringPolicy>::operator=(std::convertible_to<typename StringPolicy::string_type> auto &&value) noexcept {
+//      _value = typename StringPolicy::string_type{xfwd(value)};
+//  }
+
   template<typename StringPolicy>
   constexpr Value<StringPolicy> &Value<StringPolicy>::operator=(Value &&other) noexcept {
     _value = std::move(other._value);

@@ -39,7 +39,7 @@ namespace xdev::ctt {
           fmt::print(" - for '{}' in '{}'\n", data.iter.view(), data.container.view());
           // TODO optimize this
           xdict loop_context = context;
-          auto cont = context.at(std::string{data.container.view()});
+          auto cont = context.at(data.container.view());
           cont.visit([&]<typename ContainerT>(ContainerT &&actual){
             if constexpr (one_of<ContainerT, xdict, xlist>) {
               for (auto &&elem : actual) {

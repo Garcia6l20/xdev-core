@@ -5,6 +5,16 @@
 using namespace xdev;
 using namespace std;
 
+TEST_CASE("VariantTest.StrValue") {
+  xvar val = "hello";
+  REQUIRE(val.typeName() == "std::string");
+//  REQUIRE(val.is<bool>());
+//  REQUIRE(val == true);
+//  REQUIRE_FALSE(val == false);
+//  REQUIRE_FALSE(val != true);
+//  REQUIRE(val.toString() == "true");
+}
+
 TEST_CASE("VariantTest.BoolValue") {
     xvar val = true;
     REQUIRE(val.typeName() == "bool");

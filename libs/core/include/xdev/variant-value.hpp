@@ -39,6 +39,12 @@ namespace variant {
 
     constexpr Value() noexcept;
 
+    constexpr Value(const XValueConvertible<StringPolicy> auto &value);
+    constexpr Value(XValueConvertible<StringPolicy> auto &&value);
+
+//    constexpr Value(std::convertible_to<typename StringPolicy::string_type> auto &&value) noexcept;
+//    constexpr Value &operator=(std::convertible_to<typename StringPolicy::string_type> auto &&value) noexcept;
+
     constexpr Value(const char *value) noexcept;
     constexpr Value &operator=(const char *value) noexcept;
 
@@ -48,15 +54,12 @@ namespace variant {
     constexpr Value(Value &&other) noexcept;
     constexpr Value &operator=(Value &&other) noexcept;
 
-    constexpr Value(const XValueConvertible<StringPolicy> auto &value);
-    constexpr Value(XValueConvertible<StringPolicy> auto &&value);
-
-    constexpr Value &operator!();
-
     constexpr bool operator==(const Value &rhs) const;
     constexpr std::weak_ordering operator<=>(const Value &rhs) const;
     constexpr bool operator==(char const *rhs) const;
     constexpr std::weak_ordering operator<=>(const char *rhs) const;
+
+    constexpr Value &operator!();
 
     constexpr auto &operator++();
     constexpr auto operator++(int);
