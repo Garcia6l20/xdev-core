@@ -6,7 +6,7 @@
 
 #include <xdev/ct.hpp>
 #include <xdev/str-tools.hpp>
-#include <xdev/variant.hpp>
+#include <xdev/ctt/concepts.hpp>
 
 #include <ctre.hpp>
 
@@ -25,7 +25,7 @@ namespace xdev::ctt {
       struct impl {
         static constexpr auto view = trim(input.subview(begin, end));
         static constexpr bool match() { return ctre::match<R"([\w\.]+)">(view); }
-        constexpr auto        operator()(const xdict &context) const noexcept {
+        constexpr auto        operator()(dictionary auto const&context) const noexcept {
           // TODO dict keys should be accessible from string view
           return context.at(view);
         }

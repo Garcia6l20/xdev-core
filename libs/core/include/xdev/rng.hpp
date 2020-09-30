@@ -3,6 +3,8 @@
  */
 #pragma once
 
+#include <ranges>
+
 namespace xdev {
   namespace views = std::views;
 }
