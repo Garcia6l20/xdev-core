@@ -111,13 +111,14 @@ namespace xdev::ctt {
 
     template <auto input, size_t start, size_t end, bool ltrim_, bool rtrim_>
     struct text {
+      static constexpr std::string_view trim_chars = "\r\n";
       static constexpr auto body = [] {
         if constexpr (ltrim_ and rtrim_) {
-          return trim(std::string_view{input.begin() + start, input.begin() + end});
+          return trim(std::string_view{input.begin() + start, input.begin() + end}, trim_chars);
         } else if constexpr (ltrim_) {
-          return ltrim(std::string_view{input.begin() + start, input.begin() + end});
+          return ltrim(std::string_view{input.begin() + start, input.begin() + end}, trim_chars);
         } else if constexpr (rtrim_) {
-          return rtrim(std::string_view{input.begin() + start, input.begin() + end});
+          return rtrim(std::string_view{input.begin() + start, input.begin() + end}, trim_chars);
         } else {
           return std::string_view{input.begin() + start, input.begin() + end};
         }
