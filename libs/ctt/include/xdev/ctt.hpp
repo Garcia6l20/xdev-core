@@ -13,9 +13,9 @@ namespace xdev::ctt {
     using toks_t                      = std::decay_t<decltype(parse_tokens<input>())>;
     using blocks_t                    = std::decay_t<decltype(generate_blocks<input, toks_t>().output)>;
     std::string operator()(dictionary auto const& context) {
-      std::string output{};
-      ct::foreach<blocks_t>([&]<typename BlockT>() { BlockT::process(context, output); });
-      return output;
+      fmt::memory_buffer buffer;
+      ct::foreach<blocks_t>([&]<typename BlockT>() { BlockT::process(context, buffer); });
+      return buffer.data();
     }
   };
 

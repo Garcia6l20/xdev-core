@@ -1,6 +1,7 @@
 link_libraries(XDev::ctt) # XDev::catch2::main)
 
 add_executable(xdev-ctt-test-basic test-basic.cpp)
+target_link_libraries(xdev-ctt-test-basic XDev::catch2::main)
 option(STL_DEV "Use local stl headers" OFF)
 if(STL_DEV)
   set(GCC_ROOT /home/sylvain/Projects/gcc)

@@ -105,7 +105,7 @@ namespace xdev::ctt {
       template <typename OutputT>
       static void process(const xdict &context, OutputT &output) {
         spdlog::debug(" - processing: '{}'", body);
-        output += evaluator(context).toString();
+        fmt::format_to(output, FMT_STRING("{}"), evaluator(context));
       }
     };
 
@@ -125,8 +125,8 @@ namespace xdev::ctt {
       }();
       template <typename OutputT>
       static void process(const xdict &context, OutputT &output) {
-        spdlog::debug(" - text: '{}'", body);
-        output += body;
+        spdlog::debug(" - text: '{}' ({})", body, body.size());
+        fmt::format_to(output, FMT_STRING("{}"), body);
       }
     };
   }// namespace blocks
