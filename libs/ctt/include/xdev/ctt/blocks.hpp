@@ -74,14 +74,13 @@ namespace xdev::ctt {
         if constexpr (m) {
           constexpr auto should_trim_before = m.template get<1>().to_view().size() > 0;
           constexpr auto should_trim_after  = m.template get<4>().to_view().size() > 0;
-          static_assert(not should_trim_before);
-          static_assert(not should_trim_after);
           constexpr auto tmp1      = m.template get<2>().to_view();
           constexpr auto iter      = ct::string<tmp1.size() + 1>::from(tmp1.data());
           constexpr auto tmp2      = m.template get<3>().to_view();
           constexpr auto container = ct::string<tmp2.size() + 1>::from(tmp2.data());
           constexpr auto inner     = generate_blocks_impl<input, toks, ct::tuple<>, index + 1, should_trim_after>();
-          return result_t<inner.index, impl_t<inner.output, iter, container, should_trim_before, should_trim_after>>{};
+          using inner_result_t = decltype(inner);
+          return result_t<inner.index, impl_t<inner.output, iter, container, should_trim_before, inner_result_t::trim_after>>{};
         }
       }
     };
@@ -150,8 +149,8 @@ namespace xdev::ctt {
       }
     } else {
       using prev_tok_t = ct::at_t<index - 1, toks>;
-      if constexpr (tok_t::start - prev_tok_t::end > 1) {
-        return ct::push_t<output, blocks::text<input, prev_tok_t::end + 1, tok_t::start - 1, ltrim, rtrim>>{};
+      if constexpr (tok_t::start - prev_tok_t::end > 0) {
+        return ct::push_t<output, blocks::text<input, prev_tok_t::end + 1, tok_t::start, ltrim, rtrim>>{};
       } else {
         // no text between tokens
         return output{};

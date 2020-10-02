@@ -20,9 +20,9 @@ int main() {
 
   auto template_ = R"(
   head
-{% for value in input %}
+{% for value in input -%}
   pre value {{ value }} post value
-{% endfor %}
+{% endfor -%}
   tail
   )"_ctt;
 
