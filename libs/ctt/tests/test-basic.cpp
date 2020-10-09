@@ -43,3 +43,19 @@ SCENARIO("ctt can loop through lists", "[xdev-ctt][list]") {
   fmt::print("\nresult: {}\n", result);
   REQUIRE(result == "head pre 1 post pre 2 post pre 3 post tail");
 }
+
+SCENARIO("ctt can if statements", "[xdev-ctt][list]") {
+  spdlog::set_level(spdlog::level::debug);
+
+  auto template_ = R"(head
+{%- if test -%}
+YES
+{%- endif -%}
+ tail)"_ctt;
+
+  print_infos(template_);
+
+  auto result = template_(xdict{{"test", true}});
+  fmt::print("\nresult: {}\n", result);
+  REQUIRE(result == "head pre 1 post pre 2 post pre 3 post tail");
+}

@@ -80,4 +80,11 @@ concept Stringable = requires(T obj) {
   { obj.toString() } ->std::convertible_to<std::string>;
 };
 
+template <typename T>
+concept void_ = std::same_as<T, void>;
+
+template <typename T>
+concept not_void_ = not void_<T>;
+
+
 } // namespace xdev

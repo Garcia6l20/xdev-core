@@ -74,13 +74,14 @@ namespace xdev::ctt {
         if constexpr (m) {
           constexpr auto should_trim_before = m.template get<1>().to_view().size() > 0;
           constexpr auto should_trim_after  = m.template get<4>().to_view().size() > 0;
-          constexpr auto tmp1      = m.template get<2>().to_view();
-          constexpr auto iter      = ct::string<tmp1.size() + 1>::from(tmp1.data());
-          constexpr auto tmp2      = m.template get<3>().to_view();
-          constexpr auto container = ct::string<tmp2.size() + 1>::from(tmp2.data());
-          constexpr auto inner     = generate_blocks_impl<input, toks, ct::tuple<>, index + 1, should_trim_after>();
+          constexpr auto tmp1               = m.template get<2>().to_view();
+          constexpr auto iter               = ct::string<tmp1.size() + 1>::from(tmp1.data());
+          constexpr auto tmp2               = m.template get<3>().to_view();
+          constexpr auto container          = ct::string<tmp2.size() + 1>::from(tmp2.data());
+          constexpr auto inner = generate_blocks_impl<input, toks, ct::tuple<>, index + 1, should_trim_after>();
           using inner_result_t = decltype(inner);
-          return result_t<inner.index, impl_t<inner.output, iter, container, should_trim_before, inner_result_t::trim_after>>{};
+          return result_t<inner.index,
+                          impl_t<inner.output, iter, container, should_trim_before, inner_result_t::trim_after>>{};
         }
       }
     };
@@ -89,6 +90,44 @@ namespace xdev::ctt {
       template <ct::string input, typename ImplT>
       static constexpr auto try_load() {
         constexpr auto m = ctre::match<R"((-?)\s?endfor\s?(-?))">(ImplT::content);
+        if constexpr (m) {
+          constexpr auto should_trim_before = m.template get<1>().to_view().size() > 0;
+          constexpr auto should_trim_after  = m.template get<2>().to_view().size() > 0;
+          return base_control<should_trim_before, should_trim_after>{};
+        }
+      }
+    };
+
+    struct if_control {
+
+      template <auto blocks_, ct::string test_, bool trim_before_, bool trim_after_>
+      struct impl_t : base_control<trim_before_, trim_after_> {
+        static constexpr auto test = test_;
+        using blocks_t             = decltype(blocks_);
+        template <typename OutputT>
+        static void process(const xdict &context, OutputT &output) {
+          spdlog::debug(" - if '{}' in '{}'", test.view());
+          // TODO
+        }
+      };
+
+      template <ct::string input, typename ImplT, typename toks, size_t index>
+      static constexpr auto try_load() {
+        constexpr auto m = ctre::match<R"((-?)\s?if\s+(\w+)\s+\s?(-?))">(ImplT::content);
+        if constexpr (m) {
+          constexpr auto should_trim_before = m.template get<1>().to_view().size() > 0;
+          constexpr auto should_trim_after  = m.template get<3>().to_view().size() > 0;
+          constexpr auto tmp1               = m.template get<2>().to_view();
+          constexpr auto test               = ct::string<tmp1.size() + 1>::from(tmp1.data());
+          return base_control<should_trim_before, should_trim_after>{};
+        }
+      }
+    };
+
+    struct endif_control {
+      template <ct::string input, typename ImplT>
+      static constexpr auto try_load() {
+        constexpr auto m = ctre::match<R"((-?)\s?endif\s?(-?))">(ImplT::content);
         if constexpr (m) {
           constexpr auto should_trim_before = m.template get<1>().to_view().size() > 0;
           constexpr auto should_trim_after  = m.template get<2>().to_view().size() > 0;
@@ -112,7 +151,7 @@ namespace xdev::ctt {
     template <auto input, size_t start, size_t end, bool ltrim_, bool rtrim_>
     struct text {
       static constexpr std::string_view trim_chars = "\r\n";
-      static constexpr auto body = [] {
+      static constexpr auto             body       = [] {
         if constexpr (ltrim_ and rtrim_) {
           return trim(std::string_view{input.begin() + start, input.begin() + end}, trim_chars);
         } else if constexpr (ltrim_) {
@@ -174,7 +213,10 @@ namespace xdev::ctt {
       } else if constexpr (decays_to<token_t, tokens::control>) {
         auto load_for    = [&] { return blocks::for_control::try_load<input, impl_t, toks, index>(); };
         auto load_endfor = [&] { return blocks::endfor_control::try_load<input, impl_t>(); };
+        auto load_if    = [&] { return blocks::if_control::try_load<input, impl_t, toks, index>(); };
+        auto load_endif    = [&] { return blocks::endif_control::try_load<input, impl_t>(); };
         if constexpr (not std::is_void_v<decltype(load_for())>) {
+          // for
           using result_t = decltype(load_for());
           return generate_blocks_impl<
             input, toks,
@@ -182,9 +224,14 @@ namespace xdev::ctt {
                        typename result_t::block_t>,
             result_t::index + 1, result_t::block_t::trim_after>();
         } else if constexpr (not std::is_void_v<decltype(load_endfor())>) {
+          // endfor
           using result_t = decltype(load_endfor());
           return generate_result_t<push_text_t<input, toks, output, index, ltrim, result_t::trim_before>, index,
                                    result_t::trim_after>{};
+        } else if constexpr (not std::is_void_v<decltype(load_if())>) {
+          static_assert(always_false_v<impl_t>, "if not implemented !");
+        } else if constexpr (not std::is_void_v<decltype(load_endif())>) {
+          static_assert(always_false_v<impl_t>, "endif not implemented !");
         } else {
           static_assert(always_false_v<impl_t>, "Unhandled block !");
         }
